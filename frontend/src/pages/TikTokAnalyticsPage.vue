@@ -1,73 +1,72 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
-import { Play, Share2, Clock, Eye } from 'lucide-vue-next'
-import DashboardLayout from '@/layouts/DashboardLayout.vue'
-import StatCard from '@/components/dashboard/StatCard.vue'
-import AudienceChart from '@/components/dashboard/AudienceChart.vue'
-import ContentTable from '@/components/dashboard/ContentTable.vue'
-import TerritoryPanel from '@/components/dashboard/TerritoryPanel.vue'
-import DeviceTypePanel from '@/components/dashboard/DeviceTypePanel.vue'
-import { usePlatformAnalytics } from '@/composables/usePlatformAnalytics'
-import { useRouter } from 'vue-router'
+import { onMounted, computed } from "vue";
+import { Play, Share2, Clock, Eye } from "lucide-vue-next";
+import DashboardLayout from "@/layouts/DashboardLayout.vue";
+import StatCard from "@/components/dashboard/StatCard.vue";
+import AudienceChart from "@/components/dashboard/AudienceChart.vue";
+import ContentTable from "@/components/dashboard/ContentTable.vue";
+import TerritoryPanel from "@/components/dashboard/TerritoryPanel.vue";
+import DeviceTypePanel from "@/components/dashboard/DeviceTypePanel.vue";
+import { usePlatformAnalytics } from "@/composables/usePlatformAnalytics";
+import { useRouter } from "vue-router";
 
-const router = useRouter()
-const { loading, accountData, fetchAnalytics } = usePlatformAnalytics('tiktok')
+const router = useRouter();
+const { loading, accountData, fetchAnalytics } = usePlatformAnalytics("tiktok");
 
 const tiktokStats = computed(() => {
-  if (!accountData.value?.data.analytics) return []
+  if (!accountData.value?.data.analytics) return [];
 
-  const analytics = accountData.value.data.analytics
+  const analytics = accountData.value.data.analytics;
   return [
     {
-      title: 'Video Views',
+      title: "Video Views",
       value: formatNumber(analytics.totalViews || 0),
-      change: '24%',
-      changeType: 'up' as const,
+      change: "24%",
+      changeType: "up" as const,
       icon: Play,
-      subtitle: '+1.2M vs last week'
+      subtitle: "+1.2M vs last week",
     },
     {
-      title: 'Shares',
+      title: "Shares",
       value: formatNumber(analytics.totalShares || 0),
-      change: '15%',
-      changeType: 'up' as const,
+      change: "15%",
+      changeType: "up" as const,
       icon: Share2,
-      subtitle: 'Viral velocity high'
+      subtitle: "Viral velocity high",
     },
     {
-      title: 'Total Likes',
+      title: "Total Likes",
       value: formatNumber(analytics.totalLikes || 0),
-      change: '8.4%',
-      changeType: 'up' as const,
+      change: "8.4%",
+      changeType: "up" as const,
       icon: Eye,
-      subtitle: 'Watch time total'
+      subtitle: "Watch time total",
     },
     {
-      title: 'Engagement Rate',
-      value: analytics.engagementRate.toFixed(2) + '%',
-      change: '12%',
-      changeType: 'up' as const,
+      title: "Engagement Rate",
+      value: analytics.engagementRate.toFixed(2) + "%",
+      change: "12%",
+      changeType: "up" as const,
       icon: Clock,
-      subtitle: 'Retention rate'
-    }
-  ]
-})
+      subtitle: "Retention rate",
+    },
+  ];
+});
 
 const formatNumber = (num: number): string => {
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'K'
-  return num.toString()
-}
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+  return num.toString();
+};
 
 onMounted(() => {
   fetchAnalytics().catch((err) => {
     if ((err as any)?.response?.status === 404) {
-      alert('TikTok account not connected. Please connect your account first.')
-      router.push('/connections')
+      alert("TikTok account not connected. Please connect your account first.");
+      router.push("/connections");
     }
-  })
-})
-
+  });
+});
 </script>
 
 <template>
@@ -76,9 +75,12 @@ onMounted(() => {
     <div class="mb-6">
       <div class="flex items-center gap-3 mb-1">
         <div class="size-2 rounded-full bg-slate-900 dark:bg-white" />
-        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">TikTok Analytics</h2>
+        <h2
+          class="text-4xl font-black uppercase text-slate-900 dark:text-white">
+          TikTok Analytics
+        </h2>
       </div>
-      <p class="text-sm text-slate-500 dark:text-slate-400">
+      <p class="text-sm uppercase font-bold text-slate-500 dark:text-slate-400">
         Analyze your TikTok trends and reach.
       </p>
     </div>
@@ -94,8 +96,7 @@ onMounted(() => {
         :change-type="stat.changeType"
         :icon="stat.icon"
         :subtitle="stat.subtitle"
-        platform="tiktok"
-      />
+        platform="tiktok" />
     </div>
 
     <!-- Views Trend Chart -->
@@ -103,8 +104,7 @@ onMounted(() => {
       <AudienceChart
         platform="tiktok"
         title="Views Trend"
-        subtitle="Video performance trajectory"
-      />
+        subtitle="Video performance trajectory" />
     </div>
 
     <!-- TikTok-Specific Panels -->

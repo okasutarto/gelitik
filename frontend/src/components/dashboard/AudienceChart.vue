@@ -58,7 +58,7 @@ const chartData = computed(() => {
         {
           label: "TikTok",
           data: [2500, 3000, 4500, 3000, 3500, 4500, 3500],
-          backgroundColor: "#5c5b5b",
+          backgroundColor: "#0f172a",
           borderRadius: 4,
           barPercentage: 0.6,
         },
@@ -171,20 +171,22 @@ const isBarChart = computed(() => props.platform === "all");
 </script>
 
 <template>
-  <div
-    class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm">
+  <div class="neo-card border-neo-3 border-black neo-hover-lift">
     <!-- Header -->
     <div
       class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
       <div>
-        <h3 class="text-lg font-bold text-slate-900 dark:text-white">
+        <h3
+          class="text-lg font-black uppercase hidden lg:block dark:text-white">
           {{ title }}
         </h3>
-        <p class="text-sm text-slate-500 dark:text-slate-400">{{ subtitle }}</p>
+        <p class="text-sm font-bold opacity-60 uppercase dark:text-slate-400">
+          {{ subtitle }}
+        </p>
       </div>
       <select
         v-model="selectedPeriod"
-        class="bg-slate-50 dark:bg-slate-700 border-none text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-300 py-2 px-3 focus:ring-2 focus:ring-primary-500 cursor-pointer outline-none">
+        class="bg-slate-50 dark:bg-slate-700 border-neo-3 border-black neo-shadow-hard-sm text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-300 py-2 px-3 focus:ring-2 focus:ring-primary-500 cursor-pointer outline-none">
         <option value="7days">Last 7 Days</option>
         <option value="30days">Last 30 Days</option>
         <option value="quarter">Last Quarter</option>

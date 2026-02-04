@@ -9,9 +9,13 @@
 <template>
   <div class="flex min-h-screen w-full flex-row overflow-hidden">
     <!-- Left Side Slot (Testimonial/Branding) -->
-    <slot name="left" />
+    <div class="hidden md:flex flex-1 bg-neo-accent border-r-4 border-black shadow-neo-hard">
+      <slot name="left" />
+    </div>
     
     <!-- Right Side Slot (Form Content) -->
-    <slot name="right" />
+    <div class="flex-1 bg-white dark:bg-slate-900 relative">
+      <slot name="right" />
+    </div>
   </div>
 </template>

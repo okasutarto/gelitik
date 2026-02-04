@@ -1,30 +1,20 @@
 <script setup lang="ts">
-import { Sun, Moon } from 'lucide-vue-next'
-import { useTheme } from '@/composables/useTheme'
+import { Sun, Moon } from "lucide-vue-next";
+import { useTheme } from "@/composables/useTheme";
 
-const { isDark, toggleTheme } = useTheme()
+const { isDark, toggleTheme } = useTheme();
 </script>
 
 <template>
   <button
     @click="toggleTheme"
-    class="relative flex items-center justify-center w-10 h-10 rounded-xl 
-           bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
-           hover:bg-slate-50 dark:hover:bg-slate-700 
-           transition-all duration-200 cursor-pointer
-           focus:outline-none focus:ring-2 focus:ring-primary/20"
-    :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-  >
-    <Transition name="theme-icon" mode="out-in">
-      <Sun
-        v-if="isDark"
-        class="w-5 h-5 text-amber-500"
-      />
-      <Moon
-        v-else
-        class="w-5 h-5 text-slate-600"
-      />
-    </Transition>
+    :class="[
+      'p-3 rounded-2xl border-neo-3 border-black cursor-pointer transition-transform shadow-neo-hard-sm',
+      isDark ? 'bg-slate-800 text-slate-200' : 'bg-neo-accent text-black',
+    ]"
+    :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
+    <Sun v-if="isDark" :size="24" :stroke-width="2" />
+    <Moon v-else :size="24" :stroke-width="2" />
   </button>
 </template>
 

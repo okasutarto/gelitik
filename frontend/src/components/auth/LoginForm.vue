@@ -1,172 +1,112 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Mail, Lock } from 'lucide-vue-next'
-import AppInput from '@/components/ui/AppInput.vue'
-import AppButton from '@/components/ui/AppButton.vue'
-import AppCheckbox from '@/components/ui/AppCheckbox.vue'
-import AppDivider from '@/components/ui/AppDivider.vue'
-import AppLogo from '@/components/ui/AppLogo.vue'
-import ThemeToggle from '@/components/ui/ThemeToggle.vue'
-import SocialLoginButton from './SocialLoginButton.vue'
+import { ref } from "vue";
 
 interface LoginFormData {
-  email: string
-  password: string
-  rememberMe: boolean
+  email: string;
+  password: string;
+  rememberMe: boolean;
 }
 
 const emit = defineEmits<{
-  (e: 'submit', data: LoginFormData): void
-  (e: 'google-login'): void
-  (e: 'forgot-password'): void
-  (e: 'signup'): void
-}>()
+  (e: "submit", data: LoginFormData): void;
+  (e: "google-login"): void;
+  (e: "forgot-password"): void;
+  (e: "signup"): void;
+}>();
 
-const email = ref('')
-const password = ref('')
-const rememberMe = ref(false)
-const isLoading = ref(false)
-const errorMsg = ref('')
+const email = ref("");
+const password = ref("");
 
-const handleSubmit = async () => {
-  isLoading.value = true
-  errorMsg.value = ''
-  
-  try {
-    await emit('submit', {
-      email: email.value,
-      password: password.value,
-      rememberMe: rememberMe.value
-    })
-  } catch (error: any) {
-    errorMsg.value = error.response?.data?.error || 'Login failed'
-  } finally {
-    isLoading.value = false
-  }
-}
-
-const handleGoogleLogin = () => {
-  emit('google-login')
-}
-
-const handleForgotPassword = () => {
-  emit('forgot-password')
-}
-
-const handleSignup = () => {
-  emit('signup')
-}
+const handleSubmit = () => {
+  emit("submit", {
+    email: email.value,
+    password: password.value,
+    rememberMe: false,
+  });
+};
 </script>
 
 <template>
-  <div
-    class="w-full md:w-1/2 bg-background-light dark:bg-background-dark 
-           flex flex-col items-center justify-center p-6 sm:p-12 overflow-y-auto"
-  >
-    <div class="w-full max-w-md flex flex-col gap-6">
-      <!-- Theme Toggle (Top Right) -->
-      <div class="absolute top-4 right-4 md:top-6 md:right-6">
-        <ThemeToggle />
-      </div>
+  <div class="space-y-6">
+    <button
+      @click="$emit('google-login')"
+      class="w-full bg-white border-[3px] border-black p-4 rounded-3xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-3 font-black text-lg transition-all active:translate-x-1 active:translate-y-1 active:shadow-none">
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+          fill="#4285F4" />
+        <path
+          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+          fill="#34A853" />
+        <path
+          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1.18 4.93l2.85-2.22.81-.62z"
+          fill="#FBBC05" />
+        <path
+          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 7.7 1 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+          fill="#EA4335" />
+      </svg>
+      Login with Google
+    </button>
 
-      <!-- Mobile Logo (Visible only on small screens) -->
-      <div class="md:hidden flex justify-center mb-4">
-        <AppLogo variant="dark" size="md" />
-      </div>
+    <div class="relative flex items-center py-4">
+      <div class="flex-grow border-t-[3px] border-black"></div>
+      <span
+        class="flex-shrink mx-4 w-10 h-10 rounded-full bg-[#FFCC00] border-[3px] border-black flex items-center justify-center font-black text-sm"
+        >OR</span
+      >
+      <div class="flex-grow border-t-[3px] border-black"></div>
+    </div>
 
-      <!-- Header -->
-      <div class="text-center space-y-2">
-        <h1
-          class="text-slate-900 dark:text-white tracking-tight text-[32px] font-bold leading-tight"
+    <form @submit.prevent="handleSubmit" class="space-y-4">
+      <div class="space-y-2">
+        <label class="font-black uppercase text-sm tracking-wider"
+          >Email Address</label
         >
-          Welcome Back
-        </h1>
-        <p class="text-slate-500 dark:text-slate-400 text-base">
-          Please enter your details to sign in.
-        </p>
+        <input
+          v-model="email"
+          type="email"
+          placeholder="name@company.com"
+          class="w-full bg-white border-[3px] border-black p-4 rounded-3xl font-bold placeholder:text-gray-400 focus:outline-none focus:bg-[#FFCC00] transition-colors" />
       </div>
 
-      <!-- Google Login Button -->
-      <SocialLoginButton provider="google" @click="handleGoogleLogin" />
-
-      <!-- Divider -->
-      <AppDivider />
-
-      <!-- Form Fields -->
-      <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
-        <!-- Email Input -->
-        <div class="space-y-1">
-          <label
-            for="email"
-            class="text-sm font-medium text-slate-700 dark:text-slate-300"
+      <div class="space-y-2">
+        <div class="flex justify-between">
+          <label class="font-black uppercase text-sm tracking-wider"
+            >Password</label
           >
-            Email
-          </label>
-          <AppInput
-            id="email"
-            v-model="email"
-            type="email"
-            placeholder="Enter your email"
-            :icon="Mail"
-            required
-          />
-        </div>
-
-        <!-- Password Input -->
-        <div class="space-y-1">
-          <label
-            for="password"
-            class="text-sm font-medium text-slate-700 dark:text-slate-300"
-          >
-            Password
-          </label>
-          <AppInput
-            id="password"
-            v-model="password"
-            type="password"
-            placeholder="••••••••"
-            :icon="Lock"
-            required
-          />
-        </div>
-
-        <!-- Options Row -->
-        <div class="flex items-center justify-between mt-1">
-          <AppCheckbox id="remember" v-model="rememberMe">
-            Remember for 30 days
-          </AppCheckbox>
           <a
             href="#"
-            @click.prevent="handleForgotPassword"
-            class="text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+            @click.prevent="$emit('forgot-password')"
+            class="text-sm font-bold underline"
+            >Forgot?</a
           >
-            Forgot password?
-          </a>
         </div>
+        <input
+          v-model="password"
+          type="password"
+          placeholder="••••••••"
+          class="w-full bg-white border-[3px] border-black p-4 rounded-3xl font-bold placeholder:text-gray-400 focus:outline-none focus:bg-[#FFCC00] transition-colors" />
+      </div>
 
-        <!-- Submit Button -->
-        <AppButton
-          type="submit"
-          variant="primary"
-          full-width
-          :loading="isLoading"
-          class="mt-4"
-        >
-          Sign in
-        </AppButton>
-      </form>
+      <button
+        type="submit"
+        class="w-full bg-[#FFCC00] border-[4px] border-black p-5 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] font-[900] text-2xl uppercase tracking-tighter transition-all active:translate-x-1 active:translate-y-1 active:shadow-none mt-6">
+        Sign In
+      </button>
+    </form>
 
-      <!-- Footer -->
-      <p class="text-center text-sm text-slate-600 dark:text-slate-400 mt-2">
-        Don't have an account?
-        <a
-          href="#"
-          @click.prevent="handleSignup"
-          class="font-semibold text-primary hover:text-primary/80 transition-colors"
-        >
-          Sign up
-        </a>
-      </p>
-    </div>
+    <p class="text-center font-bold">
+      New here?
+      <a
+        href="#"
+        @click.prevent="$emit('signup')"
+        class="font-black underline decoration-2 underline-offset-4"
+        >Create account</a
+      >
+    </p>
   </div>
 </template>

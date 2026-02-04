@@ -29,3 +29,108 @@ body {
 html {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+/* Neo-Brutalist Design System */
+:root {
+  --neo-accent: #FFCC00;
+  --neo-black: #000000;
+  --neo-white: #FFFFFF;
+}
+
+.dark {
+  --neo-black: #FFFFFF;
+  --neo-white: #1a1a1a;
+}
+
+/* Thick borders */
+.border-neo-3 {
+  border-width: 3px;
+}
+
+.border-neo-4 {
+  border-width: 4px;
+}
+
+/* Hard shadows (no blur, sharp edges) */
+.shadow-neo-hard {
+  box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.shadow-neo-hard-lg {
+  box-shadow: 12px 12px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.shadow-neo-hard-sm {
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.dark .shadow-neo-hard {
+  box-shadow: 8px 8px 0px 0px rgba(255, 255, 255, 0.15);
+}
+
+.dark .shadow-neo-hard-lg {
+  box-shadow: 12px 12px 0px 0px rgba(255, 255, 255, 0.15);
+}
+
+.dark .shadow-neo-hard-sm {
+  box-shadow: 6px 6px 0px 0px rgba(255, 255, 255, 0.15);
+}
+
+.hover\:shadow-neo-hard-sm:hover {
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.dark .hover\:shadow-neo-hard-sm:hover {
+  box-shadow: 6px 6px 0px 0px rgba(255, 255, 255, 0.15);
+}
+
+.hover\:shadow-neo-hard:hover {
+  box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.dark .hover\:shadow-neo-hard:hover {
+  box-shadow: 8px 8px 0px 0px rgba(255, 255, 255, 0.15);
+}
+
+.hover\:shadow-neo-hard-lg:hover {
+  box-shadow: 12px 12px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.dark .hover\:shadow-neo-hard-lg:hover {
+  box-shadow: 12px 12px 0px 0px rgba(255, 255, 255, 0.15);
+}
+
+/* Accent utilities */
+.bg-neo-accent {
+  background-color: var(--neo-accent);
+}
+
+.text-neo-accent {
+  color: var(--neo-accent);
+}
+
+.border-neo-accent {
+  border-color: var(--neo-accent);
+}
+
+/* Neo-Brutalist base card */
+.neo-card {
+  background-color: var(--neo-white);
+  border-radius: 1.5rem;
+  padding: 1.25rem;
+  box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.dark .neo-card {
+  background-color: #1e293b;
+}
+
+/* Hover lift (instant, no fade) */
+.neo-hover-lift {
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+.neo-hover-lift:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 12px 12px 0px 0px rgba(0, 0, 0, 1);
+}

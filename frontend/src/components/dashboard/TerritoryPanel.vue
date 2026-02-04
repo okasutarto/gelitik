@@ -1,32 +1,37 @@
 <script setup lang="ts">
-import { Globe } from 'lucide-vue-next'
+import { Globe } from "lucide-vue-next";
 
 interface TerritoryData {
-  name: string
-  percentage: number
+  name: string;
+  percentage: number;
 }
 
 interface Props {
-  territories?: TerritoryData[]
+  territories?: TerritoryData[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   territories: () => [
-    { name: 'Indonesia', percentage: 92 },
-    { name: 'Malaysia', percentage: 5 },
-    { name: 'Singapore', percentage: 3 }
-  ]
-})
+    { name: "Indonesia", percentage: 92 },
+    { name: "Malaysia", percentage: 5 },
+    { name: "Singapore", percentage: 3 },
+  ],
+});
 
 const getBarColor = (index: number) => {
-  const colors = ['bg-slate-900 dark:bg-white', 'bg-slate-700 dark:bg-slate-300', 'bg-slate-500 dark:bg-slate-400']
-  return colors[index] || 'bg-slate-400'
-}
+  const colors = [
+    "bg-slate-900 dark:bg-white",
+    "bg-slate-700 dark:bg-slate-300",
+    "bg-slate-500 dark:bg-slate-400",
+  ];
+  return colors[index] || "bg-slate-400";
+};
 </script>
 
 <template>
-  <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm">
-    <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+  <div class="neo-card border-neo-3 border-black neo-hover-lift">
+    <h4
+      class="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
       <Globe :size="18" class="text-teal-500" />
       Territory
     </h4>
@@ -34,18 +39,18 @@ const getBarColor = (index: number) => {
       <div
         v-for="(territory, index) in territories"
         :key="territory.name"
-        class="flex items-center justify-between"
-      >
+        class="flex items-center justify-between">
         <span class="text-sm text-slate-600 dark:text-slate-300 min-w-[80px]">
           {{ territory.name }}
         </span>
-        <div class="flex-1 mx-4 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+        <div
+          class="flex-1 mx-4 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
           <div
             :class="['h-full rounded-full transition-all', getBarColor(index)]"
-            :style="{ width: `${territory.percentage}%` }"
-          />
+            :style="{ width: `${territory.percentage}%` }" />
         </div>
-        <span class="text-sm font-bold text-slate-900 dark:text-white min-w-[40px] text-right">
+        <span
+          class="text-sm font-bold text-slate-900 dark:text-white min-w-[40px] text-right">
           {{ territory.percentage }}%
         </span>
       </div>

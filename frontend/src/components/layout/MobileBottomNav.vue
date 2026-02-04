@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router'
-import { LayoutDashboard, BarChart3, Plus, CalendarDays, Settings } from 'lucide-vue-next'
-
-const route = useRoute()
-const router = useRouter()
+  import { useRoute, useRouter } from 'vue-router'
+  import { LayoutDashboard, BarChart3, Plus, CalendarDays, Settings } from 'lucide-vue-next'
+  
+  const route = useRoute()
+  const router = useRouter()
 
 interface NavItem {
   name: string

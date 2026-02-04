@@ -1,7 +1,6 @@
 import express from 'express';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { Strategy as GitHubStrategy } from 'passport-github2';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { prisma } from '../app';
 import { generateToken } from '../middleware/auth';
@@ -37,11 +36,11 @@ passport.use(new GoogleStrategy({
     let user = await prisma.user.findUnique({
       where: { googleId: profile.id }
     });
-
+ 
     if (user) {
       return done(null, user);
     }
-
+ 
     user = await prisma.user.create({
       data: {
         googleId: profile.id,
@@ -50,37 +49,7 @@ passport.use(new GoogleStrategy({
         avatar: profile.photos?.[0]?.value
       }
     });
-
-    return done(null, user);
-  } catch (error) {
-    return done(error, undefined);
-  }
-}));
-
-// GitHub OAuth Strategy
-passport.use(new GitHubStrategy({
-  clientID: process.env.GITHUB_CLIENT_ID!,
-  clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-  callbackURL: "/api/auth/github/callback"
-}, async (accessToken, refreshToken, profile, done) => {
-  try {
-    let user = await prisma.user.findUnique({
-      where: { githubId: profile.id }
-    });
-
-    if (user) {
-      return done(null, user);
-    }
-
-    user = await prisma.user.create({
-      data: {
-        githubId: profile.id,
-        email: profile.emails?.[0]?.value || `${profile.username}@github.local`,
-        name: profile.displayName,
-        avatar: profile.photos?.[0]?.value
-      }
-    });
-
+ 
     return done(null, user);
   } catch (error) {
     return done(error, undefined);
@@ -104,20 +73,10 @@ passport.deserializeUser(async (id: string, done) => {
 });
 
 // Auth routes
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] })); 
 
 router.get('/google/callback', 
   passport.authenticate('google', { session: false }),
-  (req, res) => {
-    const token = generateToken((req.user as any).id);
-    res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
-  }
-);
-
-router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
-
-router.get('/github/callback',
-  passport.authenticate('github', { session: false }),
   (req, res) => {
     const token = generateToken((req.user as any).id);
     res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
@@ -144,7 +103,7 @@ router.get('/me', passport.authenticate('jwt', { session: false }), async (req, 
         }
       }
     });
-
+    
     res.json({
       success: true,
       data: fullUser

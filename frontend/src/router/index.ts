@@ -76,7 +76,7 @@ const routes: RouteRecordRaw[] = [
     {
         path: '/settings',
         name: 'settings',
-        component: () => import('@/pages/DashboardPage.vue'), // Placeholder
+        component: () => import('@/pages/SettingsPage.vue'),
         meta: { title: 'Settings - Gelitik', requiresAuth: true }
     }
 ]

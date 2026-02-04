@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Search, Bell, Zap } from 'lucide-vue-next'
-
-const userAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik'
+  import { Search, Bell, Zap } from 'lucide-vue-next'
+  
+  const userAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik'
 </script>
 
 <template>

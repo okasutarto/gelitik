@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import passport from 'passport';
+import jwt from 'jsonwebtoken';
 import { AuthController } from '../controllers/auth.controller';
 import { authenticateJwt } from '../middleware/auth.middleware';
 import { InstagramService } from '../services/instagram.service';
@@ -24,12 +25,11 @@ router.get('/google', (req, res, next) => {
     passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
 });
 
-router.get('/google/callback', (req, res, next) => {
-    if (!process.env.GOOGLE_CLIENT_ID) {
-        return res.redirect(`${process.env.FRONTEND_URL}/login?error=google_not_configured`);
-    }
-    passport.authenticate('google', { session: false, failureRedirect: '/login' })(req, res, next);
-}, AuthController.googleCallback);
+router.get('/google/callback', passport.authenticate('google', { session: false, failureRedirect: '/login' }), (req, res) => {
+    const user = req.user as any;
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'your-secret-key', { expiresIn: '7d' });
+    res.redirect(`${process.env.FRONTEND_URL}/login?token=${token}`);
+});
 
 // === Platform Connection (Protected) ===
 // Initiate Auth Flow

@@ -16,13 +16,10 @@ import {
   Zap
 } from 'lucide-vue-next'
 import { useSidebar } from '@/composables/useSidebar'
-import { useTheme } from '@/composables/useTheme'
-import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 
 const route = useRoute()
 const router = useRouter()
 const { isCollapsed, toggleSidebar, initSidebar } = useSidebar()
-useTheme() // Initialize theme
 
 onMounted(() => {
   initSidebar()
@@ -250,7 +247,7 @@ const navigateTo = (path: string) => {
         </button>
       </template>
 
-      <!-- User Profile with Theme Toggle -->
+      <!-- User Profile -->
       <div
         :class="[
           'flex items-center gap-3 rounded-xl',
@@ -265,8 +262,6 @@ const navigateTo = (path: string) => {
           <p class="text-sm font-bold text-white truncate">Gelitik Team</p>
           <p class="text-xs text-slate-400 truncate">admin@gelitik.com</p>
         </div>
-        <!-- Theme Toggle - next to profile when expanded, below avatar when collapsed -->
-        <ThemeToggle />
       </div>
     </div>
 

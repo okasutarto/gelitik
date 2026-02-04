@@ -35,19 +35,7 @@ const handleLogin = async (data: { email: string; password: string; rememberMe: 
 }
 
 const handleGoogleLogin = () => {
-  // Bypass backend auth for now
-  const mockUser = {
-    id: 'google_user',
-    email: 'user@gmail.com',
-    name: 'Google User',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=google'
-  }
-  
-  localStorage.setItem('token', 'mock-google-token')
-  localStorage.setItem('user', JSON.stringify(mockUser))
-  authStore.setAuth(mockUser, 'mock-google-token')
-  
-  router.push('/dashboard')
+  window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/auth/google`
 }
 
 const handleForgotPassword = () => {

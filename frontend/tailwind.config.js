@@ -24,7 +24,10 @@ export default {
         background: {
           light: '#f6f6f8',
           dark: '#131022'
-        }
+        },
+        sidebar: '#1e1b4b',
+        instagram: '#E1306C',
+        tiktok: '#000000'
       },
       fontFamily: {
         display: ['Inter', 'sans-serif']

@@ -19,16 +19,35 @@ const testimonial = {
 
 // Event handlers
 const handleLogin = async (data: { email: string; password: string; rememberMe: boolean }) => {
-  try {
-    await authStore.login(data.email, data.password)
-    router.push('/dashboard')
-  } catch (error) {
-    throw error // Re-throw to be caught by form component
+  // Bypass backend auth for now
+  const mockUser = {
+    id: 'dev_user',
+    email: data.email,
+    name: 'Dev User',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik'
   }
+  
+  localStorage.setItem('token', 'mock-token-123')
+  localStorage.setItem('user', JSON.stringify(mockUser))
+  authStore.setAuth(mockUser, 'mock-token-123')
+  
+  router.push('/dashboard')
 }
 
 const handleGoogleLogin = () => {
-  window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/auth/google`
+  // Bypass backend auth for now
+  const mockUser = {
+    id: 'google_user',
+    email: 'user@gmail.com',
+    name: 'Google User',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=google'
+  }
+  
+  localStorage.setItem('token', 'mock-google-token')
+  localStorage.setItem('user', JSON.stringify(mockUser))
+  authStore.setAuth(mockUser, 'mock-google-token')
+  
+  router.push('/dashboard')
 }
 
 const handleForgotPassword = () => {

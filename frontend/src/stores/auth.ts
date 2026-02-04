@@ -55,6 +55,9 @@ export const useAuthStore = defineStore('auth', () => {
 
     const checkSession = async () => {
         if (!token.value) return false
+        // Mock session check for dev bypass
+        if (token.value.startsWith('mock-')) return true
+
         try {
             const { data } = await api.get('/auth/me')
             user.value = data

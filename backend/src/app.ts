@@ -2,10 +2,12 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import passport from './config/passport'; // Import passport config
+import passport from './config/passport';
 import { authenticateJwt } from './middleware/auth.middleware';
 import authRoutes from './routes/auth.routes';
 import analyticsRoutes from './routes/analytics.routes';
+import socialAccountsRoutes from './routes/socialAccounts';
+import { startTokenRefreshCron } from './jobs/tokenRefresh';
 
 const app = express();
 
@@ -38,7 +40,11 @@ app.use(passport.initialize()); // Initialize Passport
 
 // Routes
 app.use('/auth', authRoutes);
-app.use('/api/analytics', authenticateJwt, analyticsRoutes); // Protect analytics routes
+app.use('/api/analytics', authenticateJwt, analyticsRoutes);
+app.use('/api/accounts', authenticateJwt, socialAccountsRoutes);
+
+// Start token refresh cron job
+startTokenRefreshCron();
 
 // Health Check
 app.get('/health', (req, res) => {

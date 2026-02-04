@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { AuthController } from '../controllers/auth.controller';
 import { authenticateJwt } from '../middleware/auth.middleware';
 import { InstagramService } from '../services/instagram.service';
-import { TikTokService } from '../services/tiktok.service';
+import { TikTokService } from '../services/tiktokService';
 import { PrismaClient } from '@prisma/client';
 
 const router = Router();

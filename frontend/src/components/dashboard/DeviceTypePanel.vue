@@ -37,7 +37,7 @@ const primaryDevice = props.devices[0]
 </script>
 
 <template>
-  <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+  <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm">
     <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
       <Smartphone :size="18" class="text-slate-800 dark:text-white" />
       Device Type

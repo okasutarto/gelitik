@@ -1,13 +1,14 @@
 import express from 'express';
-import { prisma } from '../app';
+import { PrismaClient } from '@prisma/client';
 import { TikTokService } from '../services/tiktokService';
-import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
+import { authenticateJwt } from '../middleware/auth.middleware';
 
 const router = express.Router();
+const prisma = new PrismaClient();
 const tiktokService = new TikTokService();
 
 // Get TikTok authorization URL
-router.get('/tiktok/auth-url', authenticateToken, (req, res) => {
+router.get('/tiktok/auth-url', authenticateJwt, (req, res) => {
   try {
     const authUrl = tiktokService.getAuthUrl();
     res.json({
@@ -35,14 +36,9 @@ router.get('/tiktok/callback', async (req, res) => {
   }
 
   try {
-    // Exchange code for token
     const tokenData = await tiktokService.exchangeCodeForToken(code as string);
-    
-    // Get user info
     const userInfo = await tiktokService.getUserInfo(tokenData.access_token);
-    
-    // We need the user ID from the state parameter or a session
-    // For now, let's use a temporary approach - in production, store this in a session
+
     res.redirect(`${process.env.FRONTEND_URL}/auth/tiktok/callback?` +
       `access_token=${tokenData.access_token}` +
       `&refresh_token=${tokenData.refresh_token || ''}` +
@@ -55,7 +51,7 @@ router.get('/tiktok/callback', async (req, res) => {
 });
 
 // Connect TikTok account (after OAuth callback)
-router.post('/tiktok/connect', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.post('/tiktok/connect', authenticateJwt, async (req, res) => {
   try {
     const {
       access_token,
@@ -67,18 +63,15 @@ router.post('/tiktok/connect', authenticateToken, async (req: AuthenticatedReque
       avatar_url
     } = req.body;
 
-    const user = req.user!;
+    const user = (req as any).user;
 
-    // Calculate token expiry date
     const expiresAt = new Date();
     expiresAt.setSeconds(expiresAt.getSeconds() + parseInt(expires_in));
 
-    // Get additional user info
     const userInfo = await tiktokService.getUserInfo(access_token);
     const videos = await tiktokService.getVideos(access_token);
     const analytics = await tiktokService.calculateAnalytics(userInfo, videos.videos);
 
-    // Check if account already exists
     const existingAccount = await prisma.socialAccount.findFirst({
       where: {
         userId: user.id,
@@ -89,21 +82,19 @@ router.post('/tiktok/connect', authenticateToken, async (req: AuthenticatedReque
 
     let socialAccount;
     if (existingAccount) {
-      // Update existing account
       socialAccount = await prisma.socialAccount.update({
         where: { id: existingAccount.id },
         data: {
           displayName: display_name,
           username: username || userInfo.display_name,
           avatar: avatar_url || userInfo.avatar_url,
-          accessToken,
-          refreshToken,
+          accessToken: access_token,
+          refreshToken: refresh_token,
           expiresAt,
           isActive: true
         }
       });
     } else {
-      // Create new account
       socialAccount = await prisma.socialAccount.create({
         data: {
           userId: user.id,
@@ -112,15 +103,14 @@ router.post('/tiktok/connect', authenticateToken, async (req: AuthenticatedReque
           displayName: display_name,
           username: username || userInfo.display_name,
           avatar: avatar_url || userInfo.avatar_url,
-          accessToken,
-          refreshToken,
+          accessToken: access_token,
+          refreshToken: refresh_token,
           expiresAt,
           isActive: true
         }
       });
     }
 
-    // Store initial analytics data
     await prisma.analytics.create({
       data: {
         accountId: socialAccount.id,
@@ -134,7 +124,6 @@ router.post('/tiktok/connect', authenticateToken, async (req: AuthenticatedReque
       }
     });
 
-    // Store content data
     for (const video of videos.videos) {
       await prisma.content.upsert({
         where: {
@@ -153,7 +142,8 @@ router.post('/tiktok/connect', authenticateToken, async (req: AuthenticatedReque
           shares: video.share_count,
           views: video.view_count,
           duration: video.duration,
-          postedAt: new Date(video.create_time * 1000)
+          postedAt: new Date(video.create_time * 1000),
+          type: 'video'
         },
         create: {
           accountId: socialAccount.id,
@@ -167,7 +157,8 @@ router.post('/tiktok/connect', authenticateToken, async (req: AuthenticatedReque
           shares: video.share_count,
           views: video.view_count,
           duration: video.duration,
-          postedAt: new Date(video.create_time * 1000)
+          postedAt: new Date(video.create_time * 1000),
+          type: 'video'
         }
       });
     }
@@ -186,10 +177,10 @@ router.post('/tiktok/connect', authenticateToken, async (req: AuthenticatedReque
 });
 
 // Disconnect social account
-router.delete('/:accountId', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.delete('/:accountId', authenticateJwt, async (req, res) => {
   try {
     const { accountId } = req.params;
-    const user = req.user!;
+    const user = (req as any).user;
 
     const account = await prisma.socialAccount.findFirst({
       where: {
@@ -223,9 +214,9 @@ router.delete('/:accountId', authenticateToken, async (req: AuthenticatedRequest
 });
 
 // Get all connected accounts
-router.get('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.get('/', authenticateJwt, async (req, res) => {
   try {
-    const user = req.user!;
+    const user = (req as any).user;
 
     const accounts = await prisma.socialAccount.findMany({
       where: {

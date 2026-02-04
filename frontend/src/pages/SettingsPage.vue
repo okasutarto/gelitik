@@ -49,8 +49,8 @@ const settings = ref([
       </div>
 
       <!-- Appearance Card -->
-      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-        <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm">
+        <div class="p-6">
           <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Appearance</h3>
         </div>
         <div class="p-6">
@@ -88,8 +88,8 @@ const settings = ref([
       <!-- Account & Preferences Settings -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <template v-for="setting in settings" :key="setting.category">
-          <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-            <div class="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
+          <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm">
+            <div class="p-6 flex items-center gap-3">
               <div class="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg">
                 <component :is="setting.icon" :size="20" class="text-slate-600 dark:text-slate-300" />
               </div>
@@ -113,7 +113,7 @@ const settings = ref([
       </div>
 
       <!-- Logout Card -->
-      <div class="bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+      <div class="bg-red-50 dark:bg-red-900/20 rounded-xl">
         <div class="p-6">
           <div class="flex items-center gap-3">
             <div class="p-2 bg-red-100 dark:bg-red-900/50 rounded-lg">

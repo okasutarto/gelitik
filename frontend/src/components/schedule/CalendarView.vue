@@ -68,9 +68,9 @@ const onDrop = (e: DragEvent, date: Date) => {
 </script>
 
 <template>
-  <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+  <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden">
     <!-- Weekday Headers -->
-    <div class="grid grid-cols-7 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+    <div class="grid grid-cols-7 bg-slate-50 dark:bg-slate-800/50">
       <div
         v-for="day in weekDays"
         :key="day"

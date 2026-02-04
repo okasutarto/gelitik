@@ -16,7 +16,6 @@ export const authenticateJwt = async (req: Request, res: Response, next: NextFun
                 return res.status(403).json({ error: 'Token is invalid or expired' });
             }
 
-            // Optional: Fetch fresh user from DB to ensure they still exist/aren't banned
             const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
             if (!dbUser) {
                 return res.status(401).json({ error: 'User not found' });

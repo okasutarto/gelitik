@@ -37,7 +37,7 @@ const changeBadgeClass = computed(() =>
 
 <template>
   <div
-    class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 
+    class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm
            flex flex-col justify-between h-32 relative overflow-hidden group 
            hover:shadow-md transition-shadow"
   >

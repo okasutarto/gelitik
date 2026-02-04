@@ -70,7 +70,7 @@ const routes: RouteRecordRaw[] = [
     {
         path: '/connections',
         name: 'connections',
-        component: () => import('@/pages/DashboardPage.vue'), // Placeholder
+        component: () => import('@/pages/ConnectionsPage.vue'),
         meta: { title: 'Connections - Gelitik', requiresAuth: true }
     },
     {

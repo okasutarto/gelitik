@@ -1,31 +1,47 @@
 import axios from 'axios';
 import { TikTokUserInfo, TikTokVideo, PlatformAnalytics } from '../types';
+import { PlatformService } from './platform.interface';
 
-export class TikTokService {
+export class TikTokService implements PlatformService {
   private clientId = process.env.TIKTOK_CLIENT_ID;
   private clientSecret = process.env.TIKTOK_CLIENT_SECRET;
   private redirectUri = process.env.TIKTOK_REDIRECT_URI;
   private baseUrl = 'https://open.tiktokapis.com/v2';
 
-  // Get authorization URL for OAuth flow
-  getAuthUrl(): string {
+  getAuthUrl(state?: string): string {
     const scopes = ['user.info.basic', 'video.list'];
-    const state = Math.random().toString(36).substring(7);
-    
-    return `https://www.tiktok.com/v2/auth/authorize/` +
-      `?client_key=${this.clientId}` +
-      `&scope=${scopes.join(',')}` +
-      `&response_type=code` +
-      `&redirect_uri=${this.redirectUri}` +
-      `&state=${state}`;
+    const authState = state || Math.random().toString(36).substring(7);
+    const clientId = this.clientId || '';
+    const redirectUri = this.redirectUri || '';
+
+    return `https://www.tiktok.com/v2/auth/authorize/?client_key=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes.join(',')}&response_type=code&state=${authState}`;
   }
 
-  // Exchange authorization code for access token
+  async exchangeCode(code: string): Promise<any> {
+    try {
+      const tokenData = await this.exchangeCodeForToken(code);
+      const userInfo = await this.getUserInfo(tokenData.access_token);
+
+      return {
+        accessToken: tokenData.access_token,
+        refreshToken: tokenData.refresh_token,
+        expiresIn: tokenData.expires_in,
+        platformUserId: userInfo.open_id,
+        username: userInfo.display_name,
+        displayName: userInfo.display_name,
+        avatar: userInfo.avatar_url,
+        scope: tokenData.scope
+      };
+    } catch (error) {
+      throw new Error('Failed to exchange code for token');
+    }
+  }
+
   async exchangeCodeForToken(code: string): Promise<{
     access_token: string;
     refresh_token?: string;
     expires_in: number;
-    refresh_expires_in?: number;
+    refresh_expires_in?: string;
     scope: string;
     token_type: string;
   }> {
@@ -46,7 +62,6 @@ export class TikTokService {
     }
   }
 
-  // Get user information
   async getUserInfo(accessToken: string): Promise<TikTokUserInfo> {
     try {
       const response = await axios.get(`${this.baseUrl}/user/info/`, {
@@ -61,7 +76,10 @@ export class TikTokService {
     }
   }
 
-  // Get user's videos
+  async getProfile(accessToken: string): Promise<any> {
+    return this.getUserInfo(accessToken);
+  }
+
   async getVideos(accessToken: string, cursor?: string, maxCount: number = 20): Promise<{
     videos: TikTokVideo[];
     has_more: boolean;
@@ -89,16 +107,15 @@ export class TikTokService {
     }
   }
 
-  // Calculate engagement metrics from user info and videos
   async calculateAnalytics(userInfo: TikTokUserInfo, videos: TikTokVideo[]): Promise<PlatformAnalytics> {
-    const totalLikes = videos.reduce((sum, video) => sum + video.like_count, 0) + userInfo.likes_count;
-    const totalComments = videos.reduce((sum, video) => sum + video.comment_count, 0);
-    const totalShares = videos.reduce((sum, video) => sum + video.share_count, 0);
-    const totalViews = videos.reduce((sum, video) => sum + video.view_count, 0);
-    
+    const totalLikes = videos.reduce((sum: number, video) => sum + video.like_count, 0) + userInfo.likes_count;
+    const totalComments = videos.reduce((sum: number, video) => sum + video.comment_count, 0);
+    const totalShares = videos.reduce((sum: number, video) => sum + video.share_count, 0);
+    const totalViews = videos.reduce((sum: number, video) => sum + video.view_count, 0);
+
     const totalEngagement = totalLikes + totalComments + totalShares;
     const totalImpressions = totalViews || userInfo.follower_count;
-    
+
     const engagementRate = totalImpressions > 0 ? (totalEngagement / totalImpressions) * 100 : 0;
 
     return {
@@ -108,12 +125,11 @@ export class TikTokService {
       totalComments,
       totalShares,
       totalViews,
-      engagementRate: Math.round(engagementRate * 100) / 100 // Round to 2 decimal places
+      engagementRate: Math.round(engagementRate * 100) / 100
     };
   }
 
-  // Refresh access token
-  async refreshToken(refreshToken: string): Promise<{
+  async refreshTokenForToken(refreshToken: string): Promise<{
     access_token: string;
     refresh_token?: string;
     expires_in: number;
@@ -137,7 +153,34 @@ export class TikTokService {
     }
   }
 
-  // Verify token is still valid
+  async refreshToken(refreshToken: string): Promise<any> {
+    try {
+      const tokenData = await this.refreshTokenForToken(refreshToken);
+      return {
+        accessToken: tokenData.access_token,
+        refreshToken: tokenData.refresh_token,
+        expiresIn: tokenData.expires_in,
+        platformUserId: '',
+        username: '',
+        displayName: ''
+      };
+    } catch (error) {
+      throw new Error('Failed to refresh token');
+    }
+  }
+
+  async getAnalytics(accessToken: string, accountId: string, startDate: Date, endDate: Date): Promise<any> {
+    const videosData = await this.getVideos(accessToken, undefined, 50);
+    const userInfo = await this.getUserInfo(accessToken);
+    const analytics = await this.calculateAnalytics(userInfo, videosData.videos);
+
+    return {
+      videos: videosData.videos,
+      analytics,
+      userInfo
+    };
+  }
+
   async verifyToken(accessToken: string): Promise<boolean> {
     try {
       const response = await axios.post(`${this.baseUrl}/oauth/verify_token/`, null, {
@@ -145,7 +188,7 @@ export class TikTokService {
           'Authorization': `Bearer ${accessToken}`
         }
       });
-      
+
       return response.data.data.valid;
     } catch (error) {
       return false;

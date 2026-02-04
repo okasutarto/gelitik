@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted, computed } from 'vue'
 import { Eye, Users, UserPlus, Layers } from 'lucide-vue-next'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import StatCard from '@/components/dashboard/StatCard.vue'
@@ -6,42 +7,67 @@ import AudienceChart from '@/components/dashboard/AudienceChart.vue'
 import ContentTable from '@/components/dashboard/ContentTable.vue'
 import TopCitiesPanel from '@/components/dashboard/TopCitiesPanel.vue'
 import AgeRangePanel from '@/components/dashboard/AgeRangePanel.vue'
+import { usePlatformAnalytics } from '@/composables/usePlatformAnalytics'
+import { useRouter } from 'vue-router'
 
-// Instagram-specific stats
-const instagramStats = [
-  {
-    title: 'Impressions',
-    value: '892K',
-    change: '12%',
-    changeType: 'up' as const,
-    icon: Eye,
-    subtitle: '+12% vs last week'
-  },
-  {
-    title: 'Accounts Reached',
-    value: '124K',
-    change: '5%',
-    changeType: 'up' as const,
-    icon: Users,
-    subtitle: '+5% new accounts'
-  },
-  {
-    title: 'Profile Visits',
-    value: '12.5K',
-    change: '8.4%',
-    changeType: 'up' as const,
-    icon: UserPlus,
-    subtitle: 'From bio link'
-  },
-  {
-    title: 'Stories Reach',
-    value: '45.2K',
-    change: '18%',
-    changeType: 'up' as const,
-    icon: Layers,
-    subtitle: 'Avg per story'
-  }
-]
+const router = useRouter()
+const { loading, accountData, fetchAnalytics } = usePlatformAnalytics('instagram')
+
+const instagramStats = computed(() => {
+  if (!accountData.value?.data.analytics) return []
+
+  const analytics = accountData.value.data.analytics
+  return [
+    {
+      title: 'Impressions',
+      value: formatNumber(analytics.totalViews || 0),
+      change: '12%',
+      changeType: 'up' as const,
+      icon: Eye,
+      subtitle: '+12% vs last week'
+    },
+    {
+      title: 'Accounts Reached',
+      value: formatNumber(analytics.followers || 0),
+      change: '5%',
+      changeType: 'up' as const,
+      icon: Users,
+      subtitle: '+5% new accounts'
+    },
+    {
+      title: 'Profile Visits',
+      value: '12.5K',
+      change: '8.4%',
+      changeType: 'up' as const,
+      icon: UserPlus,
+      subtitle: 'From bio link'
+    },
+    {
+      title: 'Stories Reach',
+      value: '45.2K',
+      change: '18%',
+      changeType: 'up' as const,
+      icon: Layers,
+      subtitle: 'Avg per story'
+    }
+  ]
+})
+
+const formatNumber = (num: number): string => {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K'
+  return num.toString()
+}
+
+onMounted(() => {
+  fetchAnalytics().catch((err) => {
+    if ((err as any)?.response?.status === 404) {
+      alert('Instagram account not connected. Please connect your account first.')
+      router.push('/connections')
+    }
+  })
+})
+
 </script>
 
 <template>

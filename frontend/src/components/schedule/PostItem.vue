@@ -45,7 +45,7 @@ const timeFormatted = computed(() => {
 
 <template>
   <div
-    class="relative group bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-100 dark:border-slate-700 
+    class="relative group bg-white dark:bg-slate-800 p-2 rounded-lg
            shadow-sm hover:shadow-md transition-all cursor-move mb-1.5"
     draggable="true"
   >

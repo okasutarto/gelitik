@@ -22,7 +22,7 @@ const monthYear = computed(() => {
 <template>
   <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
     <!-- Month Navigation -->
-    <div class="flex items-center gap-4 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+    <div class="flex items-center gap-4 bg-white dark:bg-slate-800 p-1.5 rounded-xl shadow-sm">
       <button
         @click="$emit('prev-month')"
         class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-colors"
@@ -46,7 +46,7 @@ const monthYear = computed(() => {
     <div class="flex items-center gap-3 w-full sm:w-auto">
       <button
         class="hidden md:flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 
-               border border-slate-200 dark:border-slate-700 rounded-xl 
+               rounded-xl 
                text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700"
       >
         <Filter :size="16" />

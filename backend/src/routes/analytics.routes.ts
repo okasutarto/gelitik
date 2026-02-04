@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { InstagramService } from '../services/instagram.service';
-import { TikTokService } from '../services/tiktok.service';
+import { TikTokService } from '../services/tiktokService';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -27,7 +27,6 @@ router.get('/overview', async (req, res) => {
             }
         });
 
-        // Aggregate latest stats
         const stats = accounts.reduce((acc, account) => {
             const latest = account.analytics[0] || {};
             return {
@@ -53,24 +52,27 @@ router.get('/:platform', async (req, res) => {
     const userId = (req.user as any)?.id;
 
     try {
-        // 1. Get Account
         const account = await prisma.socialAccount.findFirst({
             where: { userId, platform, isActive: true }
         });
 
         if (!account) return res.status(404).json({ error: 'Account not connected' });
 
-        // 2. Fetch Fresh Data (Real-time)
-        // Ideally this should be cached or background job, but fetching direct for MVP
         let data;
         if (platform === 'instagram') {
             data = await instagramService.getAnalytics(account.accessToken, account.accountId, new Date(), new Date());
         } else if (platform === 'tiktok') {
-            data = await tiktokService.getAnalytics(account.accessToken, account.accountId, new Date(), new Date());
+            const userInfo = await tiktokService.getUserInfo(account.accessToken);
+            const videosData = await tiktokService.getVideos(account.accessToken, undefined, 50);
+            const analytics = await tiktokService.calculateAnalytics(userInfo, videosData.videos);
+            data = {
+                userInfo,
+                videos: videosData.videos,
+                analytics
+            };
         }
 
         res.json({ account, data });
-
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: `Failed to fetch ${platform} analytics` });

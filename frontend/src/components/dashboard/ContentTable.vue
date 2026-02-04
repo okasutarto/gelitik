@@ -83,9 +83,9 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 </script>
 
 <template>
-  <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+  <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden">
     <!-- Header -->
-    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+    <div class="p-6 flex items-center justify-between">
       <h3 class="text-lg font-bold text-slate-900 dark:text-white">Top Performing Content</h3>
       <button class="text-primary-600 dark:text-primary-400 text-sm font-semibold hover:underline">
         View All
@@ -95,7 +95,7 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
     <!-- Desktop Table -->
     <div class="hidden md:block overflow-x-auto">
       <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-        <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-100 dark:border-slate-700">
+        <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 font-semibold">
           <tr>
             <th class="px-6 py-4">Content</th>
             <th class="px-6 py-4">Platform</th>

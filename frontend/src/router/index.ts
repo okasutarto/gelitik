@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const routes: RouteRecordRaw[] = [
     // Auth Routes
@@ -13,7 +14,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/pages/LoginPage.vue'),
         meta: {
             title: 'Login - Gelitik',
-            requiresAuth: false
+            requiresAuth: false,
+            guestOnly: true
         }
     },
 
@@ -45,14 +47,14 @@ const routes: RouteRecordRaw[] = [
             requiresAuth: true
         }
     },
-
-    // Future routes (placeholders)
     {
         path: '/schedule',
         name: 'schedule',
         component: () => import('@/pages/SchedulePage.vue'),
         meta: { title: 'Schedule - Gelitik', requiresAuth: true }
     },
+
+    // Future routes (placeholders)
     {
         path: '/inbox',
         name: 'inbox',
@@ -85,8 +87,28 @@ const router = createRouter({
 })
 
 // Update document title on route change
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
     document.title = (to.meta.title as string) || 'Gelitik'
+
+    const authStore = useAuthStore()
+
+    // Handle Google OAuth callback (e.g. /login?token=xyz)
+    if (to.path === '/login' && to.query.token) {
+        const token = to.query.token as string
+        localStorage.setItem('token', token)
+        authStore.token = token
+        await authStore.checkSession()
+        return next('/dashboard')
+    }
+
+    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+        return next('/login')
+    }
+
+    if (to.meta.guestOnly && authStore.isAuthenticated) {
+        return next('/dashboard')
+    }
+
     next()
 })
 

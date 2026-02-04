@@ -1,6 +1,9 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import passport from './config/passport'; // Import passport config
+import { authenticateJwt } from './middleware/auth.middleware';
 import authRoutes from './routes/auth.routes';
 import analyticsRoutes from './routes/analytics.routes';
 
@@ -11,17 +14,11 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Mock User Middleware (Replace with real JWT auth)
-app.use((req, res, next) => {
-  // Simulating logged in user for dev
-  (req as any).user = { id: 'user_123', email: 'admin@gelitik.com' };
-  next();
-});
+app.use(passport.initialize()); // Initialize Passport
 
 // Routes
 app.use('/auth', authRoutes);
-app.use('/api/analytics', analyticsRoutes);
+app.use('/api/analytics', authenticateJwt, analyticsRoutes); // Protect analytics routes
 
 // Health Check
 app.get('/health', (req, res) => {

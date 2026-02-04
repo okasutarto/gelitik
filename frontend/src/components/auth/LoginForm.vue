@@ -26,21 +26,23 @@ const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
 const isLoading = ref(false)
+const errorMsg = ref('')
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   isLoading.value = true
+  errorMsg.value = ''
   
-  // Emit form data
-  emit('submit', {
-    email: email.value,
-    password: password.value,
-    rememberMe: rememberMe.value
-  })
-  
-  // Reset loading after simulated delay (in real app, this would be after API response)
-  setTimeout(() => {
+  try {
+    await emit('submit', {
+      email: email.value,
+      password: password.value,
+      rememberMe: rememberMe.value
+    })
+  } catch (error: any) {
+    errorMsg.value = error.response?.data?.error || 'Login failed'
+  } finally {
     isLoading.value = false
-  }, 1500)
+  }
 }
 
 const handleGoogleLogin = () => {

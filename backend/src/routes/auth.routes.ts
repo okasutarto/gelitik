@@ -1,4 +1,7 @@
 import { Router } from 'express';
+import passport from 'passport';
+import { AuthController } from '../controllers/auth.controller';
+import { authenticateJwt } from '../middleware/auth.middleware';
 import { InstagramService } from '../services/instagram.service';
 import { TikTokService } from '../services/tiktok.service';
 import { PrismaClient } from '@prisma/client';
@@ -8,10 +11,31 @@ const prisma = new PrismaClient();
 const instagramService = new InstagramService();
 const tiktokService = new TikTokService();
 
+// === User Authentication ===
+router.post('/register', AuthController.register);
+router.post('/login', AuthController.login);
+router.get('/me', authenticateJwt, AuthController.getMe);
+
+// Google Auth
+router.get('/google', (req, res, next) => {
+    if (!process.env.GOOGLE_CLIENT_ID) {
+        return res.status(501).json({ error: 'Google Login not configured on server' });
+    }
+    passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+});
+
+router.get('/google/callback', (req, res, next) => {
+    if (!process.env.GOOGLE_CLIENT_ID) {
+        return res.redirect(`${process.env.FRONTEND_URL}/login?error=google_not_configured`);
+    }
+    passport.authenticate('google', { session: false, failureRedirect: '/login' })(req, res, next);
+}, AuthController.googleCallback);
+
+// === Platform Connection (Protected) ===
 // Initiate Auth Flow
-router.get('/:platform/connect', (req, res) => {
+router.get('/:platform/connect', authenticateJwt, (req, res) => {
     const { platform } = req.params;
-    const userId = (req.user as any)?.id; // Assuming auth middleware populates user
+    const userId = (req.user as any)?.id;
 
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
@@ -27,7 +51,7 @@ router.get('/:platform/connect', (req, res) => {
     res.status(400).json({ error: 'Unsupported platform' });
 });
 
-// Callback Handler
+// Platform Callback
 router.get('/:platform/callback', async (req, res) => {
     const { platform } = req.params;
     const { code, state } = req.query;
@@ -51,7 +75,6 @@ router.get('/:platform/callback', async (req, res) => {
         const userId = stateData.userId;
 
         if (!userId) {
-            // In production, handle this better (e.g. queue or session cookie)
             return res.status(400).json({ error: 'Session lost during auth' });
         }
 
@@ -87,7 +110,6 @@ router.get('/:platform/callback', async (req, res) => {
             }
         });
 
-        // Redirect to frontend dashboard
         res.redirect(`${process.env.FRONTEND_URL}/dashboard?connected=${platform}`);
 
     } catch (error) {

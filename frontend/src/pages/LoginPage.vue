@@ -1,7 +1,12 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import LoginTestimonial from '@/components/auth/LoginTestimonial.vue'
 import LoginForm from '@/components/auth/LoginForm.vue'
+
+const router = useRouter()
+const authStore = useAuthStore()
 
 // Testimonial data (can be fetched from API in production)
 const testimonial = {
@@ -13,14 +18,17 @@ const testimonial = {
 }
 
 // Event handlers
-const handleLogin = (data: { email: string; password: string; rememberMe: boolean }) => {
-  console.log('Login attempt:', data)
-  // TODO: Integrate with auth API
+const handleLogin = async (data: { email: string; password: string; rememberMe: boolean }) => {
+  try {
+    await authStore.login(data.email, data.password)
+    router.push('/dashboard')
+  } catch (error) {
+    throw error // Re-throw to be caught by form component
+  }
 }
 
 const handleGoogleLogin = () => {
-  console.log('Google login clicked')
-  // TODO: Initiate Google OAuth flow
+  window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/auth/google`
 }
 
 const handleForgotPassword = () => {

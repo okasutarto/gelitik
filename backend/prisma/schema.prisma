@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  avatar      String?
+  googleId    String?  @unique
+  githubId    String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  accounts    SocialAccount[]
+  sessions    Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SocialAccount {
+  id           String   @id @default(cuid())
+  userId       String
+  platform     String   // 'tiktok', 'instagram', 'youtube'
+  accountId    String   // Platform-specific user ID
+  displayName  String
+  username     String?
+  avatar       String?
+  accessToken  String   // Encrypted
+  refreshToken String?  // Encrypted
+  expiresAt    DateTime?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analytics    Analytics[]
+  content      Content[]
+  
+  @@unique([userId, platform, accountId])
+}
+
+model Analytics {
+  id             String   @id @default(cuid())
+  accountId      String
+  date           DateTime @default(now())
+  followers      Int      @default(0)
+  following      Int      @default(0)
+  totalLikes     Int      @default(0)
+  totalComments  Int      @default(0)
+  totalShares    Int      @default(0)
+  totalViews     Int      @default(0)
+  engagementRate Float   @default(0)
+  createdAt      DateTime @default(now())
+  
+  account        SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  @@unique([accountId, date])
+}
+
+model Content {
+  id           String   @id @default(cuid())
+  accountId    String
+  contentId    String   // Platform-specific content ID
+  title        String?
+  description  String?
+  thumbnail    String?
+  url          String?
+  videoUrl     String?
+  likes        Int      @default(0)
+  comments     Int      @default(0)
+  shares       Int      @default(0)
+  views        Int      @default(0)
+  duration     Int?     // Video duration in seconds
+  postedAt     DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  account      SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  @@unique([accountId, contentId])
+}

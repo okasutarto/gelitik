@@ -1,0 +1,99 @@
+import { Router } from 'express';
+import { InstagramService } from '../services/instagram.service';
+import { TikTokService } from '../services/tiktok.service';
+import { PrismaClient } from '@prisma/client';
+
+const router = Router();
+const prisma = new PrismaClient();
+const instagramService = new InstagramService();
+const tiktokService = new TikTokService();
+
+// Initiate Auth Flow
+router.get('/:platform/connect', (req, res) => {
+    const { platform } = req.params;
+    const userId = (req.user as any)?.id; // Assuming auth middleware populates user
+
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    // State carries userId to callback to link account
+    const state = JSON.stringify({ userId, platform });
+
+    if (platform === 'instagram') {
+        return res.redirect(instagramService.getAuthUrl(state));
+    } else if (platform === 'tiktok') {
+        return res.redirect(tiktokService.getAuthUrl(state));
+    }
+
+    res.status(400).json({ error: 'Unsupported platform' });
+});
+
+// Callback Handler
+router.get('/:platform/callback', async (req, res) => {
+    const { platform } = req.params;
+    const { code, state } = req.query;
+
+    if (!code || typeof code !== 'string') {
+        return res.status(400).json({ error: 'No authorization code provided' });
+    }
+
+    try {
+        let result;
+        if (platform === 'instagram') {
+            result = await instagramService.exchangeCode(code);
+        } else if (platform === 'tiktok') {
+            result = await tiktokService.exchangeCode(code);
+        } else {
+            throw new Error('Unsupported platform');
+        }
+
+        // Parse state to get userId
+        const stateData = state ? JSON.parse(String(state)) : {};
+        const userId = stateData.userId;
+
+        if (!userId) {
+            // In production, handle this better (e.g. queue or session cookie)
+            return res.status(400).json({ error: 'Session lost during auth' });
+        }
+
+        // Save/Update Account
+        await prisma.socialAccount.upsert({
+            where: {
+                userId_platform_accountId: {
+                    userId,
+                    platform,
+                    accountId: result.platformUserId
+                }
+            },
+            update: {
+                accessToken: result.accessToken,
+                refreshToken: result.refreshToken,
+                expiresAt: result.expiresIn ? new Date(Date.now() + result.expiresIn * 1000) : null,
+                displayName: result.displayName,
+                username: result.username,
+                avatar: result.avatar,
+                scope: result.scope
+            },
+            create: {
+                userId,
+                platform,
+                accountId: result.platformUserId,
+                displayName: result.displayName,
+                username: result.username,
+                avatar: result.avatar,
+                accessToken: result.accessToken,
+                refreshToken: result.refreshToken,
+                expiresAt: result.expiresIn ? new Date(Date.now() + result.expiresIn * 1000) : null,
+                scope: result.scope
+            }
+        });
+
+        // Redirect to frontend dashboard
+        res.redirect(`${process.env.FRONTEND_URL}/dashboard?connected=${platform}`);
+
+    } catch (error) {
+        console.error('Auth Error:', error);
+        res.redirect(`${process.env.FRONTEND_URL}/connections?error=auth_failed`);
+    }
+});
+
+export default router;

@@ -15,6 +15,7 @@ model User {
   email       String   @unique
   name        String?
   avatar      String?
+  password    String?  // Hashed
   googleId    String?  @unique
   githubId    String?  @unique
   createdAt   DateTime @default(now())
@@ -37,7 +38,7 @@ model Session {
 model SocialAccount {
   id           String   @id @default(cuid())
   userId       String
-  platform     String   // 'tiktok', 'instagram', 'youtube'
+  platform     String   // 'tiktok', 'instagram', 'youtube', 'linkedin'
   accountId    String   // Platform-specific user ID
   displayName  String
   username     String?
@@ -45,13 +46,17 @@ model SocialAccount {
   accessToken  String   // Encrypted
   refreshToken String?  // Encrypted
   expiresAt    DateTime?
+  tokenType    String?  // 'Bearer', etc
+  scope        String?  // Granted scopes
   isActive     Boolean  @default(true)
+  metadata     Json?    // Flexible storage for platform specifics
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   analytics    Analytics[]
   content      Content[]
+  posts        Post[]
   
   @@unique([userId, platform, accountId])
 }
@@ -60,13 +65,20 @@ model Analytics {
   id             String   @id @default(cuid())
   accountId      String
   date           DateTime @default(now())
+  
+  // Common Metrics
   followers      Int      @default(0)
   following      Int      @default(0)
   totalLikes     Int      @default(0)
   totalComments  Int      @default(0)
   totalShares    Int      @default(0)
   totalViews     Int      @default(0)
-  engagementRate Float   @default(0)
+  engagementRate Float    @default(0)
+  
+  // Platform Specific (stored as JSON to avoid sparse columns)
+  // e.g. { "profileVisits": 120, "storyReach": 500, "videoPlayTime": 3600 }
+  platformMetrics Json?
+  
   createdAt      DateTime @default(now())
   
   account        SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
@@ -77,16 +89,23 @@ model Analytics {
 model Content {
   id           String   @id @default(cuid())
   accountId    String
-  contentId    String   // Platform-specific content ID
+  contentId    String   // Platform-specific content ID (e.g. IG Media ID)
+  type         String   // 'image', 'video', 'carousel', 'reel', 'story'
   title        String?
   description  String?
   thumbnail    String?
   url          String?
   videoUrl     String?
+  
+  // Metrics
   likes        Int      @default(0)
   comments     Int      @default(0)
   shares       Int      @default(0)
   views        Int      @default(0)
+  saves        Int      @default(0)
+  reach        Int      @default(0)
+  impressions  Int      @default(0)
+  
   duration     Int?     // Video duration in seconds
   postedAt     DateTime
   createdAt    DateTime @default(now())
@@ -95,4 +114,23 @@ model Content {
   account      SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
   
   @@unique([accountId, contentId])
+}
+
+model Post {
+  id           String   @id @default(cuid())
+  accountId    String
+  title        String?
+  caption      String?
+  mediaUrls    String[] // Array of S3/Cloudinary URLs
+  scheduledFor DateTime
+  status       String   // 'draft', 'scheduled', 'published', 'failed'
+  platform     String   // Denormalized for easier querying
+  
+  publishedId  String?  // ID on platform after publishing
+  publishedUrl String?  // URL on platform after publishing
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  account      SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 }

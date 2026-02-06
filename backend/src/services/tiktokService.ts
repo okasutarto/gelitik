@@ -9,7 +9,7 @@ export class TikTokService implements PlatformService {
   private baseUrl = 'https://open.tiktokapis.com/v2';
 
   getAuthUrl(state?: string): string {
-    const scopes = ['user.info.basic', 'video.list'];
+    const scopes = ['user.info.profile', 'user.info.stats', 'video.list'];
     const authState = state || Math.random().toString(36).substring(7);
     const clientId = this.clientId || '';
     const redirectUri = this.redirectUri || '';
@@ -20,7 +20,9 @@ export class TikTokService implements PlatformService {
   async exchangeCode(code: string): Promise<any> {
     try {
       const tokenData = await this.exchangeCodeForToken(code);
-      const userInfo = await this.getUserInfo(tokenData.access_token);
+      const userInfo = await this.getUserInfo(tokenData.access_token) as TikTokUserInfo;
+
+      console.log('[TikTok] userInfo object:', userInfo);
 
       return {
         accessToken: tokenData.access_token,
@@ -33,6 +35,11 @@ export class TikTokService implements PlatformService {
         scope: tokenData.scope
       };
     } catch (error) {
+      console.error('[TikTok] Exchange code error:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('[TikTok] Response data:', error.response?.data);
+        console.error('[TikTok] Response status:', error.response?.status);
+      }
       throw new Error('Failed to exchange code for token');
     }
   }
@@ -46,32 +53,58 @@ export class TikTokService implements PlatformService {
     token_type: string;
   }> {
     try {
-      const response = await axios.post(`${this.baseUrl}/oauth/access_token/`, null, {
-        params: {
-          client_key: this.clientId,
-          client_secret: this.clientSecret,
-          code,
-          grant_type: 'authorization_code',
-          redirect_uri: this.redirectUri
+      const params = new URLSearchParams();
+      params.append('client_key', this.clientId || '');
+      params.append('client_secret', this.clientSecret || '');
+      params.append('code', code);
+      params.append('grant_type', 'authorization_code');
+      params.append('redirect_uri', this.redirectUri || '');
+
+      const response = await axios.post(`${this.baseUrl}/oauth/token/`, params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
         }
       });
 
-      return response.data.data;
+      console.log('[TikTok] Token response:', response.data);
+      console.log('[TikTok] Token scopes:', response.data.scope);
+
+      return response.data;
     } catch (error) {
+      console.error('[TikTok] Exchange code error:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('[TikTok] Response data:', error.response?.data);
+        console.error('[TikTok] Response status:', error.response?.status);
+      }
       throw new Error('Failed to exchange code for token');
     }
   }
 
   async getUserInfo(accessToken: string): Promise<TikTokUserInfo> {
     try {
+      const fields = 'open_id,union_id,avatar_url,avatar_url_100,display_name,bio_description,profile_deep_link,is_verified,follower_count,following_count,likes_count,video_count';
       const response = await axios.get(`${this.baseUrl}/user/info/`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`
-        }
+        },
+        params: { fields }
       });
 
-      return response.data.data.user;
+      console.log('[TikTok] User info response:', response.data);
+      console.log('[TikTok] User data:', (response.data as any)?.data?.user);
+
+      const user = (response.data as any).data?.user;
+      if (!user) {
+        throw new Error('No user data in response');
+      }
+
+      return user as TikTokUserInfo;
     } catch (error) {
+      console.error('[TikTok] Get user info error:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('[TikTok] Response data:', error.response?.data);
+        console.error('[TikTok] Response status:', error.response?.status);
+      }
       throw new Error('Failed to fetch user info');
     }
   }
@@ -101,7 +134,7 @@ export class TikTokService implements PlatformService {
         params
       });
 
-      return response.data.data;
+      return response.data;
     } catch (error) {
       throw new Error('Failed to fetch videos');
     }
@@ -147,7 +180,7 @@ export class TikTokService implements PlatformService {
         }
       });
 
-      return response.data.data;
+      return response.data;
     } catch (error) {
       throw new Error('Failed to refresh token');
     }
@@ -189,7 +222,7 @@ export class TikTokService implements PlatformService {
         }
       });
 
-      return response.data.data.valid;
+      return response.data.valid;
     } catch (error) {
       return false;
     }

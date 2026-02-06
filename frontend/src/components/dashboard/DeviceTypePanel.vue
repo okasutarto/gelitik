@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Smartphone } from "lucide-vue-next";
+import type { Platform } from "@/composables/usePlatform";
 
 interface DeviceData {
   name: string;
@@ -8,17 +9,18 @@ interface DeviceData {
 }
 
 interface Props {
+  platform?: Platform;
   devices?: DeviceData[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  platform: "all",
   devices: () => [
     { name: "Android", percentage: 70, color: "#0f172a" },
     { name: "iOS", percentage: 30, color: "#14b8a6" },
   ],
 });
 
-// Generate conic gradient from device data
 const conicGradient = (() => {
   let gradient = "conic-gradient(";
   let currentDeg = 0;
@@ -43,7 +45,12 @@ const primaryDevice = props.devices[0];
       <Smartphone :size="18" class="text-slate-800 dark:text-white" />
       Device Type
     </h4>
-    <div class="flex items-center justify-center h-full pb-4 gap-8">
+    <div v-if="platform === 'tiktok'" class="p-8 text-center">
+      <p class="text-slate-500 dark:text-slate-400">
+        Device data coming soon for TikTok
+      </p>
+    </div>
+    <div v-else class="flex items-center justify-center h-full pb-4 gap-8">
       <!-- Donut Chart -->
       <div class="relative size-32">
         <div

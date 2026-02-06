@@ -8,7 +8,7 @@ export class TikTokService implements PlatformService {
     private readonly baseUrl = 'https://open.tiktokapis.com/v2';
 
     constructor() {
-        this.clientKey = process.env.TIKTOK_CLIENT_KEY || '';
+        this.clientKey = process.env.TIKTOK_CLIENT_ID || '';
         this.clientSecret = process.env.TIKTOK_CLIENT_SECRET || '';
         this.redirectUri = process.env.TIKTOK_REDIRECT_URI || 'http://localhost:3000/auth/tiktok/callback';
     }

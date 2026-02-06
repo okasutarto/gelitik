@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Globe } from "lucide-vue-next";
+import type { Platform } from "@/composables/usePlatform";
 
 interface TerritoryData {
   name: string;
@@ -7,10 +8,12 @@ interface TerritoryData {
 }
 
 interface Props {
+  platform?: Platform;
   territories?: TerritoryData[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  platform: "all",
   territories: () => [
     { name: "Indonesia", percentage: 92 },
     { name: "Malaysia", percentage: 5 },
@@ -35,7 +38,12 @@ const getBarColor = (index: number) => {
       <Globe :size="18" class="text-teal-500" />
       Territory
     </h4>
-    <div class="space-y-4">
+    <div v-if="platform === 'tiktok'" class="p-8 text-center">
+      <p class="text-slate-500 dark:text-slate-400">
+        Territory data coming soon for TikTok
+      </p>
+    </div>
+    <div v-else class="space-y-4">
       <div
         v-for="(territory, index) in territories"
         :key="territory.name"

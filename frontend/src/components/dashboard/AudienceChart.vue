@@ -172,31 +172,38 @@ const isBarChart = computed(() => props.platform === "all");
 
 <template>
   <div class="neo-card border-neo-3 border-black neo-hover-lift">
-    <!-- Header -->
-    <div
-      class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-      <div>
-        <h3
-          class="text-lg font-black uppercase hidden lg:block dark:text-white">
-          {{ title }}
-        </h3>
-        <p class="text-sm font-bold opacity-60 uppercase dark:text-slate-400">
-          {{ subtitle }}
-        </p>
-      </div>
-      <select
-        v-model="selectedPeriod"
-        class="bg-slate-50 dark:bg-slate-700 border-neo-3 border-black neo-shadow-hard-sm text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-300 py-2 px-3 focus:ring-2 focus:ring-primary-500 cursor-pointer outline-none">
-        <option value="7days">Last 7 Days</option>
-        <option value="30days">Last 30 Days</option>
-        <option value="quarter">Last Quarter</option>
-      </select>
+    <div v-if="platform === 'tiktok'" class="p-8 text-center">
+      <p class="text-slate-500 dark:text-slate-400">
+        Audience data coming soon for TikTok
+      </p>
     </div>
+    <div v-else>
+      <!-- Header -->
+      <div
+        class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+        <div>
+          <h3
+            class="text-lg font-black uppercase hidden lg:block dark:text-white">
+            {{ title }}
+          </h3>
+          <p class="text-sm font-bold opacity-60 uppercase dark:text-slate-400">
+            {{ subtitle }}
+          </p>
+        </div>
+        <select
+          v-model="selectedPeriod"
+          class="bg-slate-50 dark:bg-slate-700 border-neo-3 border-black neo-shadow-hard-sm text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-300 py-2 px-3 focus:ring-2 focus:ring-primary-500 cursor-pointer outline-none">
+          <option value="7days">Last 7 Days</option>
+          <option value="30days">Last 30 Days</option>
+          <option value="quarter">Last Quarter</option>
+        </select>
+      </div>
 
-    <!-- Chart -->
-    <div class="h-64 w-full">
-      <Bar v-if="isBarChart" :data="chartData" :options="chartOptions" />
-      <Line v-else :data="chartData" :options="chartOptions" />
+      <!-- Chart -->
+      <div class="h-64 w-full">
+        <Bar v-if="isBarChart" :data="chartData" :options="chartOptions" />
+        <Line v-else :data="chartData" :options="chartOptions" />
+      </div>
     </div>
   </div>
 </template>

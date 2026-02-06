@@ -78,6 +78,20 @@ const routes: RouteRecordRaw[] = [
         name: 'settings',
         component: () => import('@/pages/SettingsPage.vue'),
         meta: { title: 'Settings - Gelitik', requiresAuth: true }
+    },
+    
+    // Legal Pages (Public)
+    {
+        path: '/terms',
+        name: 'terms',
+        component: () => import('@/pages/TermsOfServicePage.vue'),
+        meta: { title: 'Terms of Service - Gelitik', requiresAuth: false }
+    },
+    {
+        path: '/privacy',
+        name: 'privacy',
+        component: () => import('@/pages/PrivacyPolicyPage.vue'),
+        meta: { title: 'Privacy Policy - Gelitik', requiresAuth: false }
     }
 ]
 

@@ -53,6 +53,11 @@ const tiktokStats = computed(() => {
   ];
 });
 
+const tiktokVideos = computed(() => {
+  if (!accountData.value?.data?.videos) return [];
+  return accountData.value.data.videos.slice(0, 10);
+});
+
 const formatNumber = (num: number): string => {
   if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
   if (num >= 1000) return (num / 1000).toFixed(1) + "K";
@@ -107,13 +112,13 @@ onMounted(() => {
         subtitle="Video performance trajectory" />
     </div>
 
-    <!-- TikTok-Specific Panels -->
+    <!-- TikTok-specific Panels -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-      <TerritoryPanel />
-      <DeviceTypePanel />
+      <TerritoryPanel platform="tiktok" />
+      <DeviceTypePanel platform="tiktok" />
     </div>
 
     <!-- Top Performing Content -->
-    <ContentTable platform="tiktok" />
+    <ContentTable platform="tiktok" :videos="tiktokVideos" />
   </DashboardLayout>
 </template>

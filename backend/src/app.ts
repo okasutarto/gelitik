@@ -18,6 +18,8 @@ app.use(cors({
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:3000',
+      'https://prereformatory-isocheimal-micha.ngrok-free.dev',
+      'http://prereformatory-isocheimal-micha.ngrok-free.dev',
       process.env.FRONTEND_URL || 'http://localhost:5173'
     ];
     if (allowedOrigins.includes(origin)) {

@@ -45,14 +45,19 @@ const fetchAccounts = async () => {
 
 const connectPlatform = async (platform: string) => {
   try {
+    console.log(`[Connections] Connecting to ${platform}...`);
     const { data } = await api.get(`/auth/${platform}/connect`);
+    console.log(`[Connections] Response:`, data);
+    
     if (data.success && data.data.authUrl) {
+      console.log(`[Connections] Redirecting to TikTok...`);
       window.location.href = data.data.authUrl;
     } else {
+      console.error(`[Connections] Failed - No authUrl in response`, data);
       alert("Failed to initiate connection");
     }
   } catch (error) {
-    console.error("Connection error:", error);
+    console.error("[Connections] Connection error:", error);
     alert("Failed to connect account");
   }
 };

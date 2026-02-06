@@ -37,24 +37,35 @@ router.get('/:platform/connect', authenticateJwt, (req, res) => {
     const { platform } = req.params;
     const userId = (req.user as any)?.id;
 
+    console.log(`[${platform.toUpperCase()} Connect] Request received`, { userId, platform });
+
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     // State carries userId to callback to link account
     const state = JSON.stringify({ userId, platform });
+    console.log(`[${platform.toUpperCase()} Connect] State:`, state);
 
+    let authUrl;
     if (platform === 'instagram') {
-        return res.redirect(instagramService.getAuthUrl(state));
+        authUrl = instagramService.getAuthUrl(state);
     } else if (platform === 'tiktok') {
-        return res.redirect(tiktokService.getAuthUrl(state));
+        authUrl = tiktokService.getAuthUrl(state);
+    } else {
+        return res.status(400).json({ error: 'Unsupported platform' });
     }
 
-    res.status(400).json({ error: 'Unsupported platform' });
+    console.log(`[${platform.toUpperCase()} Connect] Auth URL:`, authUrl);
+
+    // Return authUrl as JSON for frontend to handle redirect
+    res.json({ success: true, data: { authUrl } });
 });
 
 // Platform Callback
 router.get('/:platform/callback', async (req, res) => {
     const { platform } = req.params;
-    const { code, state } = req.query;
+    const { code, state, error } = req.query;
+
+    console.log(`[${platform.toUpperCase()} Callback]`, { code: code ? 'present' : 'missing', state, error });
 
     if (!code || typeof code !== 'string') {
         return res.status(400).json({ error: 'No authorization code provided' });
@@ -66,20 +77,22 @@ router.get('/:platform/callback', async (req, res) => {
             result = await instagramService.exchangeCode(code);
         } else if (platform === 'tiktok') {
             result = await tiktokService.exchangeCode(code);
+            console.log('[TikTok] Exchange result:', result);
         } else {
             throw new Error('Unsupported platform');
         }
 
-        // Parse state to get userId
         const stateData = state ? JSON.parse(String(state)) : {};
         const userId = stateData.userId;
 
+        console.log(`[${platform.toUpperCase()}] User ID from state:`, userId);
+
         if (!userId) {
+            console.error(`[${platform.toUpperCase()}] No userId in state`);
             return res.status(400).json({ error: 'Session lost during auth' });
         }
 
-        // Save/Update Account
-        await prisma.socialAccount.upsert({
+        const account = await prisma.socialAccount.upsert({
             where: {
                 userId_platform_accountId: {
                     userId,
@@ -94,7 +107,8 @@ router.get('/:platform/callback', async (req, res) => {
                 displayName: result.displayName,
                 username: result.username,
                 avatar: result.avatar,
-                scope: result.scope
+                scope: result.scope,
+                isActive: true
             },
             create: {
                 userId,
@@ -106,15 +120,25 @@ router.get('/:platform/callback', async (req, res) => {
                 accessToken: result.accessToken,
                 refreshToken: result.refreshToken,
                 expiresAt: result.expiresIn ? new Date(Date.now() + result.expiresIn * 1000) : null,
-                scope: result.scope
+                scope: result.scope,
+                isActive: true
             }
         });
 
+        console.log(`[${platform.toUpperCase()}] Account saved:`, account.id);
         res.redirect(`${process.env.FRONTEND_URL}/dashboard?connected=${platform}`);
 
     } catch (error) {
         console.error('Auth Error:', error);
-        res.redirect(`${process.env.FRONTEND_URL}/connections?error=auth_failed`);
+        let errorMsg = 'Unknown error';
+        if (error instanceof Error) {
+            errorMsg = error.message;
+        } else if (typeof error === 'string') {
+            errorMsg = error;
+        } else if (error && typeof (error as any).message === 'string') {
+            errorMsg = (error as any).message;
+        }
+        res.redirect(`${process.env.FRONTEND_URL}/connections?error=${encodeURIComponent(errorMsg)}`);
     }
 });
 

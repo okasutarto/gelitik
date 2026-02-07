@@ -120,22 +120,36 @@ export class TikTokService implements PlatformService {
   }> {
     try {
       const params: any = {
-        max_count: maxCount
+        max_count: maxCount,
+        fields: 'id,video_description,create_time,like_count,comment_count,share_count,view_count,cover_image_url,embed_link,duration,height,width'
       };
 
       if (cursor) {
         params.cursor = cursor;
       }
 
-      const response = await axios.get(`${this.baseUrl}/video/list/`, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
-        },
-        params
-      });
+      const response = await axios.post(
+        `${this.baseUrl}/video/list/`,
+        {},
+        {
+          params,
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
-      return response.data;
-    } catch (error) {
+      console.log('[TikTok] Videos response:', response.data);
+
+      const videos = response.data?.data?.videos || [];
+      return {
+        videos,
+        has_more: response.data?.data?.has_more || false,
+        cursor: response.data?.data?.cursor
+      };
+    } catch (error: any) {
+      console.error('[TikTok] Get videos error detail:', error.response?.data || error.message);
       throw new Error('Failed to fetch videos');
     }
   }
@@ -198,6 +212,11 @@ export class TikTokService implements PlatformService {
         displayName: ''
       };
     } catch (error) {
+      console.error('[TikTok] Refresh token error:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('[TikTok] Response data:', error.response?.data);
+        console.error('[TikTok] Response status:', error.response?.status);
+      }
       throw new Error('Failed to refresh token');
     }
   }

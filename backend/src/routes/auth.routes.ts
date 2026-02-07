@@ -126,7 +126,7 @@ router.get('/:platform/callback', async (req, res) => {
         });
 
         console.log(`[${platform.toUpperCase()}] Account saved:`, account.id);
-        res.redirect(`${process.env.FRONTEND_URL}/dashboard?connected=${platform}`);
+        res.redirect(`${process.env.FRONTEND_URL}/dashboard/${platform}`);
 
     } catch (error) {
         console.error('Auth Error:', error);

@@ -30,16 +30,23 @@ const formatNumber = (num: number): string => {
 };
 
 const calculateEngagementRate = (video: any): number => {
-  if (!video.view_count || video.view_count === 0) return 0;
-  const totalEngagement = (video.like_count || 0) + (video.comment_count || 0) + (video.share_count || 0);
-  return (totalEngagement / video.view_count) * 100;
-};
+  console.log(video, "<<<< video");
 
-const determineVideoStatus = (video: any): "viral" | "active" | "ended" => {
-  const rate = calculateEngagementRate(video);
-  if (rate > 15) return "viral";
-  if (rate > 5) return "active";
-  return "ended";
+  const views = video.views || 0;
+  const likes = video.likes || 0;
+  const comments = video.comments || 0;
+  const shares = video.shares || 0;
+  const totalEngagement = likes + comments + shares;
+
+  console.log(totalEngagement);
+
+  if (views === 0) {
+    return 0;
+  }
+
+  const rate = (totalEngagement / views) * 100;
+
+  return rate;
 };
 
 const formatTimeAgo = (createTime: string): string => {
@@ -61,15 +68,28 @@ const filteredContent = computed(() => {
     return props.videos.map((video: any) => ({
       id: video.id,
       title: video.video_description || "Untitled",
-      thumbnail: video.cover_image_url || "https://images.unsplash.com/photo-1611162616305-c69b3e718c5?w=100&h=100&fit=crop",
+      thumbnail:
+        video.cover_image_url ||
+        "https://images.unsplash.com/photo-1611162616305-c69b3e718c5?w=100&h=100&fit=crop",
       platform: props.platform as Platform,
-      reach: formatNumber(video.view_count || 0),
-      engagement: calculateEngagementRate(video).toFixed(1) + "%",
-      status: determineVideoStatus(video),
+      duration: video.duration || 0,
+      views: video.view_count || 0,
+      likes: video.like_count || 0,
+      comments: video.comment_count || 0,
+      shares: video.share_count || 0,
+      created: video.create_time || "",
       timeAgo: formatTimeAgo(video.create_time),
     }));
   }
   return [];
+});
+
+const hasVideoData = computed(() => {
+  return (
+    props.videos &&
+    props.videos.length > 0 &&
+    props.videos.some((v: any) => v.view_count > 0)
+  );
 });
 
 const getPlatformBadge = (platform: Platform) => {
@@ -117,6 +137,46 @@ const getStatusBadge = (status: ContentItem["status"]) => {
 };
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const truncateText = (text: string, maxLength: number = 50): string => {
+  if (!text || text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + "...";
+};
+
+const formatDuration = (seconds: number): string => {
+  if (!seconds) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+};
+
+const formatDate = (timestamp: number): string => {
+  const timestampNum =
+    typeof timestamp === "string" ? parseInt(timestamp, 10) : timestamp;
+  const date = new Date(timestampNum * 1000);
+
+  console.log("[ContentTable] Timestamp conversion:", {
+    input: timestamp,
+    timestampNum,
+    date,
+    formatted: date.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    }),
+  });
+
+  if (isNaN(date.getTime())) {
+    console.error("[ContentTable] Invalid timestamp:", timestamp);
+    return "Unknown";
+  }
+
+  return date.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+};
 </script>
 
 <template>
@@ -134,8 +194,12 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
     <template v-if="filteredContent.length === 0">
       <div class="p-12 text-center">
-        <p class="text-slate-500 dark:text-slate-400 text-lg">
-          No content yet
+        <p class="text-slate-500 dark:text-slate-400 text-lg">No content yet</p>
+        <p
+          v-if="props.videos && props.videos.length > 0 && !hasVideoData"
+          class="text-xs text-slate-400 dark:text-slate-500 mt-2">
+          TikTok API returned video data with 0 views. This is normal in sandbox
+          mode.
         </p>
       </div>
     </template>
@@ -148,11 +212,13 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
           <thead
             class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 font-bold border-b-4 border-black">
             <tr>
-              <th class="px-6 py-4">Content</th>
-              <th class="px-6 py-4">Platform</th>
-              <th class="px-6 py-4">Reach</th>
-              <th class="px-6 py-4">Engagement</th>
-              <th class="px-6 py-4 text-right">Status</th>
+              <th class="px-4 py-4">Content</th>
+              <th class="px-4 py-4">Date Created</th>
+              <th class="px-4 py-4">Duration</th>
+              <th class="px-4 py-4">Views</th>
+              <th class="px-4 py-4">Likes</th>
+              <th class="px-4 py-4">Shares</th>
+              <th class="px-4 py-4">Engagement</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-y-2 divide-black">
@@ -160,42 +226,36 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
               v-for="item in filteredContent"
               :key="item.id"
               class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group cursor-pointer">
-              <td class="px-6 py-4 flex items-center gap-3">
-                <img
-                  :src="item.thumbnail"
-                  :alt="item.title"
-                  class="w-12 h-12 rounded-lg object-cover ring-1 ring-slate-100 dark:ring-slate-700" />
-                <span
-                  class="font-bold text-slate-900 dark:text-white group-hover:text-primary-600 transition-colors">
-                  {{ item.title }}
-                </span>
-              </td>
-              <td class="px-6 py-4">
-                <span
-                  :class="[
-                    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold',
-                    getPlatformBadge(item.platform).bg,
-                    getPlatformBadge(item.platform).text,
-                  ]">
+              <td class="px-4 py-4 min-w-[200px]">
+                <div class="flex items-center gap-3">
+                  <img
+                    :src="item.thumbnail"
+                    :alt="item.title"
+                    class="w-12 h-12 rounded-lg object-cover ring-1 ring-slate-100 dark:ring-slate-700 shrink-0" />
                   <span
-                    :class="[
-                      'block size-1.5 rounded-full',
-                      getPlatformBadge(item.platform).dot,
-                    ]" />
-                  {{ capitalize(item.platform) }}
-                </span>
+                    class="font-bold text-slate-900 dark:text-white group-hover:text-primary-600 transition-colors truncate"
+                    :title="item.title">
+                    {{ truncateText(item.title, 40) }}
+                  </span>
+                </div>
               </td>
-              <td class="px-6 py-4 font-semibold">{{ item.reach }}</td>
-              <td class="px-6 py-4 font-semibold">{{ item.engagement }}</td>
-              <td class="px-6 py-4 text-right">
-                <span
-                  :class="[
-                    'font-bold text-xs px-2 py-1 rounded-md',
-                    getStatusBadge(item.status).bg,
-                    getStatusBadge(item.status).text,
-                  ]">
-                  {{ capitalize(item.status) }}
-                </span>
+              <td class="px-4 py-4 whitespace-nowrap text-xs">
+                {{ formatDate(item.created) }}
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                {{ formatDuration(item.duration || 0) }}
+              </td>
+              <td class="px-4 py-4 font-semibold whitespace-nowrap">
+                {{ formatNumber(item.views || 0) }}
+              </td>
+              <td class="px-4 py-4 font-semibold whitespace-nowrap">
+                {{ formatNumber(item.likes || 0) }}
+              </td>
+              <td class="px-4 py-4 font-semibold whitespace-nowrap">
+                {{ formatNumber(item.shares || 0) }}
+              </td>
+              <td class="px-4 py-4 font-semibold whitespace-nowrap">
+                {{ calculateEngagementRate(item).toFixed(1) + "%" }}
               </td>
             </tr>
           </tbody>
@@ -214,7 +274,8 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
             :alt="item.title"
             class="w-16 h-16 rounded-lg object-cover shrink-0" />
           <div class="flex-1 min-w-0 flex flex-col justify-center">
-            <h4 class="text-sm font-bold text-slate-900 dark:text-white truncate">
+            <h4
+              class="text-sm font-bold text-slate-900 dark:text-white truncate">
               {{ item.title }}
             </h4>
             <div class="flex items-center gap-2 mt-1">

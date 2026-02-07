@@ -84,15 +84,51 @@ export class TikTokService implements PlatformService {
     }
 
     async getAnalytics(accessToken: string, accountId: string, startDate: Date, endDate: Date): Promise<any> {
-        // Determine video list
-        const response = await axios.post(`${this.baseUrl}/video/list/`, {
-            max_count: 20
+        const response = await axios.post(`${this.baseUrl}/video/list`, {
+            max_count: 50
         }, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
             }
         });
-
-        return response.data.data;
+        
+        const videos = response.data.data.videos || [];
+        
+        const totalLikes = videos.reduce((sum, video) => sum + (video.like_count || 0), 0);
+        const totalComments = videos.reduce((sum, video) => sum + (video.comment_count || 0), 0);
+        const totalShares = videos.reduce((sum, video) => sum + (video.share_count || 0), 0);
+        const totalViews = videos.reduce((sum, video) => sum + (video.view_count || 0), 0);
+        
+        const totalEngagement = totalLikes + totalComments + totalShares;
+        const avgEngagementRate = totalViews > 0 ? (totalEngagement / totalViews) * 100 : 0;
+        
+        return {
+            videos: videos.map(video => ({
+                id: video.id,
+                title: video.title || video.video_description?.substring(0, 100) || 'Untitled',
+                description: video.video_description || '',
+                thumbnail: video.cover_image_url,
+                createTime: new Date(video.create_time * 1000),
+                likes: video.like_count || 0,
+                comments: video.comment_count || 0,
+                shares: video.share_count || 0,
+                views: video.view_count || 0,
+                engagement: (video.like_count || 0) + (video.comment_count || 0) + (video.share_count || 0),
+                engagementRate: video.view_count > 0 
+                    ? Math.round(((video.like_count + video.comment_count + video.share_count) / video.view_count) * 100)
+                    : 0,
+                shareUrl: video.share_url,
+                embedLink: video.embed_link
+            })),
+            analytics: {
+                totalLikes,
+                totalComments,
+                totalShares,
+                totalViews,
+                engagementRate: Math.round(avgEngagementRate),
+                followers: 0,
+                following: 0
+            }
+        };
     }
 }

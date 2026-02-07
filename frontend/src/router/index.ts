@@ -100,30 +100,36 @@ const router = createRouter({
     routes
 })
 
-// Update document title on route change
-router.beforeEach(async (to, _from, next) => {
-    document.title = (to.meta.title as string) || 'Gelitik'
-
-    const authStore = useAuthStore()
-
-    // Handle Google OAuth callback (e.g. /login?token=xyz)
-    if (to.path === '/login' && to.query.token) {
-        const token = to.query.token as string
-        localStorage.setItem('token', token)
-        authStore.token = token
-        await authStore.checkSession()
-        return next('/dashboard')
-    }
-
-    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-        return next('/login')
-    }
-
-    if (to.meta.guestOnly && authStore.isAuthenticated) {
-        return next('/dashboard')
-    }
-
-    next()
-})
+    // Update document title on route change
+    router.beforeEach(async (to, _from, next) => {
+      document.title = (to.meta.title as string) || 'Gelitik'
+ 
+      const authStore = useAuthStore()
+ 
+      // Handle Google OAuth callback (e.g. /login?token=xyz)
+      if (to.path === '/login' && to.query.token) {
+         const token = to.query.token as string
+         localStorage.setItem('token', token)
+         authStore.token = token
+         await authStore.checkSession()
+         return next('/dashboard')
+      }
+ 
+      // Handle platform connection success (e.g., ?connected=tiktok)
+      if (to.query.connected === 'tiktok') {
+         alert('TikTok account connected successfully! You can now view your analytics.')
+         return next('/dashboard/tiktok')
+      }
+ 
+      if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+         return next('/login')
+      }
+ 
+      if (to.meta.guestOnly && authStore.isAuthenticated) {
+         return next('/dashboard')
+      }
+ 
+      next()
+    })
 
 export default router

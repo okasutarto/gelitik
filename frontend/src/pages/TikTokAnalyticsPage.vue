@@ -3,59 +3,68 @@ import { onMounted, computed } from "vue";
 import { Play, Share2, Clock, Eye } from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import StatCard from "@/components/dashboard/StatCard.vue";
-import AudienceChart from "@/components/dashboard/AudienceChart.vue";
+import UserProfile from "@/components/dashboard/UserProfile.vue";
+import VideoPerformanceChart from "@/components/dashboard/VideoPerformanceChart.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
-import TerritoryPanel from "@/components/dashboard/TerritoryPanel.vue";
-import DeviceTypePanel from "@/components/dashboard/DeviceTypePanel.vue";
 import { usePlatformAnalytics } from "@/composables/usePlatformAnalytics";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
 const { loading, accountData, fetchAnalytics } = usePlatformAnalytics("tiktok");
 
-const tiktokStats = computed(() => {
-  if (!accountData.value?.data.analytics) return [];
+const userData = computed(() => accountData.value?.data?.userInfo || null);
+const videos = computed(() => accountData.value?.data?.videos || []);
 
-  const analytics = accountData.value.data.analytics;
+const tiktokStats = computed(() => {
+  if (!userData.value) return [];
+  const vids = videos.value;
+  const totalViews = vids.reduce((sum, v) => sum + (v.view_count || 0), 0);
+  const totalLikes =
+    vids.reduce((sum, v) => sum + (v.like_count || 0), 0) +
+    (userData.value?.likes_count || 0);
+  const totalShares = vids.reduce((sum, v) => sum + (v.share_count || 0), 0);
+  const totalComments = vids.reduce(
+    (sum, v) => sum + (v.comment_count || 0),
+    0,
+  );
+  const totalEngagement = totalLikes + totalComments + totalShares;
+  const engagementRate =
+    totalViews > 0 ? (totalEngagement / totalViews) * 100 : 0;
+
   return [
     {
       title: "Video Views",
-      value: formatNumber(analytics.totalViews || 0),
-      change: "24%",
+      value: formatNumber(totalViews),
+      change: "",
       changeType: "up" as const,
       icon: Play,
-      subtitle: "+1.2M vs last week",
+      subtitle: "",
     },
     {
       title: "Shares",
-      value: formatNumber(analytics.totalShares || 0),
-      change: "15%",
+      value: formatNumber(totalShares),
+      change: "",
       changeType: "up" as const,
       icon: Share2,
-      subtitle: "Viral velocity high",
+      subtitle: "",
     },
     {
       title: "Total Likes",
-      value: formatNumber(analytics.totalLikes || 0),
-      change: "8.4%",
+      value: formatNumber(totalLikes),
+      change: "",
       changeType: "up" as const,
       icon: Eye,
-      subtitle: "Watch time total",
+      subtitle: "",
     },
     {
       title: "Engagement Rate",
-      value: analytics.engagementRate.toFixed(2) + "%",
-      change: "12%",
+      value: engagementRate.toFixed(2) + "%",
+      change: "",
       changeType: "up" as const,
       icon: Clock,
-      subtitle: "Retention rate",
+      subtitle: "",
     },
   ];
-});
-
-const tiktokVideos = computed(() => {
-  if (!accountData.value?.data?.videos) return [];
-  return accountData.value.data.videos.slice(0, 10);
 });
 
 const formatNumber = (num: number): string => {
@@ -90,8 +99,11 @@ onMounted(() => {
       </p>
     </div>
 
+    <!-- User Profile -->
+    <UserProfile v-if="userData" :user-info="userData" />
+
     <!-- Stat Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-8">
       <StatCard
         v-for="stat in tiktokStats"
         :key="stat.title"
@@ -104,21 +116,10 @@ onMounted(() => {
         platform="tiktok" />
     </div>
 
-    <!-- Views Trend Chart -->
-    <div class="mb-8">
-      <AudienceChart
-        platform="tiktok"
-        title="Views Trend"
-        subtitle="Video performance trajectory" />
-    </div>
-
-    <!-- TikTok-specific Panels -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-      <TerritoryPanel platform="tiktok" />
-      <DeviceTypePanel platform="tiktok" />
-    </div>
-
     <!-- Top Performing Content -->
-    <ContentTable platform="tiktok" :videos="tiktokVideos" />
+    <div class="mb-8">
+      <VideoPerformanceChart :videos="videos" />
+    </div>
+    <ContentTable platform="tiktok" :videos="videos" />
   </DashboardLayout>
 </template>

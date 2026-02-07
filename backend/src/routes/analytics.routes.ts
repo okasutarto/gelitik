@@ -61,14 +61,12 @@ router.get('/:platform', async (req, res) => {
         let data;
         if (platform === 'instagram') {
             data = await instagramService.getAnalytics(account.accessToken, account.accountId, new Date(), new Date());
-        } else if (platform === 'tiktok') {
-            const userInfo = await tiktokService.getUserInfo(account.accessToken);
-            const videosData = await tiktokService.getVideos(account.accessToken, undefined, 50);
-            const analytics = await tiktokService.calculateAnalytics(userInfo, videosData.videos);
+        }         else if (platform === 'tiktok') {
+            const videosData = await tiktokService.getAnalytics(account.accessToken, account.accountId, new Date(), new Date());
             data = {
-                userInfo,
+                userInfo: videosData.userInfo,
                 videos: videosData.videos,
-                analytics
+                analytics: videosData.analytics
             };
         }
 

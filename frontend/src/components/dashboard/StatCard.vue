@@ -44,15 +44,6 @@ const changeBadgeClass = computed(() =>
         class="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-wide">
         {{ title }}
       </p>
-      <span
-        :class="[
-          'text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1',
-          changeBadgeClass,
-        ]">
-        <TrendingUp v-if="changeType === 'up'" :size="14" />
-        <TrendingDown v-else :size="14" />
-        {{ change }}
-      </span>
     </div>
 
     <!-- Value -->

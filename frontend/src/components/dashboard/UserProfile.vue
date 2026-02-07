@@ -65,7 +65,7 @@ const formatNumber = (num: number): string => {
           class="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-wide"
           >Likes</span
         >
-        <span class="font-medium">{{
+        <span class="font-bold">{{
           formatNumber(userInfo.likes_count || 0)
         }}</span>
       </div>
@@ -76,7 +76,7 @@ const formatNumber = (num: number): string => {
           class="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-wide"
           >Followers</span
         >
-        <span class="font-medium">{{
+        <span class="font-bold">{{
           formatNumber(userInfo.follower_count || 0)
         }}</span>
       </div>
@@ -87,7 +87,7 @@ const formatNumber = (num: number): string => {
           class="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-wide"
           >Following</span
         >
-        <span class="font-medium">{{
+        <span class="font-bold">{{
           formatNumber(userInfo.following_count || 0)
         }}</span>
       </div>

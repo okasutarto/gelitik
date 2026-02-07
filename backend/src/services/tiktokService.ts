@@ -90,9 +90,6 @@ export class TikTokService implements PlatformService {
         params: { fields }
       });
 
-      console.log('[TikTok] User info response:', response.data);
-      console.log('[TikTok] User data:', (response.data as any)?.data?.user);
-
       const user = (response.data as any).data?.user;
       if (!user) {
         throw new Error('No user data in response');

@@ -151,17 +151,6 @@ const formatDate = (timestamp: number): string => {
     typeof timestamp === "string" ? parseInt(timestamp, 10) : timestamp;
   const date = new Date(timestampNum * 1000);
 
-  console.log("[ContentTable] Timestamp conversion:", {
-    input: timestamp,
-    timestampNum,
-    date,
-    formatted: date.toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    }),
-  });
-
   if (isNaN(date.getTime())) {
     console.error("[ContentTable] Invalid timestamp:", timestamp);
     return "Unknown";

@@ -4,7 +4,7 @@ import { Play, Share2, Clock, Eye } from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import StatCard from "@/components/dashboard/StatCard.vue";
 import UserProfile from "@/components/dashboard/UserProfile.vue";
-import VideoPerformanceChart from "@/components/dashboard/VideoPerformanceChart.vue";
+import DualChartDashboard from "@/components/dashboard/DualChartDashboard.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
 import { usePlatformAnalytics } from "@/composables/usePlatformAnalytics";
 import { useRouter } from "vue-router";
@@ -116,9 +116,9 @@ onMounted(() => {
         platform="tiktok" />
     </div>
 
-    <!-- Top Performing Content -->
+     <!-- Top Performing Content -->
     <div class="mb-8">
-      <VideoPerformanceChart :videos="videos" />
+      <DualChartDashboard :videos="videos" />
     </div>
     <ContentTable platform="tiktok" :videos="videos" />
   </DashboardLayout>

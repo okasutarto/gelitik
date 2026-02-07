@@ -30,15 +30,11 @@ const formatNumber = (num: number): string => {
 };
 
 const calculateEngagementRate = (video: any): number => {
-  console.log(video, "<<<< video");
-
   const views = video.views || 0;
   const likes = video.likes || 0;
   const comments = video.comments || 0;
   const shares = video.shares || 0;
   const totalEngagement = likes + comments + shares;
-
-  console.log(totalEngagement);
 
   if (views === 0) {
     return 0;
@@ -213,12 +209,13 @@ const formatDate = (timestamp: number): string => {
             class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 font-bold border-b-4 border-black">
             <tr>
               <th class="px-4 py-4">Content</th>
-              <th class="px-4 py-4">Date Created</th>
-              <th class="px-4 py-4">Duration</th>
-              <th class="px-4 py-4">Views</th>
-              <th class="px-4 py-4">Likes</th>
-              <th class="px-4 py-4">Shares</th>
-              <th class="px-4 py-4">Engagement</th>
+              <th class="px-4 py-4 text-center">Date Created</th>
+              <th class="px-4 py-4 text-center">Duration</th>
+              <th class="px-4 py-4 text-center">Views</th>
+              <th class="px-4 py-4 text-center">Likes</th>
+              <th class="px-4 py-4 text-center">Shares</th>
+              <th class="px-4 py-4 text-center">Comments</th>
+              <th class="px-4 py-4 text-center">Engagement</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-y-2 divide-black">
@@ -239,22 +236,25 @@ const formatDate = (timestamp: number): string => {
                   </span>
                 </div>
               </td>
-              <td class="px-4 py-4 whitespace-nowrap text-xs">
+              <td class="px-4 py-4 whitespace-nowrap text-xs text-center">
                 {{ formatDate(item.created) }}
               </td>
-              <td class="px-4 py-4 whitespace-nowrap">
+              <td class="px-4 py-4 whitespace-nowrap text-center">
                 {{ formatDuration(item.duration || 0) }}
               </td>
-              <td class="px-4 py-4 font-semibold whitespace-nowrap">
+              <td class="px-4 py-4 font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.views || 0) }}
               </td>
-              <td class="px-4 py-4 font-semibold whitespace-nowrap">
+              <td class="px-4 py-4 font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.likes || 0) }}
               </td>
-              <td class="px-4 py-4 font-semibold whitespace-nowrap">
+              <td class="px-4 py-4 font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.shares || 0) }}
               </td>
-              <td class="px-4 py-4 font-semibold whitespace-nowrap">
+              <td class="px-4 py-4 font-semibold whitespace-nowrap text-center">
+                {{ formatNumber(item.comments || 0) }}
+              </td>
+              <td class="px-4 py-4 font-semibold whitespace-nowrap text-center">
                 {{ calculateEngagementRate(item).toFixed(1) + "%" }}
               </td>
             </tr>

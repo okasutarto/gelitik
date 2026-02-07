@@ -66,8 +66,6 @@ const chartData = computed(() => {
     return { labels: [], datasets: [] };
   }
 
-  console.log('[VideoPerformanceChart] Processing videos:', paginatedVideos.value);
-
   const engagementRates = paginatedVideos.value.map((v) => {
     const likes = v.like_count || 0;
     const comments = v.comment_count || 0;
@@ -76,15 +74,38 @@ const chartData = computed(() => {
     const totalEngagement = likes + comments + shares;
     const rate = views > 0 ? (totalEngagement / views) * 100 : 0;
     
-    console.log('[VideoPerformanceChart] Video engagement:', {
-      title: v.video_description?.substring(0, 30),
-      likes,
-      comments,
-      shares,
-      views,
-      totalEngagement,
-      rate: rate.toFixed(2) + '%'
-    });
+    return rate;
+  });
+
+  const hasValidData = paginatedVideos.value.some((v) => (v.view_count || 0) > 0);
+  const hasAnyEngagement = paginatedVideos.value.some((v) => (v.like_count || 0) + (v.comment_count || 0) + (v.share_count || 0) > 0);
+
+  return {
+    labels: paginatedVideos.value.map((v) => truncateTitle(v.video_description || "", 20)),
+    datasets: [
+      {
+        label: "Views",
+        data: paginatedVideos.value.map((v) => v.view_count || 0),
+        backgroundColor: "#0f172a",
+        borderRadius: 4,
+        barPercentage: 0.6,
+        order: 2,
+      },
+      {
+        label: "Engagement Rate",
+        data: engagementRates,
+        borderColor: "#14b8a6",
+        backgroundColor: hasValidData ? "rgba(20, 184, 166, 0.2)" : "rgba(20, 184, 166, 0.05)",
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        order: 1,
+      },
+    ],
+  };
+});
     
     return rate;
   });
@@ -126,7 +147,7 @@ const chartData = computed(() => {
   };
 });
 
-const chartOptions = {
+  const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -150,18 +171,6 @@ const chartOptions = {
       padding: 12,
       cornerRadius: 8,
       displayColors: true,
-      callbacks: {
-        title: (tooltipItems: any) => {
-          const video = paginatedVideos.value[tooltipItems[0].dataIndex];
-          return video ? truncateTitle(video.video_description || "", 50) : "";
-        },
-        label: (context: any) => {
-          if (context.dataset.label === "Engagement Rate") {
-            return `${context.dataset.label}: ${context.formattedValue}%`;
-          }
-          return `${context.dataset.label}: ${context.formattedValue}`;
-        },
-      },
     },
   },
   scales: {
@@ -172,8 +181,6 @@ const chartOptions = {
       ticks: {
         color: "#94a3b8",
         font: { size: 11 },
-        maxRotation: 45,
-        minRotation: 45,
       },
     },
     y: {

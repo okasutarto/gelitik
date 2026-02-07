@@ -35,18 +35,13 @@ const formatNumber = (num: number): string => {
           :src="userInfo.avatar_url"
           :alt="userInfo.display_name"
           class="w-16 h-16 rounded-full ring-2 ring-slate-900 dark:ring-white object-cover" />
-        <div class="absolute inset-0 flex items-center justify-center">
-          <div
-            class="w-16 h-16 rounded-full bg-black/30 hover:bg-black/50 transition-colors flex items-center justify-center">
-            <ArrowUpRight :size="20" class="text-white/90" />
-          </div>
-        </div>
       </div>
       <div class="flex-1 min-w-0 flex flex-col gap-2">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <a
-              href="#"
+              href="https://www.tiktok.com/@okasp.dev"
+              target="_blank"
               class="text-xl md:text-2xl font-black text-slate-900 dark:text-white hover:underline">
               {{ userInfo.display_name }}
             </a>

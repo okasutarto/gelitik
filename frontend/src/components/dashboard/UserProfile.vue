@@ -63,20 +63,9 @@ const formatNumber = (num: number): string => {
       <div class="flex items-center gap-1.5">
         <span
           class="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-wide"
-          >Likes</span
-        >
-        <span class="font-bold">{{
-          formatNumber(userInfo.likes_count || 0)
-        }}</span>
-      </div>
-      <div
-        class="w-[5px] h-[5px] rounded-full bg-slate-300 dark:bg-slate-600"></div>
-      <div class="flex items-center gap-1.5">
-        <span
-          class="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-wide"
           >Followers</span
         >
-        <span class="font-bold">{{
+        <span class="font-bold text-slate-900 dark:text-white text-lg">{{
           formatNumber(userInfo.follower_count || 0)
         }}</span>
       </div>
@@ -87,8 +76,19 @@ const formatNumber = (num: number): string => {
           class="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-wide"
           >Following</span
         >
-        <span class="font-bold">{{
+        <span class="font-bold text-slate-900 dark:text-white text-lg">{{
           formatNumber(userInfo.following_count || 0)
+        }}</span>
+      </div>
+      <div
+        class="w-[5px] h-[5px] rounded-full bg-slate-300 dark:bg-slate-600"></div>
+      <div class="flex items-center gap-1.5">
+        <span
+          class="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-wide"
+          >Likes</span
+        >
+        <span class="font-bold text-slate-900 dark:text-white text-lg">{{
+          formatNumber(userInfo.likes_count || 0)
         }}</span>
       </div>
     </div>

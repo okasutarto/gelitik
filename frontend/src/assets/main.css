@@ -134,3 +134,47 @@ html {
   transform: translate(-4px, -4px);
   box-shadow: 12px 12px 0px 0px rgba(0, 0, 0, 1);
 }
+
+/* Skeleton Loading Shimmer Animation */
+@keyframes shimmer {
+  0%,
+  100% {
+    background-position: -200% 0;
+  }
+  50% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-pulse {
+  background: linear-gradient(
+    90deg,
+    rgb(226, 232, 240) 0%,
+    rgb(241, 245, 249) 50%,
+    rgb(226, 232, 240) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@media (prefers-color-scheme: dark) {
+  .skeleton-pulse {
+    background: linear-gradient(
+      90deg,
+      rgb(51, 65, 85) 0%,
+      rgb(100, 116, 139) 50%,
+      rgb(51, 65, 85) 100%
+    );
+    background-size: 200% 100%;
+  }
+}
+
+:global(.dark) .skeleton-pulse {
+  background: linear-gradient(
+    90deg,
+    rgb(51, 65, 85) 0%,
+    rgb(100, 116, 139) 50%,
+    rgb(51, 65, 85) 100%
+  );
+  background-size: 200% 100%;
+}

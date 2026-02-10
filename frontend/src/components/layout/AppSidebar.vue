@@ -152,8 +152,8 @@ const navigateTo = (path: string) => {
             'w-full flex items-center gap-4 py-3 rounded-2xl transition-all relative',
             isCollapsed ? 'justify-center px-0' : 'px-4',
             isActive(item.path)
-              ? 'border-neo-3 border-black bg-neo-accent text-black shadow-neo-hard-sm'
-              : 'bg-white hover:border-neo-3 hover:border-black hover:text-black hover:shadow-neo-hard-sm hover:-translate-y-1 hover:-translate-x-0.5 transition-all',
+              ? 'border-black border-neo-3 bg-neo-accent text-black shadow-neo-hard-sm'
+              : 'hover:text-black dark:hover:text-white hover:shadow-neo-hard-sm hover:-translate-y-1 hover:-translate-x-0.5 transition-all hover:border-black hover:border-2',
           ]">
           <component
             :is="item.icon"
@@ -195,12 +195,12 @@ const navigateTo = (path: string) => {
         <button
           @click="navigateTo(platform.path)"
           :class="[
-            'w-full flex items-center gap-4 py-3 rounded-2xl transition-all relative',
+            'w-full flex items-center gap-4 py-3 rounded-2xl transition-all relative dark:bg-slate-800',
             isCollapsed ? 'justify-center px-0' : 'px-4',
             getPlatformColorClass(platform.color, isActive(platform.path)) +
               (isActive(platform.path)
                 ? ''
-                : 'border-neo-3 border-black hover:shadow-neo-hard-sm hover:-translate-y-1 hover:-translate-x-0.5'),
+                : 'hover:border-black hover:border-2 hover:shadow-neo-hard-sm hover:-translate-y-1 hover:-translate-x-0.5'),
           ]">
           <component :is="platform.icon" :size="22" class="shrink-0" />
           <span
@@ -232,7 +232,7 @@ const navigateTo = (path: string) => {
       <button
         @click="navigateTo('/connections')"
         :class="[
-          'w-full flex items-center gap-4 py-3 rounded-2xl border-neo-3 border-dashed border-black bg-white hover:border-black hover:text-black hover:shadow-neo-hard-sm hover:-translate-y-1 hover:-translate-x-0.5 transition-all relative',
+          'w-full flex items-center gap-4 py-3 rounded-2xl border-neo-3 border-dashed border-black hover:border-black hover:text-black dark:hover:text-white hover:shadow-neo-hard-sm hover:-translate-y-1 hover:-translate-x-0.5 transition-all relative',
           isCollapsed ? 'justify-center px-0' : 'px-4',
         ]">
         <Plus :size="24" class="shrink-0" />
@@ -253,11 +253,11 @@ const navigateTo = (path: string) => {
         <button
           @click="navigateTo(item.path)"
           :class="[
-            'w-full flex items-center gap-4 py-3 rounded-2xl transition-all border-neo-3 border-black relative ',
+            'w-full flex items-center gap-4 py-3 rounded-2xl transition-all relative ',
             isCollapsed ? 'justify-center px-0' : 'px-4',
             isActive(item.path)
-              ? 'bg-neo-accent text-black shadow-neo-hard-sm'
-              : 'bg-white border-neo-3 border-black hover:text-black hover:border-neo-3 hover:border-black hover:shadow-neo-hard-sm hover:-translate-y-1 hover:-translate-x-0.5 transition-all',
+              ? 'text-black shadow-neo-hard-sm dark:text-white bg-neo-accent border-neo-3 border-black'
+              : 'hover:text-black hover:border-black hover:border-2 hover:shadow-neo-hard-sm hover:-translate-y-1 hover:-translate-x-0.5 transition-all',
           ]">
           <component :is="item.icon" :size="22" class="shrink-0" />
           <span v-if="!isCollapsed" class="font-bold">{{ item.name }}</span>

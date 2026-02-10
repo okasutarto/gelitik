@@ -110,7 +110,7 @@ export class TikTokService implements PlatformService {
     return this.getUserInfo(accessToken);
   }
 
-  async getVideos(accessToken: string, cursor?: string, maxCount: number = 20): Promise<{
+  async getVideos(accessToken: string, cursor?: string, maxCount: number = 50): Promise<{
     videos: TikTokVideo[];
     has_more: boolean;
     cursor?: string;

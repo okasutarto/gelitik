@@ -6,6 +6,10 @@ import StatCard from "@/components/dashboard/StatCard.vue";
 import UserProfile from "@/components/dashboard/UserProfile.vue";
 import DualChartDashboard from "@/components/dashboard/DualChartDashboard.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
+import StatCardSkeleton from "@/components/loading/StatCardSkeleton.vue";
+import UserProfileSkeleton from "@/components/loading/UserProfileSkeleton.vue";
+import ChartSkeleton from "@/components/loading/ChartSkeleton.vue";
+import ContentTableSkeleton from "@/components/loading/ContentTableSkeleton.vue";
 import { usePlatformAnalytics } from "@/composables/usePlatformAnalytics";
 import { useRouter } from "vue-router";
 
@@ -100,26 +104,34 @@ onMounted(() => {
     </div>
 
     <!-- User Profile -->
-    <UserProfile v-if="userData" :user-info="userData" />
+    <UserProfile v-if="!loading && userData" :user-info="userData" />
+    <UserProfileSkeleton v-else-if="loading" />
 
     <!-- Stat Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-8">
-      <StatCard
-        v-for="stat in tiktokStats"
-        :key="stat.title"
-        :title="stat.title"
-        :value="stat.value"
-        :change="stat.change"
-        :change-type="stat.changeType"
-        :icon="stat.icon"
-        :subtitle="stat.subtitle"
-        platform="tiktok" />
+      <template v-if="loading">
+        <StatCardSkeleton :count="4" />
+      </template>
+      <template v-else>
+        <StatCard
+          v-for="stat in tiktokStats"
+          :key="stat.title"
+          :title="stat.title"
+          :value="stat.value"
+          :change="stat.change"
+          :change-type="stat.changeType"
+          :icon="stat.icon"
+          :subtitle="stat.subtitle"
+          platform="tiktok" />
+      </template>
     </div>
 
-     <!-- Top Performing Content -->
+    <!-- Top Performing Content -->
     <div class="mb-8">
-      <DualChartDashboard :videos="videos" />
+      <ChartSkeleton v-if="loading" />
+      <DualChartDashboard v-else :videos="videos" />
     </div>
-    <ContentTable platform="tiktok" :videos="videos" />
+    <ContentTableSkeleton v-if="loading" />
+    <ContentTable v-else platform="tiktok" :videos="videos" />
   </DashboardLayout>
 </template>

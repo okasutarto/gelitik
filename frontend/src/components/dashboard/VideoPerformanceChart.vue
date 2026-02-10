@@ -106,46 +106,6 @@ const chartData = computed(() => {
     ],
   };
 });
-    
-    return rate;
-  });
-
-  const hasValidData = paginatedVideos.value.some((v) => (v.view_count || 0) > 0);
-  const hasAnyEngagement = paginatedVideos.value.some((v) => (v.like_count || 0) + (v.comment_count || 0) + (v.share_count || 0) > 0);
-
-  console.log('[VideoPerformanceChart] Summary:', {
-    totalVideos: paginatedVideos.value.length,
-    hasValidViews: hasValidData,
-    hasAnyEngagement,
-    sampleRates: engagementRates.slice(0, 3).map(r => r.toFixed(2) + '%')
-  });
-
-  return {
-    labels: paginatedVideos.value.map((v) => truncateTitle(v.video_description || "", 20)),
-    datasets: [
-      {
-        label: "Views",
-        data: paginatedVideos.value.map((v) => v.view_count || 0),
-        backgroundColor: "#0f172a",
-        borderRadius: 4,
-        barPercentage: 0.6,
-        order: 2,
-      },
-      {
-        label: "Engagement Rate",
-        data: engagementRates,
-        borderColor: "#14b8a6",
-        backgroundColor: hasValidData ? "rgba(20, 184, 166, 0.2)" : "rgba(20, 184, 166, 0.05)",
-        borderWidth: 3,
-        fill: true,
-        tension: 0.4,
-        pointRadius: 0,
-        pointHoverRadius: 6,
-        order: 1,
-      },
-    ],
-  };
-});
 
   const chartOptions = {
   responsive: true,

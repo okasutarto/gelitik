@@ -37,10 +37,17 @@ export default {
         "2xl": "1rem",
         full: "9999px",
       },
+      borderWidth: {
+        '3': '3px',
+      },
       boxShadow: {
         "neo-hard": "8px 8px 0px 0px rgba(0, 0, 0, 1)",
         "neo-hard-lg": "12px 12px 0px 0px rgba(0, 0, 0, 1)",
         "neo-hard-sm": "6px 6px 0px 0px rgba(0, 0, 0, 1)",
+        "brutal": "8px 8px 0px 0px rgba(0,0,0,1)",
+        "brutal-md": "6px 6px 0px 0px rgba(0,0,0,1)",
+        "brutal-sm": "4px 4px 0px 0px rgba(0,0,0,1)",
+        "brutal-active": "2px 2px 0px 0px rgba(0,0,0,1)",
       },
     },
   },

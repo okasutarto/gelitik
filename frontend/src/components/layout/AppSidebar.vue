@@ -3,17 +3,16 @@ import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   LayoutDashboard,
+  BarChart3,
   CalendarDays,
   Users,
-  Inbox,
   Settings,
   ChevronLeft,
   ChevronRight,
   Instagram,
   Music2,
-  Linkedin,
-  Plus,
   Zap,
+  Plus,
 } from "lucide-vue-next";
 import { useSidebar } from "@/composables/useSidebar";
 
@@ -32,7 +31,7 @@ interface NavItem {
   badge?: number;
 }
 
-interface PlatformItem {
+interface SubNavItem {
   name: string;
   path: string;
   icon: typeof Instagram;
@@ -40,14 +39,15 @@ interface PlatformItem {
   connected: boolean;
 }
 
-const mainNavItems: NavItem[] = [
-  { name: "Overview", path: "/dashboard", icon: LayoutDashboard },
-  { name: "Schedule", path: "/schedule", icon: CalendarDays },
-  { name: "Inbox", path: "/inbox", icon: Inbox, badge: 3 },
-  { name: "Audience", path: "/audience", icon: Users },
-];
+// Main dashboard item (top level)
+const mainDashboardItem: NavItem = {
+  name: "Dashboard",
+  path: "/dashboard",
+  icon: LayoutDashboard,
+};
 
-const platformItems: PlatformItem[] = [
+// Platform items (sub-nav under Platforms section)
+const platformItems: SubNavItem[] = [
   {
     name: "Instagram",
     path: "/dashboard/instagram",
@@ -64,9 +64,19 @@ const platformItems: PlatformItem[] = [
   },
 ];
 
-const bottomNavItems: NavItem[] = [
-  { name: "Settings", path: "/settings", icon: Settings },
+// Tools section items
+const toolsItems: NavItem[] = [
+  { name: "Analytics", path: "/analytics", icon: BarChart3 },
+  { name: "Schedule", path: "/schedule", icon: CalendarDays },
+  { name: "Audience", path: "/audience", icon: Users },
 ];
+
+// Settings (bottom)
+const settingsItem: NavItem = {
+  name: "Settings",
+  path: "/settings",
+  icon: Settings,
+};
 
 const isActive = (path: string) => {
   if (path === "/dashboard") {
@@ -75,34 +85,15 @@ const isActive = (path: string) => {
   return route.path.startsWith(path);
 };
 
-const getPlatformColorClass = (color: string, isActive: boolean) => {
-  if (isActive) {
-    const activeColors: Record<string, string> = {
-      pink: "bg-pink-600 text-white border-black shadow-neo-hard-sm",
-      slate: "bg-slate-700 text-white border-black shadow-neo-hard-sm",
-      blue: "bg-blue-600 text-white border-black shadow-neo-hard-sm",
-    };
-    return (
-      activeColors[color] ||
-      "bg-neo-accent text-black border-black shadow-neo-hard-sm"
-    );
-  }
-
-  const colors: Record<string, string> = {
-    pink: "text-pink-600 hover:text-black hover:border-neo-3 hover:border-black bg-white hover:shadow-neo-hard-sm transition-all hover:-translate-y-1 hover:-translate-x-0.5",
-    slate:
-      "text-slate-600 hover:text-black hover:border-neo-3 hover:border-black bg-white hover:shadow-neo-hard-sm transition-all hover:-translate-y-1 hover:-translate-x-0.5",
-    blue: "text-blue-600 hover:text-black hover:border-neo-3 hover:border-black bg-white hover:shadow-neo-hard-sm transition-all hover:-translate-y-1 hover:-translate-x-0.5",
-  };
-  return (
-    colors[color] ||
-    "text-slate-600 hover:text-black hover:border-neo-3 hover:border-black bg-white hover:shadow-neo-hard-sm transition-all hover:-translate-y-1 hover:-translate-x-0.5"
-  );
+const isPlatformActive = (path: string) => {
+  return route.path === path || route.path.startsWith(path + "/");
 };
 
 const navigateTo = (path: string) => {
   router.push(path);
 };
+
+const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
 </script>
 
 <template>
@@ -121,7 +112,7 @@ const navigateTo = (path: string) => {
       ]">
       <div class="flex items-center gap-4">
         <div
-          class="size-10 rounded-2xl bg-neo-accent border-neo-3 border-black flex items-center justify-center shadow-neo-hard shrink-0">
+          class="size-10 rounded-2xl bg-neo-accent border-3 border-black flex items-center justify-center shadow-brutal-sm shrink-0">
           <Zap :size="22" class="text-black" />
         </div>
         <h1 v-if="!isCollapsed" class="text-2xl font-black tracking-tight">
@@ -133,7 +124,7 @@ const navigateTo = (path: string) => {
       <button
         v-if="!isCollapsed"
         @click="toggleSidebar"
-        class="p-2 rounded-2xl border-neo-3 border-black hover:bg-neo-accent hover:-translate-y-1 transition-transform">
+        class="p-2 rounded-2xl border-3 border-black hover:bg-neo-accent hover:-translate-y-1 transition-transform">
         <ChevronLeft :size="20" />
       </button>
     </div>
@@ -141,134 +132,166 @@ const navigateTo = (path: string) => {
     <!-- Main Navigation -->
     <nav
       :class="[
-        'flex-1 py-6 space-y-4 overflow-y-auto no-scrollbar',
+        'flex-1 py-6 overflow-y-auto no-scrollbar',
         isCollapsed ? 'px-2' : 'px-4',
       ]">
-      <!-- Main Nav Items -->
-      <template v-for="item in mainNavItems" :key="item.path">
-        <button
-          @click="navigateTo(item.path)"
+      <!-- Dashboard (Top Level) -->
+      <button
+        @click="navigateTo(mainDashboardItem.path)"
+        :class="[
+          'nav-item w-full',
+          isActive(mainDashboardItem.path) ? 'active' : '',
+          isCollapsed ? 'justify-center px-0' : '',
+        ]">
+        <component
+          :is="mainDashboardItem.icon"
+          :size="24"
+          class="shrink-0"
+          :stroke-width="isActive(mainDashboardItem.path) ? 2.5 : 2" />
+        <span
+          v-if="!isCollapsed"
           :class="[
-            'w-full flex items-center gap-4 py-3 rounded-2xl transition-all relative',
-            isCollapsed ? 'justify-center px-0' : 'px-4',
-            isActive(item.path)
-              ? 'border-black border-neo-3 bg-neo-accent text-black shadow-neo-hard-sm'
-              : 'hover:text-black dark:hover:text-white hover:shadow-neo-hard-sm hover:-translate-y-1 hover:-translate-x-0.5 transition-all hover:border-black hover:border-2',
+            'font-black uppercase text-sm',
+            isActive(mainDashboardItem.path) ? 'text-black' : '',
           ]">
-          <component
-            :is="item.icon"
-            :size="24"
+          {{ mainDashboardItem.name }}
+        </span>
+
+        <!-- Tooltip for collapsed state -->
+        <div
+          v-if="isCollapsed"
+          class="absolute left-16 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-brutal-sm">
+          {{ mainDashboardItem.name }}
+        </div>
+      </button>
+
+      <!-- Platforms Section -->
+      <div class="pt-2">
+        <p
+          v-if="!isCollapsed"
+          class="text-sm font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-3 px-3">
+          Platforms
+        </p>
+
+        <template v-for="platform in platformItems" :key="platform.path">
+          <button
+            @click="navigateTo(platform.path)"
+            :class="[
+              'sub-nav-item w-full transition-all relative',
+              isPlatformActive(platform.path) ? 'active' : '',
+              isCollapsed ? 'justify-center px-0 ml-0' : '',
+              isCollapsed && !isPlatformActive(platform.path)
+                ? 'hover:bg-black/5'
+                : '',
+            ]">
+            <component
+              :is="platform.icon"
+              :size="22"
+              class="shrink-0"
+              :stroke-width="isPlatformActive(platform.path) ? 2.5 : 2" />
+            <span
+              v-if="!isCollapsed"
+              :class="[
+                'font-black uppercase text-sm',
+                isPlatformActive(platform.path) ? 'text-black' : '',
+              ]">
+              {{ platform.name }}
+            </span>
+
+            <!-- Connection status -->
+            <div
+              v-if="
+                !isCollapsed &&
+                platform.connected &&
+                !isPlatformActive(platform.path)
+              "
+              class="ml-auto size-2.5 rounded-full bg-black/20 border-2 border-black/30" />
+
+            <!-- Tooltip for collapsed state -->
+            <div
+              v-if="isCollapsed"
+              class="absolute left-16 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-brutal-sm">
+              {{ platform.name }}
+            </div>
+          </button>
+        </template>
+
+        <!-- Add Platform Button -->
+        <button
+          @click="navigateTo('/connections')"
+          :class="[
+            'sub-nav-item w-full transition-all relative border-dashed border-black/30',
+            isActive('/connections') ? 'active' : '',
+            isCollapsed ? 'justify-center px-0 ml-0' : '',
+          ]">
+          <Plus
+            :size="22"
             class="shrink-0"
-            :stroke-width="isActive(item.path) ? 2.5 : 2" />
+            :stroke-width="isActive('/connections') ? 2.5 : 2" />
           <span
             v-if="!isCollapsed"
-            class="font-black uppercase text-sm hidden lg:block"
-            >{{ item.name }}</span
-          >
-
-          <!-- Badge -->
-          <span
-            v-if="item.badge && !isCollapsed"
-            class="ml-auto bg-black text-neo-accent text-xs font-black px-2.5 py-1 rounded-full border-2 border-black">
-            {{ item.badge }}
+            :class="[
+              'font-black uppercase text-sm',
+              isActive('/connections') ? 'text-black' : '',
+            ]">
+            Add Platform
           </span>
 
           <!-- Tooltip for collapsed state -->
           <div
             v-if="isCollapsed"
-            class="absolute left-16 bg-black text-neo-accent text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-neo-accent opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-neo-hard-sm">
-            {{ item.name }}
+            class="absolute left-16 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-brutal-sm">
+            Add Platform
           </div>
         </button>
-      </template>
-
-      <!-- Platforms Section -->
-      <div class="pt-6">
-        <p
-          v-if="!isCollapsed"
-          class="text-sm font-black text-neo-accent uppercase tracking-wider mb-3 px-4">
-          Platforms
-        </p>
       </div>
 
-      <template v-for="platform in platformItems" :key="platform.path">
-        <button
-          @click="navigateTo(platform.path)"
-          :class="[
-            'w-full flex items-center gap-4 py-3 rounded-2xl transition-all relative dark:bg-slate-800',
-            isCollapsed ? 'justify-center px-0' : 'px-4',
-            getPlatformColorClass(platform.color, isActive(platform.path)) +
-              (isActive(platform.path)
-                ? ''
-                : 'hover:border-black hover:border-2 hover:shadow-neo-hard-sm hover:-translate-y-1 hover:-translate-x-0.5'),
-          ]">
-          <component :is="platform.icon" :size="22" class="shrink-0" />
-          <span
-            v-if="!isCollapsed"
-            class="font-black uppercase text-sm hidden lg:block"
-            >{{ platform.name }}</span
-          >
+      <!-- Tools Section -->
+      <div class="pt-2">
+        <p
+          v-if="!isCollapsed"
+          class="text-sm font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-3 px-3">
+          Tools
+        </p>
 
-          <!-- Connection status -->
-          <div
-            v-if="!isCollapsed && platform.connected"
-            class="ml-auto size-2.5 rounded-full bg-black border-2 border-neo-accent" />
-          <div
-            v-if="!isCollapsed && !platform.connected"
-            class="ml-auto text-xs font-bold">
-            Connect
-          </div>
+        <template v-for="item in toolsItems" :key="item.path">
+          <button
+            @click="navigateTo(item.path)"
+            :class="[
+              'nav-item w-full',
+              isActive(item.path) ? 'active' : '',
+              isCollapsed ? 'justify-center px-0' : '',
+            ]">
+            <component
+              :is="item.icon"
+              :size="24"
+              class="shrink-0"
+              :stroke-width="isActive(item.path) ? 2.5 : 2" />
+            <span
+              v-if="!isCollapsed"
+              :class="[
+                'font-black uppercase text-sm',
+                isActive(item.path) ? 'text-black' : '',
+              ]">
+              {{ item.name }}
+            </span>
 
-          <!-- Tooltip -->
-          <div
-            v-if="isCollapsed"
-            class="absolute left-16 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-neo-hard-sm">
-            {{ platform.name }}
-          </div>
-        </button>
-      </template>
+            <!-- Badge -->
+            <span
+              v-if="item.badge && !isCollapsed"
+              class="ml-auto bg-black text-white text-xs font-black px-2.5 py-1 rounded-full border-2 border-black">
+              {{ item.badge }}
+            </span>
 
-      <!-- Add Platform -->
-      <button
-        @click="navigateTo('/connections')"
-        :class="[
-          'w-full flex items-center gap-4 py-3 rounded-2xl border-neo-3 border-dashed border-black hover:border-black hover:text-black dark:hover:text-white hover:shadow-neo-hard-sm hover:-translate-y-1 hover:-translate-x-0.5 transition-all relative',
-          isCollapsed ? 'justify-center px-0' : 'px-4',
-        ]">
-        <Plus :size="24" class="shrink-0" />
-        <span v-if="!isCollapsed" class="font-bold">Add Platform</span>
-
-        <div
-          v-if="isCollapsed"
-          class="absolute left-16 bg-black text-neo-accent text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-neo-accent opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-neo-hard-sm">
-          Add Platform
-        </div>
-      </button>
-
-      <!-- Settings -->
-      <template
-        v-for="item in bottomNavItems"
-        :key="item.path"
-        class="absolute bottom-0 left-0 w-full bg-indigo-600 p-4 text-white">
-        <button
-          @click="navigateTo(item.path)"
-          :class="[
-            'w-full flex items-center gap-4 py-3 rounded-2xl transition-all relative ',
-            isCollapsed ? 'justify-center px-0' : 'px-4',
-            isActive(item.path)
-              ? 'text-black shadow-neo-hard-sm dark:text-white bg-neo-accent border-neo-3 border-black'
-              : 'hover:text-black hover:border-black hover:border-2 hover:shadow-neo-hard-sm hover:-translate-y-1 hover:-translate-x-0.5 transition-all',
-          ]">
-          <component :is="item.icon" :size="22" class="shrink-0" />
-          <span v-if="!isCollapsed" class="font-bold">{{ item.name }}</span>
-
-          <div
-            v-if="isCollapsed"
-            class="absolute left-16 bg-black text-neo-accent text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-neo-accent opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-neo-hard-sm">
-            {{ item.name }}
-          </div>
-        </button>
-      </template>
+            <!-- Tooltip for collapsed state -->
+            <div
+              v-if="isCollapsed"
+              class="absolute left-16 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-brutal-sm">
+              {{ item.name }}
+            </div>
+          </button>
+        </template>
+      </div>
     </nav>
 
     <!-- Bottom Section -->
@@ -277,26 +300,55 @@ const navigateTo = (path: string) => {
         'p-4 space-y-4 border-t-4 border-black',
         isCollapsed ? 'px-2' : 'px-4',
       ]">
+      <!-- Settings -->
+      <button
+        @click="navigateTo(settingsItem.path)"
+        :class="[
+          'nav-item w-full',
+          isActive(settingsItem.path) ? 'active' : '',
+          isCollapsed ? 'justify-center px-0' : '',
+        ]">
+        <component
+          :is="settingsItem.icon"
+          :size="22"
+          class="shrink-0"
+          :stroke-width="isActive(settingsItem.path) ? 2.5 : 2" />
+        <span
+          v-if="!isCollapsed"
+          :class="[
+            'font-black uppercase text-sm',
+            isActive(settingsItem.path) ? 'text-black' : '',
+          ]">
+          {{ settingsItem.name }}
+        </span>
+
+        <!-- Tooltip for collapsed state -->
+        <div
+          v-if="isCollapsed"
+          class="absolute left-16 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-brutal-sm">
+          {{ settingsItem.name }}
+        </div>
+      </button>
+
       <!-- User Profile -->
       <div
         :class="[
-          'flex items-center gap-4 rounded-2xl',
+          'flex items-center gap-4 rounded-2xl transition-all cursor-pointer group',
           isCollapsed
             ? 'flex-col justify-center p-2'
-            : 'bg-white dark:bg-slate-800 p-3 border-neo-3 border-black',
+            : 'p-3 hover:border-3 hover:border-black',
         ]">
         <div
-          class="size-10 rounded-full bg-cover bg-center border-neo-3 border-black shrink-0 shadow-neo-hard-sm"
-          style="
-            background-image: url(&quot;https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik&quot;);
-          " />
+          class="size-10 rounded-full bg-cover bg-center border-3 border-black shrink-0 shadow-brutal-sm"
+          :style="{ backgroundImage: `url('${userAvatar}')` }" />
         <div v-if="!isCollapsed" class="flex-1 min-w-0">
-          <p class="text-sm font-black dark:text-white font-bold truncate">
+          <p
+            class="text-sm font-black uppercase text-black dark:text-white truncate">
             Gelitik Team
           </p>
           <p
-            class="text-xs text-slate-600 dark:text-slate-400 font-medium truncate">
-            admin@gelitik.com
+            class="text-xs font-mono text-black/60 dark:text-white/60 truncate">
+            ADMIN_01
           </p>
         </div>
       </div>
@@ -306,7 +358,7 @@ const navigateTo = (path: string) => {
     <button
       v-if="isCollapsed"
       @click="toggleSidebar"
-      class="absolute -right-4 top-20 size-7 bg-neo-accent rounded-2xl border-neo-3 border-black flex items-center justify-center shadow-neo-hard hover:-translate-y-1 transition-transform">
+      class="absolute -right-4 top-20 size-7 bg-neo-accent rounded-2xl border-3 border-black flex items-center justify-center shadow-brutal-sm hover:-translate-y-1 transition-transform">
       <ChevronRight :size="16" />
     </button>
   </aside>

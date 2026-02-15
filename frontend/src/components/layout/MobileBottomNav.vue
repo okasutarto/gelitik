@@ -40,17 +40,17 @@ const navigateTo = (path: string) => {
 
 <template>
   <nav
-    class="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-slate-900 border-t-4 border-black z-50 pb-safe">
+    class="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-slate-900 border-t-3 border-black z-50 pb-safe">
     <div class="grid grid-cols-5 h-16">
       <template v-for="item in navItems" :key="item.path">
         <!-- FAB Button (Create) -->
         <button
           v-if="item.isFab"
           @click="navigateTo(item.path)"
-          class="flex flex-col items-center justify-center -mt-6">
+          class="flex flex-col items-center justify-center -mt-8">
           <div
-            class="size-14 bg-neo-accent rounded-2xl border-neo-3 border-black flex items-center justify-center shadow-neo-hard text-white active:scale-95 transition-transform">
-            <component :is="item.icon" :size="32" class="text-black" />
+            class="size-16 bg-neo-accent rounded-2xl border-3 border-black flex items-center justify-center shadow-brutal-sm active:shadow-brutal-active active:translate-y-0.5 transition-all">
+            <component :is="item.icon" :size="32" class="text-black" :stroke-width="2.5" />
           </div>
         </button>
 
@@ -59,15 +59,20 @@ const navigateTo = (path: string) => {
           v-else
           @click="navigateTo(item.path)"
           :class="[
-            'flex flex-col items-center justify-center gap-1',
+            'flex flex-col items-center justify-center gap-1 transition-all relative',
             isActive(item.path)
-              ? 'text-neo-accent font-bold'
-              : 'text-slate-900 dark:text-white hover:text-neo-accent font-medium',
+              ? 'text-black font-bold'
+              : 'text-black/60 hover:text-black font-medium',
           ]">
+          <!-- Active state top border -->
+          <div
+            v-if="isActive(item.path)"
+            class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-neo-accent border-b-2 border-black" />
+
           <component
             :is="item.icon"
             :size="24"
-            :stroke-width="isActive(item.path) ? 3 : 2" />
+            :stroke-width="isActive(item.path) ? 2.5 : 2" />
           <span
             :class="[
               'text-[11px]',

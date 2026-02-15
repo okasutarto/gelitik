@@ -100,6 +100,31 @@ html {
   box-shadow: 12px 12px 0px 0px rgba(255, 255, 255, 0.15);
 }
 
+/* Brutal shadows dark mode support */
+.dark .shadow-brutal {
+  box-shadow: 8px 8px 0px 0px rgba(255, 255, 255, 0.15);
+}
+
+.dark .shadow-brutal-md {
+  box-shadow: 6px 6px 0px 0px rgba(255, 255, 255, 0.15);
+}
+
+.dark .shadow-brutal-sm {
+  box-shadow: 4px 4px 0px 0px rgba(255, 255, 255, 0.15);
+}
+
+.dark .shadow-brutal-active {
+  box-shadow: 2px 2px 0px 0px rgba(255, 255, 255, 0.15);
+}
+
+.dark .hover\:shadow-brutal-sm:hover {
+  box-shadow: 4px 4px 0px 0px rgba(255, 255, 255, 0.15);
+}
+
+.dark .hover\:shadow-brutal-md:hover {
+  box-shadow: 6px 6px 0px 0px rgba(255, 255, 255, 0.15);
+}
+
 /* Accent utilities */
 .bg-neo-accent {
   background-color: var(--neo-accent);
@@ -177,4 +202,195 @@ html {
     rgb(51, 65, 85) 100%
   );
   background-size: 200% 100%;
+}
+
+/* Navigation utility classes */
+
+/* Halftone pattern */
+.halftone-pattern {
+  background-image: radial-gradient(circle, #000 2px, transparent 2.5px);
+  background-size: 8px 8px;
+  opacity: 0.15;
+}
+
+/* Sticker badge */
+.sticker-badge {
+  @apply absolute -top-3 -right-3 bg-black text-white text-[10px] font-bold px-2 py-1 rotate-12 z-20 shadow-brutal-sm border-2 border-white;
+}
+
+/* Navigation items */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  transition: all 0.2s ease;
+  color: rgb(0 0 0 / 0.6);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+}
+
+.nav-item:hover {
+  color: rgb(0 0 0);
+  background-color: rgb(0 0 0 / 0.05);
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px 0px rgb(0 0 0);
+  border: 3px solid rgb(0 0 0);
+  border-radius: 0;
+}
+
+.nav-item.active {
+  background-color: var(--neo-accent);
+  border: 3px solid rgb(0 0 0);
+  box-shadow: 6px 6px 0px 0px rgb(0 0 0);
+  color: rgb(0 0 0);
+  opacity: 1;
+  border-radius: 0;
+}
+
+.nav-item.active:hover {
+  background-color: var(--neo-accent);
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0px 0px rgb(0 0 0);
+}
+
+.dark .nav-item {
+  color: rgb(255 255 255 / 0.6);
+}
+
+.dark .nav-item:hover {
+  color: rgb(255 255 255);
+  background-color: rgb(255 255 255 / 0.05);
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px 0px rgb(255 255 255 / 0.15);
+  border: 3px solid rgb(255 255 255);
+  border-radius: 0;
+}
+
+.dark .nav-item.active {
+  background-color: var(--neo-accent);
+  border: 3px solid rgb(255 255 255);
+  box-shadow: 6px 6px 0px 0px rgb(255 255 255 / 0.15);
+  color: rgb(0 0 0);
+}
+
+.dark .nav-item.active:hover {
+  box-shadow: 6px 6px 0px 0px rgb(255 255 255 / 0.15);
+}
+
+.sub-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  color: rgb(0 0 0 / 0.6);
+  margin-bottom: 0.75rem;
+}
+
+.sub-nav-item:hover {
+  color: rgb(0 0 0);
+  background-color: rgb(0 0 0 / 0.05);
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px 0px rgb(0 0 0);
+  border: 3px solid rgb(0 0 0);
+  border-radius: 0;
+  margin-right: 0.25rem;
+}
+
+.sub-nav-item.active {
+  background-color: var(--neo-accent);
+  border: 3px solid rgb(0 0 0);
+  box-shadow: 6px 6px 0px 0px rgb(0 0 0);
+  color: rgb(0 0 0);
+  opacity: 1;
+  border-radius: 0;
+  margin-left: 0;
+  padding-left: 1.75rem;
+}
+
+.sub-nav-item.active:hover {
+  background-color: var(--neo-accent);
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0px 0px rgb(0 0 0);
+}
+
+.dark .sub-nav-item {
+  color: rgb(255 255 255 / 0.6);
+  border-left: 2px solid rgb(255 255 255 / 0.1);
+}
+
+.dark .sub-nav-item:hover {
+  color: rgb(255 255 255);
+  background-color: rgb(255 255 255 / 0.05);
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px 0px rgb(255 255 255 / 0.15);
+  border: 3px solid rgb(255 255 255);
+  border-radius: 0;
+  margin-right: 0.25rem;
+}
+
+.dark .sub-nav-item.active {
+  background-color: var(--neo-accent);
+  border: 3px solid rgb(255 255 255);
+  box-shadow: 6px 6px 0px 0px rgb(255 255 255 / 0.15);
+  color: rgb(0 0 0);
+  border-radius: 0;
+  border-left: 2px solid rgb(255 255 255 / 0.1);
+}
+
+.dark .sub-nav-item.active:hover {
+  box-shadow: 6px 6px 0px 0px rgb(255 255 255 / 0.15);
+  border-radius: 0;
+  border-left: 2px solid rgb(255 255 255 / 0.1);
+}
+
+/* Add Platform button (dashed border) */
+.sub-nav-item.border-dashed {
+  border-left: none;
+  border: 2px dashed rgb(0 0 0 / 0.3);
+}
+
+.sub-nav-item.border-dashed:hover {
+  border: 3px dashed rgb(0 0 0);
+}
+
+.sub-nav-item.border-dashed.active {
+  background-color: var(--neo-accent);
+  border: 3px solid rgb(0 0 0);
+  box-shadow: 6px 6px 0px 0px rgb(0 0 0);
+  color: rgb(0 0 0);
+  opacity: 1;
+  border-radius: 0;
+  margin-left: 0;
+  padding-left: 1.75rem;
+}
+
+.sub-nav-item.border-dashed.active:hover {
+  background-color: var(--neo-accent);
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0px 0px rgb(0 0 0);
+}
+
+.dark .sub-nav-item.border-dashed {
+  border-left: none;
+  border: 2px dashed rgb(255 255 255 / 0.3);
+}
+
+.dark .sub-nav-item.border-dashed:hover {
+  border: 3px dashed rgb(255 255 255);
+}
+
+.dark .sub-nav-item.border-dashed.active {
+  background-color: var(--neo-accent);
+  border: 3px solid rgb(255 255 255);
+  box-shadow: 6px 6px 0px 0px rgb(255 255 255 / 0.15);
+  color: rgb(0 0 0);
+  border-radius: 0;
+}
+
+.dark .sub-nav-item.border-dashed.active:hover {
+  box-shadow: 6px 6px 0px 0px rgb(255 255 255 / 0.15);
 }

@@ -1,6 +1,5 @@
 import { ref } from 'vue'
 import api from '@/services/api'
-import { useAuthStore } from '@/stores/auth'
 
 export interface VideoDetailData {
   id: string
@@ -36,7 +35,6 @@ export interface VideoDetailData {
 }
 
 export function useVideoAnalytics() {
-  const authStore = useAuthStore()
   const loading = ref(false)
   const error = ref<string | null>(null)
   const videoData = ref<VideoDetailData | null>(null)

@@ -53,14 +53,14 @@ const platformItems: SubNavItem[] = [
     path: "/dashboard/instagram",
     icon: Instagram,
     color: "pink",
-    connected: true,
+    connected: false, // Will be fetched from API
   },
   {
     name: "TikTok",
     path: "/dashboard/tiktok",
     icon: Music2,
     color: "slate",
-    connected: true,
+    connected: true, // TikTok is connected
   },
 ];
 
@@ -184,6 +184,15 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
                 ? 'hover:bg-black/5'
                 : '',
             ]">
+            <!-- Connection status dot (positioned absolutely) -->
+            <div
+              v-if="platform.connected"
+              :class="[
+                'absolute rounded-full bg-green-500 border border-green-600 shadow-sm',
+                isCollapsed ? 'top-1 right-1 size-2' : 'top-2 right-2 size-2.5'
+              ]"
+              :title="`${platform.name} is connected`" />
+
             <component
               :is="platform.icon"
               :size="22"
@@ -197,15 +206,6 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
               ]">
               {{ platform.name }}
             </span>
-
-            <!-- Connection status -->
-            <div
-              v-if="
-                !isCollapsed &&
-                platform.connected &&
-                !isPlatformActive(platform.path)
-              "
-              class="ml-auto size-2.5 rounded-full bg-black/20 border-2 border-black/30" />
 
             <!-- Tooltip for collapsed state -->
             <div

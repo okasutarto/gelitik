@@ -219,8 +219,8 @@ const toggleSortDirection = () => {
           class="text-lg font-bold w-6 text-slate-600 dark:text-slate-300 shrink-0">
           {{ index + 1 }}.
         </div>
-          <div class="flex-1 min-w-0 flex gap-3">
-           <div class="flex-1 flex items-center gap-3 min-w-0">
+        <div class="flex-1 min-w-0 flex gap-3">
+          <div class="flex-1 flex items-center gap-3 min-w-0">
             <img
               :src="
                 video.cover_image_url || 'https://via.placeholder.com/64x64'
@@ -236,12 +236,17 @@ const toggleSortDirection = () => {
           </div>
           <div
             class="text-right min-w-[80px] flex flex-col justify-center items-end">
-            <p class="text-xl font-mono font-black text-slate-900 dark:text-white">
+            <p
+              class="text-xl font-mono font-black text-slate-900 dark:text-white">
               {{ formatNumber(video.view_count || 0) }}
             </p>
             <p
               class="text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">
-              {{ sortBy === 'views' ? 'Views' : sortBy.charAt(0).toUpperCase() + sortBy.slice(1) }}
+              {{
+                sortBy === "views"
+                  ? "Views"
+                  : sortBy.charAt(0).toUpperCase() + sortBy.slice(1)
+              }}
             </p>
           </div>
         </div>

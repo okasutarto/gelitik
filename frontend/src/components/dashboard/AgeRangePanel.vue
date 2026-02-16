@@ -33,7 +33,7 @@ const getBarClass = (group: AgeGroup) => {
 </script>
 
 <template>
-  <div class="neo-card border-neo-3 border-black neo-hover-lift">
+  <div class="brutal-card brutal-hover-lift rounded-none p-6">
     <h4
       class="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
       <Cake :size="18" class="text-purple-500" />

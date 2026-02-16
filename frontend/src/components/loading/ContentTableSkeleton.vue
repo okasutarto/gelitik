@@ -1,5 +1,5 @@
 <template>
-  <div class="neo-card border-neo-3 border-black overflow-hidden">
+  <div class="brutal-card rounded-none overflow-hidden">
     <div class="hidden md:block">
       <div class="divide-y divide-y-2 divide-black">
         <div v-for="i in 4" :key="i" class="px-4 py-4 flex items-center gap-3">

@@ -32,7 +32,7 @@ const getBarColor = (index: number) => {
 </script>
 
 <template>
-  <div class="neo-card border-neo-3 border-black neo-hover-lift">
+  <div class="brutal-card brutal-hover-lift rounded-none p-6">
     <h4
       class="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
       <Globe :size="18" class="text-teal-500" />
@@ -58,7 +58,7 @@ const getBarColor = (index: number) => {
             :style="{ width: `${territory.percentage}%` }" />
         </div>
         <span
-          class="text-sm font-bold text-slate-900 dark:text-white min-w-[40px] text-right">
+          class="text-sm font-mono font-bold text-slate-900 dark:text-white min-w-[40px] text-right">
           {{ territory.percentage }}%
         </span>
       </div>

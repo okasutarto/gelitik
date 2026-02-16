@@ -1,5 +1,5 @@
 <template>
-  <div class="neo-card border-neo-3 border-black overflow-hidden">
+  <div class="brutal-card rounded-none overflow-hidden">
     <div class="flex items-center gap-4 p-4">
       <div class="relative shrink-0">
         <div

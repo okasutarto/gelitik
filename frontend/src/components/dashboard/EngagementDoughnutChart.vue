@@ -104,7 +104,7 @@ const chartOptions = {
 </script>
 
 <template>
-  <div class="neo-card border-neo-3 border-black neo-hover-lift">
+  <div class="brutal-card brutal-hover-lift rounded-none p-6">
     <div class="flex items-center justify-between mb-6">
       <div>
         <h3 class="text-lg font-black uppercase text-slate-900 dark:text-white">
@@ -115,7 +115,7 @@ const chartOptions = {
         </p>
       </div>
       <div class="text-right">
-        <p class="text-3xl font-black text-slate-900 dark:text-white">
+        <p class="text-3xl font-mono font-black text-slate-900 dark:text-white">
           {{ engagementData?.total?.toLocaleString() }}
         </p>
         <p
@@ -149,7 +149,7 @@ const chartOptions = {
             <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
           </svg>
         </div>
-        <p class="text-lg font-bold text-slate-900 dark:text-white mt-2">
+        <p class="text-lg font-mono font-bold text-slate-900 dark:text-white mt-2">
           {{ formatNumber(engagementData.likes) }}
         </p>
         <p
@@ -164,7 +164,7 @@ const chartOptions = {
             <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8.9h.5a8.48 8.48 0 018 8v.5z" />
           </svg>
         </div>
-        <p class="text-lg font-bold text-slate-900 dark:text-white mt-2">
+        <p class="text-lg font-mono font-bold text-slate-900 dark:text-white mt-2">
           {{ formatNumber(engagementData.comments) }}
         </p>
         <p
@@ -179,7 +179,7 @@ const chartOptions = {
             <path d="M21.707 20.293l-4-4a7 7 0 10-9.9-9.9 7 7 0 000 9.9 7 7 0 009.9 0l4 4a1 1 0 001.414-1.414zM6 11a5 5 0 115-5 5 5 0 01-5 5z" />
           </svg>
         </div>
-        <p class="text-font-bold text-slate-900 dark:text-white mt-2">
+        <p class="text-lg font-mono font-bold text-slate-900 dark:text-white mt-2">
           {{ formatNumber(engagementData.shares) }}
         </p>
         <p

@@ -28,7 +28,7 @@ const formatNumber = (num: number): string => {
 </script>
 
 <template>
-  <div class="neo-card border-neo-3 border-black neo-hover-lift">
+  <div class="brutal-card brutal-hover-lift rounded-none">
     <div class="flex items-center gap-4 p-4">
       <div class="relative shrink-0">
         <img
@@ -52,7 +52,7 @@ const formatNumber = (num: number): string => {
           </div>
         </div>
         <p
-          class="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 whitespace-pre-line"
+          class="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line"
           :title="userInfo.bio_description">
           {{ userInfo.bio_description }}
         </p>
@@ -62,34 +62,37 @@ const formatNumber = (num: number): string => {
       class="flex items-center gap-4 px-6 pb-4 text-sm text-slate-600 dark:text-slate-300">
       <div class="flex items-center gap-1.5">
         <span
-          class="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-wide"
+          class="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-tighter"
           >Followers</span
         >
-        <span class="font-bold text-slate-900 dark:text-white text-lg">{{
-          formatNumber(userInfo.follower_count || 0)
-        }}</span>
+        <span
+          class="font-mono font-bold text-slate-900 dark:text-white text-lg"
+          >{{ formatNumber(userInfo.follower_count || 0) }}</span
+        >
       </div>
       <div
         class="w-[5px] h-[5px] rounded-full bg-slate-300 dark:bg-slate-600"></div>
       <div class="flex items-center gap-1.5">
         <span
-          class="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-wide"
+          class="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-tighter"
           >Following</span
         >
-        <span class="font-bold text-slate-900 dark:text-white text-lg">{{
-          formatNumber(userInfo.following_count || 0)
-        }}</span>
+        <span
+          class="font-mono font-bold text-slate-900 dark:text-white text-lg"
+          >{{ formatNumber(userInfo.following_count || 0) }}</span
+        >
       </div>
       <div
         class="w-[5px] h-[5px] rounded-full bg-slate-300 dark:bg-slate-600"></div>
       <div class="flex items-center gap-1.5">
         <span
-          class="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-wide"
+          class="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-tighter"
           >Likes</span
         >
-        <span class="font-bold text-slate-900 dark:text-white text-lg">{{
-          formatNumber(userInfo.likes_count || 0)
-        }}</span>
+        <span
+          class="font-mono font-bold text-slate-900 dark:text-white text-lg"
+          >{{ formatNumber(userInfo.likes_count || 0) }}</span
+        >
       </div>
     </div>
   </div>

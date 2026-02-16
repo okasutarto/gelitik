@@ -39,7 +39,7 @@ const primaryDevice = props.devices[0];
 </script>
 
 <template>
-  <div class="neo-card border-neo-3 border-black neo-hover-lift">
+  <div class="brutal-card brutal-hover-lift rounded-none p-6">
     <h4
       class="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
       <Smartphone :size="18" class="text-slate-800 dark:text-white" />
@@ -58,7 +58,7 @@ const primaryDevice = props.devices[0];
           :style="{ background: conicGradient }" />
         <div
           class="absolute inset-4 bg-white dark:bg-slate-800 rounded-full flex flex-col items-center justify-center">
-          <span class="text-2xl font-bold text-slate-900 dark:text-white">
+          <span class="text-2xl font-mono font-bold text-slate-900 dark:text-white">
             {{ primaryDevice.percentage }}%
           </span>
           <span class="text-[10px] text-slate-400 uppercase tracking-wider">

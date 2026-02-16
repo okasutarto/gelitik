@@ -29,6 +29,7 @@ export default {
       },
       fontFamily: {
         display: ["Inter", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
       },
       borderRadius: {
         DEFAULT: "0.25rem",

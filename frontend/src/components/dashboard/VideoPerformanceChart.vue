@@ -182,7 +182,7 @@ watch(
 </script>
 
 <template>
-  <div class="neo-card border-neo-3 border-black neo-hover-lift">
+  <div class="brutal-card brutal-hover-lift rounded-none p-6">
     <div v-if="!videos || videos.length === 0" class="p-8 text-center">
       <p class="text-slate-500 dark:text-slate-400">
         No video data available
@@ -212,7 +212,7 @@ watch(
             class="bg-slate-50 dark:bg-slate-700 border-neo-3 border-black neo-shadow-hard-sm text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-300 py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-primary-500 cursor-pointer outline-none hover:ne-hover-lift">
             Previous
           </button>
-          <span class="text-sm font-bold text-slate-900 dark:text-white px-3">
+          <span class="text-sm font-mono font-bold text-slate-900 dark:text-white px-3">
             Page {{ currentPage }} of {{ totalPages }}
           </span>
           <button

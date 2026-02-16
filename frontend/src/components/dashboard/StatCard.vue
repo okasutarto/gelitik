@@ -37,11 +37,11 @@ const changeBadgeClass = computed(() =>
 
 <template>
   <div
-    class="neo-card border-neo-3 border-black flex flex-col justify-between h-36 relative overflow-hidden group neo-hover-lift">
+    class="brutal-card flex flex-col justify-between h-36 relative overflow-hidden group brutal-hover-lift rounded-none p-6">
     <!-- Header -->
     <div class="flex items-center justify-between relative z-10">
       <p
-        class="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-wide">
+        class="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-tighter">
         {{ title }}
       </p>
     </div>
@@ -49,7 +49,7 @@ const changeBadgeClass = computed(() =>
     <!-- Value -->
     <div class="relative z-10">
       <h3
-        class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+        class="text-3xl font-mono font-bold text-slate-900 dark:text-white tracking-tight">
         {{ value }}
       </h3>
       <p

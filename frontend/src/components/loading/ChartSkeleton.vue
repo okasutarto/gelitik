@@ -1,5 +1,5 @@
 <template>
-  <div class="neo-card border-neo-3 border-black overflow-hidden space-y-6 p-6">
+  <div class="brutal-card rounded-none overflow-hidden space-y-6 p-6">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div class="space-y-4">
         <div

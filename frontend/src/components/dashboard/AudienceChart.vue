@@ -171,7 +171,7 @@ const isBarChart = computed(() => props.platform === "all");
 </script>
 
 <template>
-  <div class="neo-card border-neo-3 border-black neo-hover-lift">
+  <div class="brutal-card brutal-hover-lift rounded-none p-6">
     <div v-if="platform === 'tiktok'" class="p-8 text-center">
       <p class="text-slate-500 dark:text-slate-400">
         Audience data coming soon for TikTok

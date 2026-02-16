@@ -168,7 +168,7 @@ const toggleSortDirection = () => {
 
 <template>
   <div
-    class="neo-card border-neo-3 border-black neo-hover-lift h-full flex flex-col">
+    class="brutal-card brutal-hover-lift rounded-none h-full flex flex-col p-6">
     <!-- Header -->
     <div
       class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -236,7 +236,7 @@ const toggleSortDirection = () => {
           </div>
           <div
             class="text-right min-w-[80px] flex flex-col justify-center items-end">
-            <p class="text-xl font-black text-slate-900 dark:text-white">
+            <p class="text-xl font-mono font-black text-slate-900 dark:text-white">
               {{ formatNumber(video.view_count || 0) }}
             </p>
             <p

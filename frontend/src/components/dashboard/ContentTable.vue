@@ -165,7 +165,7 @@ const formatDate = (timestamp: number): string => {
 </script>
 
 <template>
-  <div class="neo-card border-neo-3 border-black overflow-hidden">
+  <div class="brutal-card rounded-none overflow-hidden">
     <!-- Header -->
     <div class="p-6 flex items-center justify-between border-b-4 border-black">
       <h3 class="text-lg font-bold text-slate-900 dark:text-white">
@@ -195,7 +195,7 @@ const formatDate = (timestamp: number): string => {
         <table
           class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
           <thead
-            class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 font-bold border-b-4 border-black">
+            class="bg-black dark:bg-slate-700/50 text-white dark:text-slate-400 font-bold border-b-4 border-black">
             <tr>
               <th class="px-4 py-4">Content</th>
               <th class="px-4 py-4 text-center">Date Created</th>
@@ -231,19 +231,24 @@ const formatDate = (timestamp: number): string => {
               <td class="px-4 py-4 whitespace-nowrap text-center">
                 {{ formatDuration(item.duration || 0) }}
               </td>
-              <td class="px-4 py-4 font-semibold whitespace-nowrap text-center">
+              <td
+                class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.views || 0) }}
               </td>
-              <td class="px-4 py-4 font-semibold whitespace-nowrap text-center">
+              <td
+                class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.likes || 0) }}
               </td>
-              <td class="px-4 py-4 font-semibold whitespace-nowrap text-center">
+              <td
+                class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.shares || 0) }}
               </td>
-              <td class="px-4 py-4 font-semibold whitespace-nowrap text-center">
+              <td
+                class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.comments || 0) }}
               </td>
-              <td class="px-4 py-4 font-semibold whitespace-nowrap text-center">
+              <td
+                class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
                 {{ calculateEngagementRate(item).toFixed(1) + "%" }}
               </td>
             </tr>

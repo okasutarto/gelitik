@@ -74,16 +74,12 @@ onMounted(() => {
 
 <template>
   <DashboardLayout>
-    <!-- Page Header with Platform Color -->
-    <div class="mb-6">
-      <div class="flex items-center gap-3 mb-1">
-        <div class="size-2 rounded-full bg-pink-500" />
-        <h2
-          class="text-4xl font-black uppercase text-slate-900 dark:text-white">
-          Instagram Insights
-        </h2>
-      </div>
-      <p class="text-sm uppercase font-bold text-slate-500 dark:text-slate-400">
+    <!-- Page Header -->
+    <div class="bg-white dark:bg-slate-800 border-b-4 border-black dark:border-white p-6 md:p-8 mb-8 -mx-4 md:-mx-8">
+      <h2 class="text-4xl lg:text-5xl font-black uppercase text-slate-900 dark:text-white leading-tight">
+        Instagram Insights
+      </h2>
+      <p class="text-sm font-bold opacity-60 uppercase text-slate-600 dark:text-slate-400 mt-2">
         Deep dive into your Instagram performance.
       </p>
     </div>

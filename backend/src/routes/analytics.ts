@@ -334,4 +334,102 @@ router.get('/platform/:platform', authenticateToken, async (req: AuthenticatedRe
   }
 });
 
+// Get detailed video analytics
+router.get('/:platform/video/:videoId', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const user = req.user!;
+    const { platform, videoId } = req.params;
+
+    // Find the user's account for this platform
+    const account = await prisma.socialAccount.findFirst({
+      where: {
+        userId: user.id,
+        platform: platform.toLowerCase(),
+        isActive: true
+      }
+    });
+
+    if (!account) {
+      return res.status(404).json({
+        success: false,
+        error: 'Account not found for this platform'
+      });
+    }
+
+    // Find the specific content item
+    const content = await prisma.content.findFirst({
+      where: {
+        id: videoId,
+        accountId: account.id
+      }
+    });
+
+    if (!content) {
+      return res.status(404).json({
+        success: false,
+        error: 'Video not found'
+      });
+    }
+
+    // Calculate engagement rate
+    const engagementRate = content.views > 0
+      ? ((content.likes + content.comments + content.shares) / content.views) * 100
+      : 0;
+
+    // Return detailed video analytics
+    res.json({
+      id: content.id,
+      title: content.title || 'Untitled Video',
+      description: content.description || '',
+      thumbnail: content.thumbnail || '',
+      cover_image_url: content.thumbnail || '',
+      create_time: content.postedAt ? Math.floor(content.postedAt.getTime() / 1000) : 0,
+      duration: content.duration || 0,
+      views: content.views,
+      likes: content.likes,
+      comments: content.comments,
+      shares: content.shares,
+      engagement_rate: Math.round(engagementRate * 10) / 10,
+      // Add demographic data (mock data for now - can be enhanced with real data)
+      demographics: {
+        age_range: [
+          { range: '18-24', percentage: 35 },
+          { range: '25-34', percentage: 28 },
+          { range: '35-44', percentage: 20 },
+          { range: '45+', percentage: 17 }
+        ],
+        gender: [
+          { gender: 'Male', percentage: 45 },
+          { gender: 'Female', percentage: 55 }
+        ],
+        top_countries: [
+          { country: 'United States', percentage: 40 },
+          { country: 'United Kingdom', percentage: 15 },
+          { country: 'Canada', percentage: 10 },
+          { country: 'Australia', percentage: 8 }
+        ],
+        top_cities: [
+          { city: 'New York', percentage: 12 },
+          { city: 'Los Angeles', percentage: 8 },
+          { city: 'London', percentage: 6 },
+          { city: 'Toronto', percentage: 5 }
+        ]
+      },
+      // Add traffic sources (mock data for now)
+      traffic_sources: [
+        { source: 'For You Page', percentage: 65 },
+        { source: 'Profile', percentage: 20 },
+        { source: 'Following', percentage: 10 },
+        { source: 'Other', percentage: 5 }
+      ]
+    });
+  } catch (error) {
+    console.error('Video detail fetch error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch video analytics'
+    });
+  }
+});
+
 export default router;

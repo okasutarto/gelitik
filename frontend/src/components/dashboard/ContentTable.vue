@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import type { Platform } from "@/composables/usePlatform";
+import VideoDetailModal from "./VideoDetailModal.vue";
 
 interface ContentItem {
   id: string;
@@ -22,6 +23,20 @@ const props = withDefaults(defineProps<Props>(), {
   platform: "all",
   videos: undefined,
 });
+
+// Video detail modal state
+const selectedVideoId = ref<string | null>(null);
+const isModalOpen = ref(false);
+
+const openVideoDetail = (videoId: string) => {
+  selectedVideoId.value = videoId;
+  isModalOpen.value = true;
+};
+
+const closeModal = () => {
+  isModalOpen.value = false;
+  selectedVideoId.value = null;
+};
 
 const formatNumber = (num: number): string => {
   if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
@@ -167,7 +182,8 @@ const formatDate = (timestamp: number): string => {
 <template>
   <div class="brutal-card rounded-none overflow-hidden">
     <!-- Header -->
-    <div class="p-6 flex items-center justify-between border-b-4 border-black">
+    <div
+      class="p-6 flex items-center justify-between border-b-4 border-black bg-neo-accent">
       <h3 class="text-lg font-bold text-slate-900 dark:text-white">
         Top Performing Content
       </h3>
@@ -211,6 +227,7 @@ const formatDate = (timestamp: number): string => {
             <tr
               v-for="item in filteredContent"
               :key="item.id"
+              @click="openVideoDetail(item.id)"
               class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group cursor-pointer">
               <td class="px-4 py-4 min-w-[200px]">
                 <div class="flex items-center gap-3">
@@ -262,7 +279,8 @@ const formatDate = (timestamp: number): string => {
         <div
           v-for="item in filteredContent"
           :key="item.id"
-          class="p-4 flex gap-4 active:bg-slate-50 dark:active:bg-slate-700/50">
+          @click="openVideoDetail(item.id)"
+          class="p-4 flex gap-4 active:bg-slate-50 dark:active:bg-slate-700/50 cursor-pointer">
           <img
             :src="item.thumbnail"
             :alt="item.title"
@@ -302,4 +320,12 @@ const formatDate = (timestamp: number): string => {
       </div>
     </template>
   </div>
+
+  <!-- Video Detail Modal -->
+  <VideoDetailModal
+    v-if="selectedVideoId"
+    :platform="platform"
+    :video-id="selectedVideoId"
+    :is-open="isModalOpen"
+    @close="closeModal" />
 </template>

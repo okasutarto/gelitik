@@ -77,4 +77,57 @@ router.get('/:platform', async (req, res) => {
     }
 });
 
+/**
+ * GET /api/analytics/:platform/video/:videoId
+ * Detailed analytics for a specific video (fetched from platform API)
+ */
+router.get('/:platform/video/:videoId', async (req, res) => {
+    const { platform, videoId } = req.params;
+    const userId = (req.user as any)?.id;
+
+    try {
+        const account = await prisma.socialAccount.findFirst({
+            where: { userId, platform, isActive: true }
+        });
+
+        if (!account) {
+            return res.status(404).json({ error: 'Account not found for this platform' });
+        }
+
+        if (platform === 'tiktok') {
+            // Fetch video details from TikTok API
+            const videoDetails = await tiktokService.getVideoDetails(account.accessToken, videoId);
+
+            // Calculate engagement rate
+            const engagementRate = videoDetails.view_count > 0
+                ? ((videoDetails.like_count + videoDetails.comment_count + videoDetails.share_count) / videoDetails.view_count) * 100
+                : 0;
+
+            res.json({
+                id: videoDetails.id,
+                title: videoDetails.video_description || 'Untitled Video',
+                description: videoDetails.video_description || '',
+                thumbnail: videoDetails.cover_image_url || '',
+                cover_image_url: videoDetails.cover_image_url || '',
+                create_time: videoDetails.create_time || 0,
+                duration: videoDetails.duration || 0,
+                views: videoDetails.view_count || 0,
+                likes: videoDetails.like_count || 0,
+                comments: videoDetails.comment_count || 0,
+                shares: videoDetails.share_count || 0,
+                engagement_rate: Math.round(engagementRate * 10) / 10
+            });
+        } else if (platform === 'instagram') {
+            // Instagram doesn't have the same video detail API
+            // You would need to use Instagram Graph API for media insights
+            res.status(501).json({ error: 'Instagram video details not implemented yet' });
+        } else {
+            res.status(400).json({ error: 'Unsupported platform' });
+        }
+    } catch (error) {
+        console.error('Video detail fetch error:', error);
+        res.status(500).json({ error: 'Failed to fetch video analytics' });
+    }
+});
+
 export default router;

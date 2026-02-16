@@ -45,11 +45,14 @@ const overviewStats = [
 <template>
   <DashboardLayout>
     <!-- Page Header -->
-    <div class="bg-white dark:bg-slate-800 border-b-4 border-black dark:border-white p-6 md:p-8 mb-8 -mx-4 md:-mx-8">
-      <h2 class="text-4xl lg:text-5xl font-black uppercase text-slate-900 dark:text-white leading-tight">
+    <div
+      class="bg-neo-accent dark:bg-slate-800 border-b-4 border-black dark:border-white p-6 md:p-8 mb-8 -mx-4 md:-mx-8">
+      <h2
+        class="text-4xl lg:text-5xl font-black uppercase text-slate-900 dark:text-white leading-tight">
         Overview
       </h2>
-      <p class="text-sm font-bold opacity-60 uppercase text-slate-600 dark:text-slate-400 mt-2">
+      <p
+        class="text-sm font-bold opacity-60 uppercase text-slate-600 dark:text-slate-400 mt-2">
         Welcome back to your master dashboard.
       </p>
     </div>

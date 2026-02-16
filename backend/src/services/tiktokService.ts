@@ -230,6 +230,44 @@ export class TikTokService implements PlatformService {
     };
   }
 
+  async getVideoDetails(accessToken: string, videoId: string): Promise<TikTokVideo> {
+    try {
+      // Use the official TikTok Display API /v2/video/query/ endpoint
+      const fields = 'id,title,video_description,duration,cover_image_url,like_count,comment_count,share_count,view_count';
+      const response = await axios.post(
+        `${this.baseUrl}/video/query/?fields=${fields}`,
+        {
+          filters: {
+            video_ids: [videoId]
+          }
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      console.log('[TikTok] Video query response:', response.data);
+
+      const videos = response.data?.data?.videos || [];
+
+      if (videos.length === 0) {
+        throw new Error(`Video with ID ${videoId} not found`);
+      }
+
+      return videos[0] as TikTokVideo;
+    } catch (error) {
+      console.error('[TikTok] Get video details error:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('[TikTok] Response data:', error.response?.data);
+        console.error('[TikTok] Response status:', error.response?.status);
+      }
+      throw new Error('Failed to fetch video details');
+    }
+  }
+
   async verifyToken(accessToken: string): Promise<boolean> {
     try {
       const response = await axios.post(`${this.baseUrl}/oauth/verify_token/`, null, {

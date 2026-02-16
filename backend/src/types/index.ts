@@ -38,6 +38,7 @@ export interface TikTokVideo {
   share_count: number;
   view_count: number;
   create_time: number;
+  share_url?: string;
 }
 
 export interface PlatformAnalytics {

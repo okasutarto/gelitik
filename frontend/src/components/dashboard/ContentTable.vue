@@ -2,17 +2,7 @@
 import { computed, ref } from "vue";
 import type { Platform } from "@/composables/usePlatform";
 import VideoDetailModal from "./VideoDetailModal.vue";
-
-interface ContentItem {
-  id: string;
-  title: string;
-  thumbnail: string;
-  platform: Platform;
-  reach: string;
-  engagement: string;
-  status: "viral" | "active" | "ended";
-  timeAgo: string;
-}
+import { formatNumber } from "@/utils/format";
 
 interface Props {
   platform?: Platform;
@@ -36,12 +26,6 @@ const openVideoDetail = (videoId: string) => {
 const closeModal = () => {
   isModalOpen.value = false;
   selectedVideoId.value = null;
-};
-
-const formatNumber = (num: number): string => {
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-  return num.toString();
 };
 
 const calculateEngagementRate = (video: any): number => {
@@ -127,24 +111,6 @@ const getPlatformBadge = (platform: Platform) => {
     },
   };
   return configs[platform];
-};
-
-const getStatusBadge = (status: ContentItem["status"]) => {
-  const configs: Record<typeof status, { bg: string; text: string }> = {
-    viral: {
-      bg: "bg-purple-400 dark:bg-[#6B2CF5] border-2 border-black dark:border-electric shadow-brutal-sm",
-      text: "text-black",
-    },
-    active: {
-      bg: "bg-green-400 dark:bg-[#00F0FF] border-2 border-black dark:border-electric shadow-brutal-sm",
-      text: "text-black",
-    },
-    ended: {
-      bg: "bg-slate-300 dark:bg-slate-600 border-2 border-black dark:border-electric shadow-brutal-sm",
-      text: "text-black dark:text-white",
-    },
-  };
-  return configs[status];
 };
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);

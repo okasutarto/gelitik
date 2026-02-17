@@ -2,10 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+import prisma from '../config/prisma';
+import { JWT_SECRET, FRONTEND_URL } from '../config/env';
 
 export class AuthController {
 
@@ -68,7 +66,7 @@ export class AuthController {
         const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
 
         // Redirect to frontend with token
-        res.redirect(`${process.env.FRONTEND_URL}/login?token=${token}`);
+        res.redirect(`${FRONTEND_URL}/login?token=${token}`);
     }
 
     // Get Current User (Session Check)

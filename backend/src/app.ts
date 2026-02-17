@@ -3,13 +3,34 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import passport from './config/passport';
+import rateLimit from 'express-rate-limit';
 import { authenticateJwt } from './middleware/auth.middleware';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { FRONTEND_URL, PORT as CONFIG_PORT } from './config/env';
 import authRoutes from './routes/auth.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import socialAccountsRoutes from './routes/socialAccounts';
 import { startTokenRefreshCron } from './jobs/tokenRefresh';
 
 const app = express();
+
+// Rate limiting for auth endpoints (prevent brute force attacks)
+const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // Limit each IP to 20 requests per windowMs
+  message: { error: 'Too many attempts, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Stricter rate limiting for login
+const loginRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 login attempts per windowMs
+  message: { error: 'Too many login attempts, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // CORS Configuration
 app.use(cors({
@@ -18,10 +39,8 @@ app.use(cors({
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:3000',
-      'https://prereformatory-isocheimal-micha.ngrok-free.dev',
-      'http://prereformatory-isocheimal-micha.ngrok-free.dev',
-      process.env.FRONTEND_URL || 'http://localhost:5173'
-    ];
+      FRONTEND_URL
+    ].filter(Boolean);
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -41,7 +60,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize()); // Initialize Passport
 
 // Routes
-app.use('/auth', authRoutes);
+// Apply rate limiting to auth routes
+app.use('/auth', authRateLimiter, authRoutes);
 app.use('/api/analytics', authenticateJwt, analyticsRoutes);
 app.use('/api/accounts', authenticateJwt, socialAccountsRoutes);
 
@@ -53,11 +73,13 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-const PORT = process.env.PORT || 3000;
+// Error handling middleware (must be last)
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  app.listen(CONFIG_PORT, () => {
+    console.log(`Server running on port ${CONFIG_PORT}`);
   });
 }
 

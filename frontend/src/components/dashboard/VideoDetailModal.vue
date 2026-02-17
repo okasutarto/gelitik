@@ -13,6 +13,7 @@ import {
   type VideoDetailData,
 } from "@/composables/useVideoAnalytics";
 import BrutalBadge from "./BrutalBadge.vue";
+import { formatNumber } from "@/utils/format";
 
 interface Props {
   platform: string;
@@ -33,13 +34,6 @@ const engagementRate = computed(() => {
   if (views === 0) return 0;
   return (((likes + comments + shares) / views) * 100).toFixed(1);
 });
-
-const formatNumber = (num: number): string => {
-  if (!num) return "0";
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-  return num.toString();
-};
 
 const formatDate = (timestamp: number): string => {
   const date = new Date(timestamp * 1000);

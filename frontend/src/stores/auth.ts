@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import api from '@/services/api'
 
 interface User {
@@ -14,7 +13,6 @@ export const useAuthStore = defineStore('auth', () => {
     const user = ref<User | null>(JSON.parse(localStorage.getItem('user') || 'null'))
     const token = ref<string | null>(localStorage.getItem('token'))
     const isAuthenticated = computed(() => !!token.value)
-    const router = useRouter()
 
     const setAuth = (newUser: User, newToken: string) => {
         user.value = newUser
@@ -24,25 +22,15 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     const login = async (email: string, password: string) => {
-        try {
-            const { data } = await api.post('/auth/login', { email, password })
-            setAuth(data.user, data.token)
-            return true
-        } catch (error) {
-            console.error('Login failed:', error)
-            throw error
-        }
+        const { data } = await api.post('/auth/login', { email, password })
+        setAuth(data.user, data.token)
+        return true
     }
 
     const register = async (email: string, password: string, name: string) => {
-        try {
-            const { data } = await api.post('/auth/register', { email, password, name })
-            setAuth(data.user, data.token)
-            return true
-        } catch (error) {
-            console.error('Registration failed:', error)
-            throw error
-        }
+        const { data } = await api.post('/auth/register', { email, password, name })
+        setAuth(data.user, data.token)
+        return true
     }
 
     const logout = () => {
@@ -55,8 +43,6 @@ export const useAuthStore = defineStore('auth', () => {
 
     const checkSession = async () => {
         if (!token.value) return false
-        // Mock session check for dev bypass
-        if (token.value.startsWith('mock-')) return true
 
         try {
             const { data } = await api.get('/auth/me')

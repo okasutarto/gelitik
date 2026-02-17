@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { CheckCircle2, ArrowUpRight } from "lucide-vue-next";
+import { formatNumber } from "@/utils/format";
 
 interface UserInfo {
   display_name: string;
@@ -18,13 +19,6 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-
-const formatNumber = (num: number): string => {
-  if (!num) return "0";
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-  return num.toString();
-};
 </script>
 
 <template>

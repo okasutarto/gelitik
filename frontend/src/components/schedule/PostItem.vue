@@ -53,11 +53,7 @@ const timeFormatted = computed(() => {
     class="relative group bg-white dark:bg-slate-800 p-2 border-neo-3 border-black shadow-neo-hard hover:-translate-y-1 transition-transform cursor-move mb-1.5"
     draggable="true">
     <!-- Platform Indicator Strip -->
-    <div
-      :class="[
-        'absolute left-0 top-0 bottom-0 w-1 rounded-l-lg',
-        platformColors,
-      ]" />
+    <div :class="['absolute left-0 top-0 bottom-0 w-1', platformColors]" />
 
     <div class="pl-2 flex gap-2">
       <!-- Thumbnail (if exists) -->

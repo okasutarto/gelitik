@@ -1,10 +1,9 @@
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/prisma';
 import { InstagramService } from '../services/instagram.service';
 import { TikTokService } from '../services/tiktokService';
 
 const router = Router();
-const prisma = new PrismaClient();
 const instagramService = new InstagramService();
 const tiktokService = new TikTokService();
 

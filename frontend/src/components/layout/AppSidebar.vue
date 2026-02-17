@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   LayoutDashboard,
@@ -15,6 +15,7 @@ import {
   Plus,
   Sun,
   Moon,
+  ChevronDown,
 } from "lucide-vue-next";
 import { useTheme } from "@/composables/useTheme";
 import { useSidebar } from "@/composables/useSidebar";
@@ -23,6 +24,21 @@ const route = useRoute();
 const router = useRouter();
 const { isCollapsed, toggleSidebar, initSidebar } = useSidebar();
 const { isDark, toggleTheme } = useTheme();
+
+const isPlatformsOpen = ref(true);
+const isToolsOpen = ref(true);
+
+const togglePlatforms = () => {
+  if (!isCollapsed.value) {
+    isPlatformsOpen.value = !isPlatformsOpen.value;
+  }
+};
+
+const toggleTools = () => {
+  if (!isCollapsed.value) {
+    isToolsOpen.value = !isToolsOpen.value;
+  }
+};
 
 onMounted(() => {
   initSidebar();
@@ -149,7 +165,7 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
       <button
         @click="navigateTo(mainDashboardItem.path)"
         :class="[
-          'nav-item w-full',
+          'group nav-item w-full',
           isActive(mainDashboardItem.path) ? 'active' : '',
           isCollapsed ? 'justify-center px-0' : '',
         ]">
@@ -177,130 +193,167 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
 
       <!-- Platforms Section -->
       <div class="pt-2">
-        <p
+        <button
           v-if="!isCollapsed"
-          class="text-sm font-black text-black/40 dark:text-electric/60 uppercase tracking-widest mb-3 px-3">
-          Platforms
+          @click="togglePlatforms"
+          class="flex items-center justify-between w-full text-sm font-black text-black/40 dark:text-electric/60 uppercase tracking-widest mb-3 px-3 hover:text-black dark:hover:text-white transition-colors">
+          <span>Platforms</span>
+          <ChevronDown
+            :size="16"
+            class="transition-transform duration-200"
+            :class="{ '-rotate-90': !isPlatformsOpen }" />
+        </button>
+        <p
+          v-else
+          class="text-center text-[10px] font-black text-black/40 dark:text-electric/60 uppercase mb-2">
+          Apps
         </p>
 
-        <template v-for="platform in platformItems" :key="platform.path">
-          <button
-            @click="navigateTo(platform.path)"
-            :class="[
-              'sub-nav-item w-full transition-all relative',
-              isPlatformActive(platform.path) ? 'active' : '',
-              isCollapsed ? 'justify-center px-0 ml-0' : '',
-              isCollapsed && !isPlatformActive(platform.path)
-                ? 'hover:bg-black/5'
-                : '',
-            ]">
-            <!-- Connection status dot (positioned absolutely) -->
-            <div
-              v-if="platform.connected"
+        <div
+          v-show="isPlatformsOpen || isCollapsed"
+          class="transition-all duration-300 overflow-hidden"
+          :class="{
+            'opacity-100 max-h-[500px]': isPlatformsOpen || isCollapsed,
+            'opacity-0 max-h-0': !isPlatformsOpen && !isCollapsed,
+          }">
+          <template v-for="platform in platformItems" :key="platform.path">
+            <button
+              @click="navigateTo(platform.path)"
               :class="[
-                'absolute rounded-full bg-green-500 border border-green-600 shadow-sm',
-                isCollapsed ? 'top-1 right-1 size-2' : 'top-2 right-2 size-2.5',
-              ]"
-              :title="`${platform.name} is connected`" />
+                'group sub-nav-item w-full transition-all relative',
+                isPlatformActive(platform.path) ? 'active' : '',
+                isCollapsed ? 'justify-center px-0 ml-0' : '',
+                isCollapsed && !isPlatformActive(platform.path)
+                  ? 'hover:bg-black/5'
+                  : '',
+              ]">
+              <!-- Connection status dot (positioned absolutely) -->
+              <div
+                v-if="platform.connected"
+                :class="[
+                  'absolute rounded-full bg-green-500 border border-green-600 shadow-sm',
+                  isCollapsed
+                    ? 'top-1 right-1 size-2'
+                    : 'top-2 right-2 size-2.5',
+                ]"
+                :title="`${platform.name} is connected`" />
 
-            <component
-              :is="platform.icon"
+              <component
+                :is="platform.icon"
+                :size="22"
+                class="shrink-0"
+                :stroke-width="isPlatformActive(platform.path) ? 2.5 : 2" />
+              <span
+                v-if="!isCollapsed"
+                :class="[
+                  'font-black uppercase text-sm',
+                  isPlatformActive(platform.path) ? 'text-black' : '',
+                ]">
+                {{ platform.name }}
+              </span>
+
+              <!-- Tooltip for collapsed state -->
+              <div
+                v-if="isCollapsed"
+                class="absolute left-16 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-brutal-sm">
+                {{ platform.name }}
+              </div>
+            </button>
+          </template>
+
+          <button
+            @click="navigateTo('/connections')"
+            :class="[
+              'group sub-nav-item w-full transition-all relative border-dashed border-black/30',
+              isActive('/connections') ? 'active' : '',
+              isCollapsed ? 'justify-center px-0 ml-0' : '',
+            ]">
+            <Plus
               :size="22"
               class="shrink-0"
-              :stroke-width="isPlatformActive(platform.path) ? 2.5 : 2" />
+              :stroke-width="isActive('/connections') ? 2.5 : 2" />
             <span
               v-if="!isCollapsed"
               :class="[
                 'font-black uppercase text-sm',
-                isPlatformActive(platform.path) ? 'text-black' : '',
+                isActive('/connections') ? 'text-black' : '',
               ]">
-              {{ platform.name }}
+              Add Platform
             </span>
 
             <!-- Tooltip for collapsed state -->
             <div
               v-if="isCollapsed"
               class="absolute left-16 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-brutal-sm">
-              {{ platform.name }}
+              Add Platform
             </div>
           </button>
-        </template>
-
-        <!-- Add Platform Button -->
-        <button
-          @click="navigateTo('/connections')"
-          :class="[
-            'sub-nav-item w-full transition-all relative border-dashed border-black/30',
-            isActive('/connections') ? 'active' : '',
-            isCollapsed ? 'justify-center px-0 ml-0' : '',
-          ]">
-          <Plus
-            :size="22"
-            class="shrink-0"
-            :stroke-width="isActive('/connections') ? 2.5 : 2" />
-          <span
-            v-if="!isCollapsed"
-            :class="[
-              'font-black uppercase text-sm',
-              isActive('/connections') ? 'text-black' : '',
-            ]">
-            Add Platform
-          </span>
-
-          <!-- Tooltip for collapsed state -->
-          <div
-            v-if="isCollapsed"
-            class="absolute left-16 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-brutal-sm">
-            Add Platform
-          </div>
-        </button>
+        </div>
       </div>
 
       <!-- Tools Section -->
       <div class="pt-2">
-        <p
+        <button
           v-if="!isCollapsed"
-          class="text-sm font-black text-black/40 dark:text-electric/60 uppercase tracking-widest mb-3 px-3">
+          @click="toggleTools"
+          class="flex items-center justify-between w-full text-sm font-black text-black/40 dark:text-electric/60 uppercase tracking-widest mb-3 px-3 hover:text-black dark:hover:text-white transition-colors">
+          <span>Tools</span>
+          <ChevronDown
+            :size="16"
+            class="transition-transform duration-200"
+            :class="{ '-rotate-90': !isToolsOpen }" />
+        </button>
+        <p
+          v-else
+          class="text-center text-[10px] font-black text-black/40 dark:text-electric/60 uppercase mb-2">
           Tools
         </p>
 
-        <template v-for="item in toolsItems" :key="item.path">
-          <button
-            @click="navigateTo(item.path)"
-            :class="[
-              'nav-item w-full',
-              isActive(item.path) ? 'active' : '',
-              isCollapsed ? 'justify-center px-0' : '',
-            ]">
-            <component
-              :is="item.icon"
-              :size="24"
-              class="shrink-0"
-              :stroke-width="isActive(item.path) ? 2.5 : 2" />
-            <span
-              v-if="!isCollapsed"
+        <div
+          v-show="isToolsOpen || isCollapsed"
+          class="transition-all duration-300 overflow-hidden"
+          :class="{
+            'opacity-100 max-h-[500px]': isToolsOpen || isCollapsed,
+            'opacity-0 max-h-0': !isToolsOpen && !isCollapsed,
+          }">
+          <template v-for="item in toolsItems" :key="item.path">
+            <button
+              @click="navigateTo(item.path)"
               :class="[
-                'font-black uppercase text-sm',
-                isActive(item.path) ? 'text-black' : '',
+                'group nav-item w-full',
+                isActive(item.path) ? 'active' : '',
+                isCollapsed ? 'justify-center px-0' : '',
               ]">
-              {{ item.name }}
-            </span>
+              <component
+                :is="item.icon"
+                :size="24"
+                class="shrink-0"
+                :stroke-width="isActive(item.path) ? 2.5 : 2" />
+              <span
+                v-if="!isCollapsed"
+                :class="[
+                  'font-black uppercase text-sm',
+                  isActive(item.path) ? 'text-black' : '',
+                ]">
+                {{ item.name }}
+              </span>
 
-            <!-- Badge -->
-            <span
-              v-if="item.badge && !isCollapsed"
-              class="ml-auto bg-black text-white text-xs font-black px-2.5 py-1 rounded-full border-2 border-black">
-              {{ item.badge }}
-            </span>
+              <!-- Badge -->
+              <span
+                v-if="item.badge && !isCollapsed"
+                class="ml-auto bg-black text-white text-xs font-black px-2.5 py-1 rounded-full border-2 border-black">
+                {{ item.badge }}
+              </span>
 
-            <!-- Tooltip for collapsed state -->
-            <div
-              v-if="isCollapsed"
-              class="absolute left-16 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-brutal-sm">
-              {{ item.name }}
-            </div>
-          </button>
-        </template>
+              <!-- Tooltip for collapsed state -->
+              <div
+                v-if="isCollapsed"
+                class="absolute left-16 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-brutal-sm">
+                {{ item.name }}
+              </div>
+            </button>
+          </template>
+        </div>
       </div>
     </nav>
 
@@ -314,7 +367,7 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
       <button
         @click="navigateTo(settingsItem.path)"
         :class="[
-          'nav-item w-full',
+          'group nav-item w-full',
           isActive(settingsItem.path) ? 'active' : '',
           isCollapsed ? 'justify-center px-0' : '',
         ]">

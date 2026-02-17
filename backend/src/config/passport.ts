@@ -1,10 +1,8 @@
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { PrismaClient } from '@prisma/client';
+import prisma from './prisma';
 import bcrypt from 'bcryptjs';
-
-const prisma = new PrismaClient();
 
 // Serialize user for session (or JWT payload building)
 passport.serializeUser((user: any, done) => {

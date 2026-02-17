@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 import { Bar } from "vue-chartjs";
 import { useTheme } from "@/composables/useTheme";
+import { formatNumber } from "@/utils/format";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -69,13 +70,6 @@ const displayedVideos = computed(() => {
 const truncateTitle = (title: string, maxLength: number = 30): string => {
   if (!title || title.length <= maxLength) return title;
   return title.substring(0, maxLength) + "...";
-};
-
-const formatNumber = (num: number): string => {
-  if (!num) return "0";
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-  return num.toString();
 };
 
 const chartData = computed(() => {
@@ -201,7 +195,7 @@ const toggleSortDirection = () => {
         <button
           @click="toggleSortDirection"
           class="bg-slate-50 dark:bg-navy border-neo-3 border-black dark:border-electric neo-shadow-hard-sm text-sm font-semibold text-slate-600 dark:text-white py-2 px-4 cursor-pointer outline-none brutal-hover-lift flex items-center gap-2">
-          {{ sortDirection === "asc" ? "↓ Ascending" : "↓ Descending" }}
+          {{ sortDirection === "asc" ? "↑ Ascending" : "↓ Descending" }}
         </button>
       </div>
     </div>
@@ -247,7 +241,7 @@ const toggleSortDirection = () => {
             class="text-right min-w-[80px] flex flex-col justify-center items-end">
             <p
               class="text-xl font-mono font-black text-slate-900 dark:text-white">
-              {{ formatNumber(video.view_count || 0) }}
+              {{ formatNumber(video[sortBy === 'views' ? 'view_count' : sortBy === 'likes' ? 'like_count' : sortBy === 'shares' ? 'share_count' : 'view_count'] || 0) }}
             </p>
             <p
               class="text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">
@@ -265,7 +259,8 @@ const toggleSortDirection = () => {
 </template>
 
 <style scoped>
-.truncate {
+/* Custom line clamp utility - renamed to avoid conflict with Tailwind's .truncate */
+.line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;

@@ -12,19 +12,12 @@ const handleLogin = async (data: {
   password: string;
   rememberMe: boolean;
 }) => {
-  // Bypass backend auth for now
-  const mockUser = {
-    id: "dev_user",
-    email: data.email,
-    name: "Dev User",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik",
-  };
-
-  localStorage.setItem("token", "mock-token-123");
-  localStorage.setItem("user", JSON.stringify(mockUser));
-  authStore.setAuth(mockUser, "mock-token-123");
-
-  router.push("/dashboard");
+  try {
+    await authStore.login(data.email, data.password);
+    router.push("/dashboard");
+  } catch (error) {
+    console.error('Login failed:', error);
+  }
 };
 
 const handleGoogleLogin = () => {
@@ -32,11 +25,11 @@ const handleGoogleLogin = () => {
 };
 
 const handleForgotPassword = () => {
-  console.log("Forgot password clicked");
+  // TODO: Implement forgot password flow
 };
 
 const handleSignup = () => {
-  console.log("Signup clicked");
+  // TODO: Implement signup flow
 };
 </script>
 
@@ -127,7 +120,7 @@ const handleSignup = () => {
           class="md:hidden mt-12 w-full pt-8 border-t-[3px] border-black/10 text-center">
           <p
             class="text-[10px] font-black uppercase tracking-widest text-gray-400">
-            © 2024 Gelitik Lab. All rights reserved.
+            © {{ new Date().getFullYear() }} Gelitik Lab. All rights reserved.
           </p>
           <div class="mt-3 flex justify-center gap-4">
             <router-link

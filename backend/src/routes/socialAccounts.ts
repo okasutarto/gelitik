@@ -1,10 +1,10 @@
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/prisma';
 import { TikTokService } from '../services/tiktokService';
 import { authenticateJwt } from '../middleware/auth.middleware';
+import { FRONTEND_URL } from '../config/env';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 const tiktokService = new TikTokService();
 
 // Get TikTok authorization URL
@@ -24,29 +24,34 @@ router.get('/tiktok/auth-url', authenticateJwt, (req, res) => {
 });
 
 // Handle TikTok OAuth callback
+// SECURITY NOTE: Tokens are passed in URL query params here.
+// For production, this should use session-based token handling or
+// short-lived temporary codes to avoid exposing tokens in logs/history.
 router.get('/tiktok/callback', async (req, res) => {
   const { code, state, error } = req.query;
 
   if (error) {
-    return res.redirect(`${process.env.FRONTEND_URL}/auth/error?error=${error}`);
+    return res.redirect(`${FRONTEND_URL}/auth/error?error=${error}`);
   }
 
   if (!code) {
-    return res.redirect(`${process.env.FRONTEND_URL}/auth/error?error=missing_code`);
+    return res.redirect(`${FRONTEND_URL}/auth/error?error=missing_code`);
   }
 
   try {
     const tokenData = await tiktokService.exchangeCodeForToken(code as string);
     const userInfo = await tiktokService.getUserInfo(tokenData.access_token);
 
-    res.redirect(`${process.env.FRONTEND_URL}/auth/tiktok/callback?` +
+    // Pass tokens via URL (security concern - see note above)
+    // TODO: Implement session-based token handling for production
+    res.redirect(`${FRONTEND_URL}/auth/tiktok/callback?` +
       `access_token=${tokenData.access_token}` +
       `&refresh_token=${tokenData.refresh_token || ''}` +
       `&expires_in=${tokenData.expires_in}` +
       `&user_id=${userInfo.open_id}` +
-      `&display_name=${userInfo.display_name}`);
+      `&display_name=${encodeURIComponent(userInfo.display_name)}`);
   } catch (error) {
-    res.redirect(`${process.env.FRONTEND_URL}/auth/error?error=token_exchange_failed`);
+    res.redirect(`${FRONTEND_URL}/auth/error?error=token_exchange_failed`);
   }
 });
 

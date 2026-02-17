@@ -49,7 +49,7 @@ const monthYear = computed(() => {
     <!-- Actions -->
     <div class="flex items-center gap-3 w-full sm:w-auto">
       <button
-        class="hidden md:flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border-neo-3 border-black text-slate-600 dark:text-slate-300 text-sm font-bold hover:bg-neo-accent hover:-translate-y-1">
+        class="hidden md:flex items-center gap-2 px-4 py-2 bg-white dark:bg-navy border-neo-3 border-black dark:border-electric text-slate-600 dark:text-slate-300 text-sm font-bold brutal-hover-lift">
         <Filter :size="16" />
         Filter
       </button>

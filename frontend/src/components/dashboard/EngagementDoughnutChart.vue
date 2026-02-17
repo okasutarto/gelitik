@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { Doughnut } from "vue-chartjs";
 import { useTheme } from "@/composables/useTheme";
+import { formatNumber } from "@/utils/format";
 import {
   Chart as ChartJS,
   Tooltip,
@@ -69,10 +70,6 @@ const chartData = computed(() => {
     ],
   };
 });
-
-const formatNumber = (value: number) => {
-  return value?.toLocaleString() || "0";
-};
 
 const chartOptions = computed(() => ({
   responsive: true,

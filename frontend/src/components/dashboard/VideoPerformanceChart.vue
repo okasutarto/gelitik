@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { Bar, Line } from "vue-chartjs";
+import { formatNumber } from "@/utils/format";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -52,13 +53,6 @@ const hasVideoData = computed(() => {
 const truncateTitle = (title: string, maxLength: number = 20): string => {
   if (!title || title.length <= maxLength) return title;
   return title.substring(0, maxLength) + "...";
-};
-
-const formatNumber = (num: number): string => {
-  if (!num) return "0";
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-  return num.toString();
 };
 
 const chartData = computed(() => {

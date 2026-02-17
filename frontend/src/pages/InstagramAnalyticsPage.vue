@@ -10,6 +10,7 @@ import TopCitiesPanel from "@/components/dashboard/TopCitiesPanel.vue";
 import AgeRangePanel from "@/components/dashboard/AgeRangePanel.vue";
 import { usePlatformAnalytics } from "@/composables/usePlatformAnalytics";
 import { useRouter } from "vue-router";
+import { formatNumber } from "@/utils/format";
 
 const router = useRouter();
 const { loading, accountData, fetchAnalytics } =
@@ -54,12 +55,6 @@ const instagramStats = computed(() => {
     },
   ];
 });
-
-const formatNumber = (num: number): string => {
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-  return num.toString();
-};
 
 onMounted(() => {
   fetchAnalytics().catch((err) => {

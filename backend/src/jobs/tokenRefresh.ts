@@ -1,9 +1,8 @@
 import cron from 'node-cron';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/prisma';
 import { InstagramService } from '../services/instagram.service';
 import { TikTokService } from '../services/tiktokService';
 
-const prisma = new PrismaClient();
 const instagramService = new InstagramService();
 const tiktokService = new TikTokService();
 

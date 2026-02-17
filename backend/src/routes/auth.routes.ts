@@ -3,18 +3,20 @@ import passport from 'passport';
 import jwt from 'jsonwebtoken';
 import { AuthController } from '../controllers/auth.controller';
 import { authenticateJwt } from '../middleware/auth.middleware';
+import { validate, schemas } from '../middleware/validation';
 import { InstagramService } from '../services/instagram.service';
 import { TikTokService } from '../services/tiktokService';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/prisma';
+import { JWT_SECRET, FRONTEND_URL } from '../config/env';
+import { generateOAuthState, validateOAuthState } from '../config/oauthState';
 
 const router = Router();
-const prisma = new PrismaClient();
 const instagramService = new InstagramService();
 const tiktokService = new TikTokService();
 
 // === User Authentication ===
-router.post('/register', AuthController.register);
-router.post('/login', AuthController.login);
+router.post('/register', validate(schemas.register), AuthController.register);
+router.post('/login', validate(schemas.login), AuthController.login);
 router.get('/me', authenticateJwt, AuthController.getMe);
 
 // Google Auth
@@ -27,8 +29,8 @@ router.get('/google', (req, res, next) => {
 
 router.get('/google/callback', passport.authenticate('google', { session: false, failureRedirect: '/login' }), (req, res) => {
     const user = req.user as any;
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'your-secret-key', { expiresIn: '7d' });
-    res.redirect(`${process.env.FRONTEND_URL}/login?token=${token}`);
+    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
+    res.redirect(`${FRONTEND_URL}/login?token=${token}`);
 });
 
 // === Platform Connection (Protected) ===
@@ -37,13 +39,10 @@ router.get('/:platform/connect', authenticateJwt, (req, res) => {
     const { platform } = req.params;
     const userId = (req.user as any)?.id;
 
-    console.log(`[${platform.toUpperCase()} Connect] Request received`, { userId, platform });
-
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    // State carries userId to callback to link account
-    const state = JSON.stringify({ userId, platform });
-    console.log(`[${platform.toUpperCase()} Connect] State:`, state);
+    // Generate secure OAuth state with CSRF protection
+    const state = generateOAuthState(userId, platform);
 
     let authUrl;
     if (platform === 'instagram') {
@@ -54,8 +53,6 @@ router.get('/:platform/connect', authenticateJwt, (req, res) => {
         return res.status(400).json({ error: 'Unsupported platform' });
     }
 
-    console.log(`[${platform.toUpperCase()} Connect] Auth URL:`, authUrl);
-
     // Return authUrl as JSON for frontend to handle redirect
     res.json({ success: true, data: { authUrl } });
 });
@@ -65,10 +62,19 @@ router.get('/:platform/callback', async (req, res) => {
     const { platform } = req.params;
     const { code, state, error } = req.query;
 
-    console.log(`[${platform.toUpperCase()} Callback]`, { code: code ? 'present' : 'missing', state, error });
+    // Validate OAuth state for CSRF protection
+    const stateData = typeof state === 'string' ? validateOAuthState(state) : null;
+    if (!stateData) {
+        return res.redirect(`${FRONTEND_URL}/auth/error?error=invalid_state`);
+    }
+
+    // Verify platform matches
+    if (stateData.platform !== platform) {
+        return res.redirect(`${FRONTEND_URL}/auth/error?error=platform_mismatch`);
+    }
 
     if (!code || typeof code !== 'string') {
-        return res.status(400).json({ error: 'No authorization code provided' });
+        return res.redirect(`${FRONTEND_URL}/auth/error?error=missing_code`);
     }
 
     try {
@@ -77,20 +83,11 @@ router.get('/:platform/callback', async (req, res) => {
             result = await instagramService.exchangeCode(code);
         } else if (platform === 'tiktok') {
             result = await tiktokService.exchangeCode(code);
-            console.log('[TikTok] Exchange result:', result);
         } else {
             throw new Error('Unsupported platform');
         }
 
-        const stateData = state ? JSON.parse(String(state)) : {};
         const userId = stateData.userId;
-
-        console.log(`[${platform.toUpperCase()}] User ID from state:`, userId);
-
-        if (!userId) {
-            console.error(`[${platform.toUpperCase()}] No userId in state`);
-            return res.status(400).json({ error: 'Session lost during auth' });
-        }
 
         const account = await prisma.socialAccount.upsert({
             where: {
@@ -125,11 +122,9 @@ router.get('/:platform/callback', async (req, res) => {
             }
         });
 
-        console.log(`[${platform.toUpperCase()}] Account saved:`, account.id);
-        res.redirect(`${process.env.FRONTEND_URL}/dashboard/${platform}`);
+        res.redirect(`${FRONTEND_URL}/dashboard/${platform}`);
 
     } catch (error) {
-        console.error('Auth Error:', error);
         let errorMsg = 'Unknown error';
         if (error instanceof Error) {
             errorMsg = error.message;
@@ -138,7 +133,7 @@ router.get('/:platform/callback', async (req, res) => {
         } else if (error && typeof (error as any).message === 'string') {
             errorMsg = (error as any).message;
         }
-        res.redirect(`${process.env.FRONTEND_URL}/connections?error=${encodeURIComponent(errorMsg)}`);
+        res.redirect(`${FRONTEND_URL}/connections?error=${encodeURIComponent(errorMsg)}`);
     }
 });
 

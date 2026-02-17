@@ -39,11 +39,15 @@ jobs:
             exit 0
           fi
 
-          # Get diff content - limit to first 5000 chars to avoid too large
-          DIFF_CONTENT=$(head -c 5000 pr_diff.txt)
+          # Get diff content - limit to first 3000 chars to avoid too large
+          DIFF_CONTENT=$(head -c 3000 pr_diff.txt | jq -Rs .)
 
-          # Build JSON payload - escape content properly
-          printf '{"model": "M2-her", "messages": [{"role": "system", "content": "Kamu adalah Senior Architect & Code Reviewer. Berikan review untuk perubahan kode berikut. Fokus pada modularitas Vue 3 dan potensi bug."}, {"role": "user", "content": "%s"}]}' "$DIFF_CONTENT" > request_body.json
+          # Build JSON payload using jq to properly escape
+          jq -n \
+            --arg model "M2-her" \
+            --arg system "Kamu adalah Senior Architect & Code Reviewer. Berikan review untuk perubahan kode berikut. Fokus pada modularitas Vue 3 dan potensi bug." \
+            --arg user "$DIFF_CONTENT" \
+            '{model: $model, messages: [{role: "system", content: $system}, {role: "user", content: $user}]}' > request_body.json
 
           # MiniMax API - correct endpoint
           curl -s --location "https://api.minimax.io/v1/text/chatcompletion_v2" \

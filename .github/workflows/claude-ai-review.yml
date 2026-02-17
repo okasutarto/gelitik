@@ -29,13 +29,18 @@ jobs:
       - name: Get Review from MiniMax
         env:
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          GROUP_ID: ${{ secrets.MINIMAX_GROUP_ID }}
         run: |
-          # Membaca diff dan menyiapkan payload JSON
+          # Skip if API key is not configured
+          if [ -z "$MINIMAX_API_KEY" ]; then
+            echo '{"choices":[{"message":{"content":"## AI Code Review\n\nMiniMax API key not configured. Skipping AI review."}}]}' > minimax_response.json
+            exit 0
+          fi
+
+          # Membaca diff dan siapkan payload JSON
           DIFF_CONTENT=$(cat pr_diff.txt | jq -sR .)
 
-          # MiniMax v2 API dengan group_id di query parameter
-          curl --location "https://api.minimax.chat/v1/text/chatcompletion_v2.5?GroupId=$GROUP_ID" \
+          # MiniMax v2.5 API - tanpa GroupId di URL
+          curl -s --location "https://api.minimax.chat/v1/text/chatcompletion_v2.5" \
           --header "Content-Type: application/json" \
           --header "Authorization: Bearer $MINIMAX_API_KEY" \
           --data "{
@@ -54,20 +59,16 @@ jobs:
 
       - name: Format & Post Comment
         run: |
-          # Debug: Tampilkan response untuk troubleshooting
-          echo "=== MiniMax Response ===" && cat minimax_response.json
-
-          # Ekstrak teks review - coba berbagai format, fallback ke manual
-          REVIEW=$(cat minimax_response.json | jq -r '.choices[0].message.content' 2>/dev/null)
-          if [ -z "$REVIEW" ] || [ "$REVIEW" = "null" ]; then
-            REVIEW=$(cat minimax_response.json | jq -r '.choices[0].text' 2>/dev/null)
-          fi
-          if [ -z "$REVIEW" ] || [ "$REVIEW" = "null" ]; then
-            REVIEW=$(cat minimax_response.json | jq -r '.output_text' 2>/dev/null)
-          fi
-          if [ -z "$REVIEW" ] || [ "$REVIEW" = "null" ]; then
-            REVIEW="## AI Code Review\n\nReview generation in progress. Check API configuration."
+          # Skip if response is error
+          if grep -q "404\|error\|not found" minimax_response.json; then
+            echo "## AI Code Review\n\n⚠️ MiniMax API not available. Please configure API key." > review_output.md
+          else
+            # Ekstrak teks review
+            REVIEW=$(cat minimax_response.json | jq -r '.choices[0].message.content // .choices[0].text // .output_text // empty' 2>/dev/null)
+            if [ -z "$REVIEW" ] || [ "$REVIEW" = "null" ]; then
+              REVIEW="## AI Code Review\n\nUnable to parse review response."
+            fi
+            echo -e "$REVIEW" > review_output.md
           fi
 
-          echo -e "$REVIEW" > review_output.md
           gh pr comment ${{ github.event.pull_request.number }} --body-file review_output.md

@@ -64,12 +64,27 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Skip if response is error
-          if grep -q "404\|error\|not found" minimax_response.json; then
+          # Debug: Show raw response
+          echo "=== Raw Response ==="
+          cat minimax_response.json
+
+          # Check if valid JSON first
+          if ! jq empty minimax_response.json 2>/dev/null; then
+            echo "## AI Code Review\n\n⚠️ Invalid API response. Check API configuration." > review_output.md
+          elif grep -q "404\|error\|not found\|invalid" minimax_response.json; then
             echo "## AI Code Review\n\n⚠️ MiniMax API not available. Please configure API key." > review_output.md
           else
-            # Ekstrak teks review
-            REVIEW=$(cat minimax_response.json | jq -r '.choices[0].message.content // .choices[0].text // .output_text // empty' 2>/dev/null)
+            # Try to extract review from various response formats
+            set +e
+            REVIEW=$(cat minimax_response.json | jq -r '.choices[0].message.content' 2>/dev/null)
+            if [ -z "$REVIEW" ] || [ "$REVIEW" = "null" ]; then
+              REVIEW=$(cat minimax_response.json | jq -r '.choices[0].text' 2>/dev/null)
+            fi
+            if [ -z "$REVIEW" ] || [ "$REVIEW" = "null" ]; then
+              REVIEW=$(cat minimax_response.json | jq -r '.output_text' 2>/dev/null)
+            fi
+            set -e
+
             if [ -z "$REVIEW" ] || [ "$REVIEW" = "null" ]; then
               REVIEW="## AI Code Review\n\nUnable to parse review response."
             fi

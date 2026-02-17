@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { Loader2 } from "lucide-vue-next";
 
+// AppButton - Neo-brutalist styled button component
 interface Props {
   variant?: "primary" | "secondary" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";

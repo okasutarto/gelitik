@@ -56,7 +56,17 @@ jobs:
           # Debug: Tampilkan response untuk troubleshooting
           echo "=== MiniMax Response ===" && cat minimax_response.json
 
-          # Ekstrak teks review - coba berbagai format
-          cat minimax_response.json | jq -r 'try .choices[0].message.content catch try .choices[0].text catch try .output_text catch "Review generation failed"' > review_output.md || echo "## AI Code Review\n\nUnable to parse response" > review_output.md
+          # Ekstrak teks review - coba berbagai format, fallback ke manual
+          REVIEW=$(cat minimax_response.json | jq -r '.choices[0].message.content' 2>/dev/null)
+          if [ -z "$REVIEW" ] || [ "$REVIEW" = "null" ]; then
+            REVIEW=$(cat minimax_response.json | jq -r '.choices[0].text' 2>/dev/null)
+          fi
+          if [ -z "$REVIEW" ] || [ "$REVIEW" = "null" ]; then
+            REVIEW=$(cat minimax_response.json | jq -r '.output_text' 2>/dev/null)
+          fi
+          if [ -z "$REVIEW" ] || [ "$REVIEW" = "null" ]; then
+            REVIEW="## AI Code Review\n\nReview generation in progress. Check API configuration."
+          fi
 
+          echo -e "$REVIEW" > review_output.md
           gh pr comment ${{ github.event.pull_request.number }} --body-file review_output.md

@@ -1,0 +1,58 @@
+name: AI Code Review (MiniMax)
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate PR Diff
+        run: |
+          # Ambil PR number dari event
+          PR_NUM=${{ github.event.pull_request.number }}
+
+          # Generate diff dalam format yang bisa dibaca AI
+          # Kita ambil semua file yang berubah (modified, added, deleted)
+          git diff --name-status HEAD~1..HEAD > pr_diff.txt
+
+          # Tambahkan konteks file yang diubah
+          echo "\n--- File Changed ---\n" >> pr_diff.txt
+          git diff --no-prefix HEAD~1..HEAD >> pr_diff.txt
+
+      - name: Get Review from MiniMax
+        env:
+          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+          GROUP_ID: ${{ secrets.MINIMAX_GROUP_ID }}
+        run: |
+          # Membaca diff dan menyiapkan payload JSON
+          DIFF_CONTENT=$(cat pr_diff.txt | jq -sR .)
+
+          curl --location "https://api.minimax.chat/v1/text_generation_v2" \
+          --header "Content-Type: application/json" \
+          --header "Authorization: Bearer $MINIMAX_API_KEY" \
+          --data "{
+            \"model\": \"abab6.5s-chat\", 
+            \"messages\": [
+              {
+                \"role\": \"system\",
+                \"content\": \"Kamu adalah Senior Architect & Code Reviewer. Berikan review untuk perubahan kode berikut. Fokus pada modularitas Vue 3 dan potensi bug.\"
+              },
+              {
+                \"role\": \"user\",
+                \"content\": $DIFF_CONTENT
+              }
+            ]
+          }" > minimax_response.json
+
+      - name: Format & Post Comment
+        run: |
+          # Ekstrak teks review dari response JSON
+          cat minimax_response.json | jq -r '.choices[0].message.content' > review_output.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file review_output.md

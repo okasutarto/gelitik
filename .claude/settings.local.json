@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"D:/Personal Project/gelitik\" diff --stat)",
+      "Bash(git -C \"D:/Personal Project/gelitik\" status)",
+      "Bash(git -C \"D:/Personal Project/gelitik\" diff --stat HEAD -- frontend/)",
+      "Bash(npm run build)",
+      "Bash(git -C \"D:/Personal Project/gelitik\" log --oneline -5)",
+      "Bash(git -C \"D:/Personal Project/gelitik\" add frontend/src/stores/auth.ts frontend/src/composables/useTheme.ts frontend/src/composables/useToast.ts frontend/src/composables/useVideoAnalytics.ts frontend/src/composables/usePlatformAnalytics.ts frontend/src/components/dashboard/VideoDetailModal.vue frontend/src/components/dashboard/ContentTable.vue frontend/src/components/dashboard/DualChartDashboard.vue frontend/src/components/dashboard/EngagementDoughnutChart.vue frontend/src/components/dashboard/TopVideosChart.vue frontend/src/components/schedule/CreatePostModal.vue frontend/src/pages/ConnectionsPage.vue frontend/src/pages/TikTokAnalyticsPage.vue frontend/src/pages/InstagramAnalyticsPage.vue frontend/src/router/index.ts)",
+      "Bash(git -C:*)",
+      "Bash(gh -C:*)",
+      "Bash(where gh)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)",
+      "WebFetch(domain:github.com)"
+    ]
+  }
+}

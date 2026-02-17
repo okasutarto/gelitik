@@ -23,7 +23,8 @@
       "Bash(gh run list:*)",
       "Bash(gh secret list:*)",
       "Bash(gh api:*)",
-      "Bash(~/.claude/hooks/auto-pr-review.sh:*)"
+      "Bash(~/.claude/hooks/auto-pr-review.sh:*)",
+      "Bash(unset:*)"
     ]
   }
 }

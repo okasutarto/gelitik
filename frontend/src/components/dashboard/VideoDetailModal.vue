@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
+import { computed, watch } from "vue";
 import {
   X,
   Eye,
@@ -28,11 +28,11 @@ const emit = defineEmits<{
 
 const { loading, videoData, fetchVideoDetail } = useVideoAnalytics();
 
-const engagementRate = computed(() => {
+const engagementRate = computed((): number => {
   if (!videoData.value) return 0;
   const { views, likes, comments, shares } = videoData.value;
   if (views === 0) return 0;
-  return (((likes + comments + shares) / views) * 100).toFixed(1);
+  return parseFloat((((likes + comments + shares) / views) * 100).toFixed(1));
 });
 
 const formatDate = (timestamp: number): string => {
@@ -44,11 +44,15 @@ const formatDate = (timestamp: number): string => {
   });
 };
 
-onMounted(() => {
-  if (props.isOpen) {
-    fetchVideoDetail(props.platform, props.videoId);
-  }
-});
+watch(
+  () => [props.videoId, props.isOpen] as const,
+  ([newVideoId, newIsOpen]) => {
+    if (newIsOpen && newVideoId) {
+      fetchVideoDetail(props.platform, newVideoId);
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>

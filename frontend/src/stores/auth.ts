@@ -10,9 +10,19 @@ interface User {
 }
 
 export const useAuthStore = defineStore('auth', () => {
-    const user = ref<User | null>(JSON.parse(localStorage.getItem('user') || 'null'))
+    const user = ref<User | null>((() => {
+        try {
+            const stored = localStorage.getItem('user')
+            if (!stored || stored === 'null') return null
+            return JSON.parse(stored) as User
+        } catch {
+            localStorage.removeItem('user')
+            return null
+        }
+    })())
     const token = ref<string | null>(localStorage.getItem('token'))
     const isAuthenticated = computed(() => !!token.value)
+    const isLoading = ref(false)
 
     const setAuth = (newUser: User, newToken: string) => {
         user.value = newUser
@@ -22,15 +32,31 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     const login = async (email: string, password: string) => {
-        const { data } = await api.post('/auth/login', { email, password })
-        setAuth(data.user, data.token)
-        return true
+        isLoading.value = true
+        try {
+            const { data } = await api.post('/auth/login', { email, password })
+            setAuth(data.user, data.token)
+            return { success: true }
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Login failed'
+            return { success: false, error: message }
+        } finally {
+            isLoading.value = false
+        }
     }
 
     const register = async (email: string, password: string, name: string) => {
-        const { data } = await api.post('/auth/register', { email, password, name })
-        setAuth(data.user, data.token)
-        return true
+        isLoading.value = true
+        try {
+            const { data } = await api.post('/auth/register', { email, password, name })
+            setAuth(data.user, data.token)
+            return { success: true }
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Registration failed'
+            return { success: false, error: message }
+        } finally {
+            isLoading.value = false
+        }
     }
 
     const logout = () => {
@@ -59,6 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
         user,
         token,
         isAuthenticated,
+        isLoading,
         login,
         register,
         logout,

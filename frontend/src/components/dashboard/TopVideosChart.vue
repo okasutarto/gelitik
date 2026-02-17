@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import { Bar } from "vue-chartjs";
 import { useTheme } from "@/composables/useTheme";
 import { formatNumber } from "@/utils/format";
+import type { Video } from "@/types/video";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,6 +12,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  type TooltipItem,
 } from "chart.js";
 
 ChartJS.register(
@@ -23,7 +25,7 @@ ChartJS.register(
 );
 
 interface Props {
-  videos?: any[];
+  videos?: Video[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -123,11 +125,11 @@ const chartOptions = computed(() => ({
       borderColor: isDark.value ? "#00F0FF" : "transparent",
       borderWidth: isDark.value ? 1 : 0,
       callbacks: {
-        title: (tooltipItems: any) => {
+        title: (tooltipItems: TooltipItem<'bar'>[]) => {
           const video = displayedVideos.value[tooltipItems[0].dataIndex];
           return video ? truncateTitle(video.video_description || "", 50) : "";
         },
-        label: (context: any) => {
+        label: (context: TooltipItem<'bar'>) => {
           const video = displayedVideos.value[context.dataIndex];
           if (!video) return "";
           const value = context.parsed.y;

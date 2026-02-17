@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import type { Platform } from "@/composables/usePlatform";
+import type { Platform } from "@/types/platform";
+import type { Video } from "@/types/video";
 import VideoDetailModal from "./VideoDetailModal.vue";
 import { formatNumber } from "@/utils/format";
 
 interface Props {
   platform?: Platform;
-  videos?: any[];
-}
+  videos?: Video[];
+};
 
 const props = withDefaults(defineProps<Props>(), {
   platform: "all",
@@ -28,7 +29,7 @@ const closeModal = () => {
   selectedVideoId.value = null;
 };
 
-const calculateEngagementRate = (video: any): number => {
+const calculateEngagementRate = (video: Video | { views?: number; likes?: number; comments?: number; shares?: number }): number => {
   const views = video.views || 0;
   const likes = video.likes || 0;
   const comments = video.comments || 0;
@@ -44,7 +45,8 @@ const calculateEngagementRate = (video: any): number => {
   return rate;
 };
 
-const formatTimeAgo = (createTime: string): string => {
+const formatTimeAgo = (createTime: string | number | undefined): string => {
+  if (!createTime) return "Unknown";
   if (!createTime) return "Unknown";
   const now = new Date();
   const created = new Date(createTime);
@@ -60,7 +62,7 @@ const formatTimeAgo = (createTime: string): string => {
 
 const filteredContent = computed(() => {
   if (props.videos && props.videos.length > 0) {
-    return props.videos.map((video: any) => ({
+    return props.videos.map((video: Video) => ({
       id: video.id,
       title: video.video_description || "Untitled",
       thumbnail:
@@ -83,7 +85,7 @@ const hasVideoData = computed(() => {
   return (
     props.videos &&
     props.videos.length > 0 &&
-    props.videos.some((v: any) => v.view_count > 0)
+    props.videos.some((v: Video) => (v.view_count || 0) > 0)
   );
 });
 
@@ -127,7 +129,8 @@ const formatDuration = (seconds: number): string => {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
 
-const formatDate = (timestamp: number): string => {
+const formatDate = (timestamp: string | number): string => {
+  if (!timestamp) return "Unknown";
   const timestampNum =
     typeof timestamp === "string" ? parseInt(timestamp, 10) : timestamp;
   const date = new Date(timestampNum * 1000);
@@ -277,10 +280,10 @@ const formatDate = (timestamp: number): string => {
           </div>
           <div class="flex flex-col justify-center items-end text-right">
             <span class="text-lg font-bold text-slate-900 dark:text-white">{{
-              item.reach
+              item.views
             }}</span>
             <span class="text-xs text-slate-500 dark:text-slate-400 font-medium"
-              >Reach</span
+              >Views</span
             >
           </div>
         </div>

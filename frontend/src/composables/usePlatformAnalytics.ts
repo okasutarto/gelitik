@@ -1,32 +1,13 @@
 import { ref } from 'vue'
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
+import type { PlatformAnalytics, PlatformData } from '@/types/analytics'
+import type { AxiosError } from 'axios'
 
-export interface PlatformAnalytics {
-  followers: number
-  following: number
-  totalLikes: number
-  totalComments: number
-  totalShares: number
-  totalViews: number
-  engagementRate: number
-}
+export type { PlatformAnalytics, PlatformData } from '@/types/analytics'
 
-export interface AccountInfo {
-  id: string
-  platform: string
-  displayName: string
-  username: string
-  avatar?: string
-}
-
-export interface PlatformData {
-  account: AccountInfo
-  data: {
-    userInfo?: any
-    videos?: any[]
-    analytics?: PlatformAnalytics
-  }
+function isAxiosError(error: unknown): error is AxiosError {
+  return typeof error === 'object' && error !== null && 'isAxiosError' in error
 }
 
 export function usePlatformAnalytics(platform: string) {
@@ -41,8 +22,12 @@ export function usePlatformAnalytics(platform: string) {
       error.value = null
       const { data } = await api.get(`/api/analytics/${platform}`)
       accountData.value = data
-    } catch (err: any) {
-      error.value = err.response?.data?.error || 'Failed to fetch analytics'
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        error.value = err.response?.data?.error || 'Failed to fetch analytics'
+      } else {
+        error.value = 'Failed to fetch analytics'
+      }
       console.error('Analytics fetch error:', err)
     } finally {
       loading.value = false
@@ -53,7 +38,7 @@ export function usePlatformAnalytics(platform: string) {
     try {
       const { data } = await api.get('/api/analytics/overview')
       return data
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Overview fetch error:', err)
       throw err
     }

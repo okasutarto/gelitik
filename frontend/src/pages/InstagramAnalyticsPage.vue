@@ -11,8 +11,10 @@ import AgeRangePanel from "@/components/dashboard/AgeRangePanel.vue";
 import { usePlatformAnalytics } from "@/composables/usePlatformAnalytics";
 import { useRouter } from "vue-router";
 import { formatNumber } from "@/utils/format";
+import { useToast } from "@/composables/useToast";
 
 const router = useRouter();
+const toast = useToast();
 const { loading, accountData, fetchAnalytics } =
   usePlatformAnalytics("instagram");
 
@@ -59,7 +61,7 @@ const instagramStats = computed(() => {
 onMounted(() => {
   fetchAnalytics().catch((err) => {
     if ((err as any)?.response?.status === 404) {
-      alert(
+      toast.error(
         "Instagram account not connected. Please connect your account first.",
       );
       router.push("/connections");

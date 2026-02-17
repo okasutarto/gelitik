@@ -11,11 +11,13 @@ import {
   Filler,
   ArcElement,
 } from "chart.js";
+import type { TooltipItem } from "chart.js";
+import type { Video } from "@/types/video";
 
 ChartJS.register(Tooltip, Legend, Title, Filler, ArcElement);
 
 interface Props {
-  videos?: any[];
+  videos?: Video[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -106,7 +108,7 @@ const chartOptions = computed(() => ({
       borderColor: isDark.value ? "#00F0FF" : "transparent",
       borderWidth: isDark.value ? 1 : 0,
       callbacks: {
-        label: (context: any) => {
+        label: (context: TooltipItem<'doughnut'>) => {
           const total = engagementData.value.total;
           const value = context.parsed;
           const percentage =

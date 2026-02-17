@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import PostItem from "./PostItem.vue";
+import { PostItem } from "@/components/schedule";
 import { useSchedule } from "@/composables/useSchedule";
 
 const { selectedDate, currentMonthPosts } = useSchedule();

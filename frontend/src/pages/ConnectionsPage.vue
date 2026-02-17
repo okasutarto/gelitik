@@ -5,8 +5,10 @@ import api from "@/services/api";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
 import { Instagram, Music2, Plus, Trash2, CheckCircle } from "lucide-vue-next";
+import { useToast } from "@/composables/useToast";
 
 const router = useRouter();
+const toast = useToast();
 
 interface ConnectedAccount {
   id: string;
@@ -85,11 +87,11 @@ const connectPlatform = async (platform: string) => {
       window.location.href = data.data.authUrl;
     } else {
       console.error(`[Connections] Failed - No authUrl in response`, data);
-      alert("Failed to initiate connection");
+      toast.error("Failed to initiate connection");
     }
   } catch (error) {
     console.error("[Connections] Connection error:", error);
-    alert("Failed to connect account");
+    toast.error("Failed to connect account");
   }
 };
 
@@ -101,7 +103,7 @@ const disconnectAccount = async (accountId: string) => {
     await fetchAccounts();
   } catch (error) {
     console.error("Disconnect error:", error);
-    alert("Failed to disconnect account");
+    toast.error("Failed to disconnect account");
   }
 };
 

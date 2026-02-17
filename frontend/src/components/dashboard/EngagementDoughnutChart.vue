@@ -3,19 +3,12 @@ import { computed } from "vue";
 import { Doughnut } from "vue-chartjs";
 import { useTheme } from "@/composables/useTheme";
 import { formatNumber } from "@/utils/format";
-import {
-  Chart as ChartJS,
-  Tooltip,
-  Legend,
-  Title,
-  Filler,
-  ArcElement,
-} from "chart.js";
-
-ChartJS.register(Tooltip, Legend, Title, Filler, ArcElement);
+import type { Video } from "@/types/video";
+import "@/composables/useChart"; // Registers Chart.js components
+import type { TooltipItem } from "chart.js";
 
 interface Props {
-  videos?: any[];
+  videos?: Video[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -106,7 +99,7 @@ const chartOptions = computed(() => ({
       borderColor: isDark.value ? "#00F0FF" : "transparent",
       borderWidth: isDark.value ? 1 : 0,
       callbacks: {
-        label: (context: any) => {
+        label: (context: TooltipItem<'doughnut'>) => {
           const total = engagementData.value.total;
           const value = context.parsed;
           const percentage =

@@ -14,8 +14,10 @@ import ContentTableSkeleton from "@/components/loading/ContentTableSkeleton.vue"
 import { usePlatformAnalytics } from "@/composables/usePlatformAnalytics";
 import { useRouter } from "vue-router";
 import { formatNumber } from "@/utils/format";
+import { useToast } from "@/composables/useToast";
 
 const router = useRouter();
+const toast = useToast();
 const { loading, accountData, fetchAnalytics } = usePlatformAnalytics("tiktok");
 
 const userData = computed(() => accountData.value?.data?.userInfo || null);
@@ -74,9 +76,16 @@ const tiktokStats = computed(() => {
 });
 
 onMounted(() => {
+  // Check for connection success message from OAuth callback
+  const connectionSuccess = sessionStorage.getItem('connection-success')
+  if (connectionSuccess === 'tiktok') {
+    sessionStorage.removeItem('connection-success')
+    toast.success('TikTok account connected successfully! You can now view your analytics.')
+  }
+
   fetchAnalytics().catch((err) => {
     if ((err as any)?.response?.status === 404) {
-      alert("TikTok account not connected. Please connect your account first.");
+      toast.error("TikTok account not connected. Please connect your account first.");
       router.push("/connections");
     }
   });

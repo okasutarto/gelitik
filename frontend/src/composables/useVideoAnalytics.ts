@@ -1,37 +1,12 @@
 import { ref } from 'vue'
 import api from '@/services/api'
+import type { VideoDetailData } from '@/types/video'
+import type { AxiosError } from 'axios'
 
-export interface VideoDetailData {
-  id: string
-  title: string
-  description: string
-  thumbnail: string
-  cover_image_url?: string
-  create_time: number
-  duration: number
-  views: number
-  likes: number
-  comments: number
-  shares: number
-  engagement_rate: number
-  // Additional detailed analytics
-  demographics?: {
-    age_range?: { range: string; percentage: number }[]
-    gender?: { gender: string; percentage: number }[]
-    top_countries?: { country: string; percentage: number }[]
-    top_cities?: { city: string; percentage: number }[]
-  }
-  performance_over_time?: {
-    date: string
-    views: number
-    likes: number
-    comments: number
-    shares: number
-  }[]
-  traffic_sources?: {
-    source: string
-    percentage: number
-  }[]
+export type { VideoDetailData } from '@/types/video'
+
+function isAxiosError(error: unknown): error is AxiosError {
+  return typeof error === 'object' && error !== null && 'isAxiosError' in error
 }
 
 export function useVideoAnalytics() {
@@ -46,8 +21,12 @@ export function useVideoAnalytics() {
       const { data } = await api.get(`/api/analytics/${platform}/video/${videoId}`)
       videoData.value = data
       return data
-    } catch (err: any) {
-      error.value = err.response?.data?.error || 'Failed to fetch video analytics'
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        error.value = err.response?.data?.error || 'Failed to fetch video analytics'
+      } else {
+        error.value = 'Failed to fetch video analytics'
+      }
       console.error('Video detail fetch error:', err)
       throw err
     } finally {

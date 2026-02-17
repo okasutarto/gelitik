@@ -1,13 +1,23 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import type { Platform } from "@/composables/usePlatform";
-import VideoDetailModal from "./VideoDetailModal.vue";
+import type { Platform } from "@/types/platform";
+import type { Video } from "@/types/video";
+import { VideoDetailModal } from "@/components/dashboard";
 import { formatNumber } from "@/utils/format";
+import {
+  calculateEngagementRate,
+  formatTimeAgo,
+  getPlatformBadge,
+  capitalize,
+  truncateText,
+  formatDuration,
+  formatDate,
+} from "@/utils/video";
 
 interface Props {
   platform?: Platform;
-  videos?: any[];
-}
+  videos?: Video[];
+};
 
 const props = withDefaults(defineProps<Props>(), {
   platform: "all",
@@ -28,39 +38,9 @@ const closeModal = () => {
   selectedVideoId.value = null;
 };
 
-const calculateEngagementRate = (video: any): number => {
-  const views = video.views || 0;
-  const likes = video.likes || 0;
-  const comments = video.comments || 0;
-  const shares = video.shares || 0;
-  const totalEngagement = likes + comments + shares;
-
-  if (views === 0) {
-    return 0;
-  }
-
-  const rate = (totalEngagement / views) * 100;
-
-  return rate;
-};
-
-const formatTimeAgo = (createTime: string): string => {
-  if (!createTime) return "Unknown";
-  const now = new Date();
-  const created = new Date(createTime);
-  const diffMs = now.getTime() - created.getTime();
-  const diffHours = diffMs / (1000 * 60 * 60);
-  const diffDays = diffHours / 24;
-
-  if (diffDays > 7) return `${Math.floor(diffDays)}d ago`;
-  if (diffDays >= 1) return `${Math.floor(diffDays)}d ago`;
-  if (diffHours >= 1) return `${Math.floor(diffHours)}h ago`;
-  return "Just now";
-};
-
 const filteredContent = computed(() => {
   if (props.videos && props.videos.length > 0) {
-    return props.videos.map((video: any) => ({
+    return props.videos.map((video: Video) => ({
       id: video.id,
       title: video.video_description || "Untitled",
       thumbnail:
@@ -83,66 +63,9 @@ const hasVideoData = computed(() => {
   return (
     props.videos &&
     props.videos.length > 0 &&
-    props.videos.some((v: any) => v.view_count > 0)
+    props.videos.some((v: Video) => (v.view_count || 0) > 0)
   );
 });
-
-const getPlatformBadge = (platform: Platform) => {
-  const configs: Record<Platform, { bg: string; text: string; dot: string }> = {
-    all: {
-      bg: "bg-neo-accent dark:bg-[#FFCC00] border-2 border-black dark:border-electric shadow-brutal-sm",
-      text: "text-black",
-      dot: "bg-black",
-    },
-    instagram: {
-      bg: "bg-pink-400 dark:bg-[#FF0099] border-2 border-black dark:border-electric shadow-brutal-sm",
-      text: "text-black",
-      dot: "bg-black",
-    },
-    tiktok: {
-      bg: "bg-cyan-400 dark:bg-[#00F0FF] border-2 border-black dark:border-electric shadow-brutal-sm",
-      text: "text-black",
-      dot: "bg-black",
-    },
-    linkedin: {
-      bg: "bg-blue-400 dark:bg-[#6B2CF5] border-2 border-black dark:border-electric shadow-brutal-sm",
-      text: "text-black",
-      dot: "bg-black",
-    },
-  };
-  return configs[platform];
-};
-
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
-const truncateText = (text: string, maxLength: number = 50): string => {
-  if (!text || text.length <= maxLength) return text;
-  return text.substring(0, maxLength) + "...";
-};
-
-const formatDuration = (seconds: number): string => {
-  if (!seconds) return "0:00";
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
-};
-
-const formatDate = (timestamp: number): string => {
-  const timestampNum =
-    typeof timestamp === "string" ? parseInt(timestamp, 10) : timestamp;
-  const date = new Date(timestampNum * 1000);
-
-  if (isNaN(date.getTime())) {
-    console.error("[ContentTable] Invalid timestamp:", timestamp);
-    return "Unknown";
-  }
-
-  return date.toLocaleDateString("id-ID", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-};
 </script>
 
 <template>
@@ -277,10 +200,10 @@ const formatDate = (timestamp: number): string => {
           </div>
           <div class="flex flex-col justify-center items-end text-right">
             <span class="text-lg font-bold text-slate-900 dark:text-white">{{
-              item.reach
+              item.views
             }}</span>
             <span class="text-xs text-slate-500 dark:text-slate-400 font-medium"
-              >Reach</span
+              >Views</span
             >
           </div>
         </div>

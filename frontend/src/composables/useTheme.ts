@@ -1,9 +1,11 @@
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onScopeDispose } from 'vue'
 
 export type Theme = 'light' | 'dark' | 'system'
 
 const theme = ref<Theme>('system')
 const isDark = ref(false)
+let mediaQueryListener: ((e: MediaQueryListEvent) => void) | null = null
+let listenerInitialized = false
 
 const STORAGE_KEY = 'gelitik-theme'
 
@@ -66,19 +68,31 @@ export function useTheme() {
         setTheme(nextTheme)
     }
 
-    // Set up system preference listener (only needed once)
-    if (typeof window !== 'undefined') {
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    // Set up system preference listener (only needed once, with cleanup)
+    if (typeof window !== 'undefined' && !listenerInitialized) {
+        mediaQueryListener = () => {
             if (theme.value === 'system') {
                 updateDarkMode()
             }
-        })
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', mediaQueryListener)
+        listenerInitialized = true
+    }
+
+    // Provide cleanup function for Vue's lifecycle
+    const cleanup = () => {
+        if (typeof window !== 'undefined' && mediaQueryListener) {
+            window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', mediaQueryListener)
+            mediaQueryListener = null
+            listenerInitialized = false
+        }
     }
 
     return {
         theme,
         isDark,
         setTheme,
-        toggleTheme
+        toggleTheme,
+        cleanup
     }
 }

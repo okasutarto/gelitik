@@ -4,7 +4,7 @@ import { X, Calendar, Clock, Upload, Smile } from "lucide-vue-next";
 import AppButton from "@/components/ui/AppButton.vue";
 import AppInput from "@/components/ui/AppInput.vue";
 import { useSchedule } from "@/composables/useSchedule";
-import type { Platform } from "@/composables/usePlatform";
+import type { Platform } from "@/types/platform";
 
 interface Props {
   isOpen: boolean;
@@ -14,7 +14,7 @@ defineProps<Props>();
 
 const emit = defineEmits<{
   (e: "close"): void;
-  (e: "submit", data: any): void;
+  (e: "submit", data: boolean): void;
 }>();
 
 const { addPost } = useSchedule();

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, type Component } from "vue";
-import type { Platform } from "@/composables/usePlatform";
+import type { Platform } from "@/types/platform";
 
 interface Props {
   title: string;

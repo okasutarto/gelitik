@@ -117,7 +117,7 @@ const router = createRouter({
  
       // Handle platform connection success (e.g., ?connected=tiktok)
       if (to.query.connected === 'tiktok') {
-         alert('TikTok account connected successfully! You can now view your analytics.')
+         sessionStorage.setItem('connection-success', 'tiktok')
          return next('/dashboard/tiktok')
       }
  

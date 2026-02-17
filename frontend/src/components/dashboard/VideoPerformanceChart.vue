@@ -1,35 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { Bar, Line } from "vue-chartjs";
+import { Bar } from "vue-chartjs";
 import { formatNumber } from "@/utils/format";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from "chart.js";
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-);
+import { truncateText } from "@/utils/video";
+import type { Video } from "@/types/video";
+import "@/composables/useChart"; // Registers Chart.js components
 
 interface Props {
-  videos?: any[];
-}
+  videos?: Video[];
+};
 
 const props = withDefaults(defineProps<Props>(), {
   videos: () => [],
@@ -47,13 +26,8 @@ const paginatedVideos = computed(() => {
 });
 
 const hasVideoData = computed(() => {
-  return props.videos && props.videos.length > 0 && props.videos.some((v: any) => v.view_count > 0);
+  return props.videos && props.videos.length > 0 && props.videos.some((v: Video) => (v.view_count || 0) > 0);
 });
-
-const truncateTitle = (title: string, maxLength: number = 20): string => {
-  if (!title || title.length <= maxLength) return title;
-  return title.substring(0, maxLength) + "...";
-};
 
 const chartData = computed(() => {
   if (!paginatedVideos.value || paginatedVideos.value.length === 0) {
@@ -75,7 +49,7 @@ const chartData = computed(() => {
   const hasAnyEngagement = paginatedVideos.value.some((v) => (v.like_count || 0) + (v.comment_count || 0) + (v.share_count || 0) > 0);
 
   return {
-    labels: paginatedVideos.value.map((v) => truncateTitle(v.video_description || "", 20)),
+    labels: paginatedVideos.value.map((v) => truncateText(v.video_description || "", 20)),
     datasets: [
       {
         label: "Views",

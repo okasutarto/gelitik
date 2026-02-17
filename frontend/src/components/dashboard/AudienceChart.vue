@@ -1,32 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { Bar, Line } from "vue-chartjs";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from "chart.js";
 import { useTheme } from "@/composables/useTheme";
-import type { Platform } from "@/composables/usePlatform";
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-);
+import type { Platform } from "@/types/platform";
+import "@/composables/useChart"; // Registers Chart.js components
 
 interface Props {
   platform: Platform;

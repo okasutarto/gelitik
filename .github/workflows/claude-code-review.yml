@@ -1,0 +1,36 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    branches: [main]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    if: contains(github.event.comment.body, '@claude') || github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Post PR Info Comment
+        run: |
+          PR_NUM=${{ github.event.pull_request.number }}
+          BRANCH=${{ github.head_ref }}
+
+          gh pr comment $PR_NUM --body "🤖 Claude Code review triggered! @claude Please review this PR and provide feedback on code quality, potential bugs, and improvements."
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--max-turns 10 --dangerouslyAllowAnthropicKey"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

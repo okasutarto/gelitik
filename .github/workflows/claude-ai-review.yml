@@ -32,7 +32,6 @@ jobs:
       - name: Get Review from MiniMax
         env:
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
-          MINIMAX_GROUP_ID: ${{ secrets.MINIMAX_GROUP_ID }}
         run: |
           # Skip if API key is not configured
           if [ -z "$MINIMAX_API_KEY" ]; then
@@ -40,22 +39,15 @@ jobs:
             exit 0
           fi
 
-          # Skip if GroupId is not configured
-          if [ -z "$MINIMAX_GROUP_ID" ]; then
-            echo '{"choices":[{"message":{"content":"## AI Code Review\n\nMiniMax GroupId not configured. Skipping AI review."}}]}' > minimax_response.json
-            exit 0
-          fi
-
           # Membaca diff dan siapkan payload JSON
           DIFF_CONTENT=$(cat pr_diff.txt | jq -sR .)
 
-          # MiniMax v2 API dengan GroupId di header
-          curl -s --location "https://api.minimax.chat/v1/text_generation" \
+          # MiniMax API - correct endpoint
+          curl -s --location "https://api.minimax.io/v1/text/chatcompletion_v2" \
           --header "Content-Type: application/json" \
           --header "Authorization: Bearer $MINIMAX_API_KEY" \
           --data "{
-            \"model\": \"abab6.5s-chat\",
-            \"group_id\": \"$MINIMAX_GROUP_ID\",
+            \"model\": \"M2-her\",
             \"messages\": [
               {
                 \"role\": \"system\",

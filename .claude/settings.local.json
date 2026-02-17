@@ -16,7 +16,12 @@
       "Bash(git push)",
       "WebFetch(domain:github.com)",
       "Bash(chmod:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh secret list:*)"
     ]
   }
 }

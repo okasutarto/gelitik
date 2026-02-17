@@ -34,11 +34,12 @@ jobs:
           # Membaca diff dan menyiapkan payload JSON
           DIFF_CONTENT=$(cat pr_diff.txt | jq -sR .)
 
-          curl --location "https://api.minimax.chat/v1/text_generation_v2" \
+          # MiniMax v2 API dengan group_id di query parameter
+          curl --location "https://api.minimax.chat/v1/text/chatcompletion_v2.5?GroupId=$GROUP_ID" \
           --header "Content-Type: application/json" \
           --header "Authorization: Bearer $MINIMAX_API_KEY" \
           --data "{
-            \"model\": \"abab6.5s-chat\", 
+            \"model\": \"abab6.5s-chat\",
             \"messages\": [
               {
                 \"role\": \"system\",

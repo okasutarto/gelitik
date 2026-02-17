@@ -7,6 +7,9 @@ on:
 jobs:
   review:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -58,6 +61,8 @@ jobs:
           }" > minimax_response.json
 
       - name: Format & Post Comment
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           # Skip if response is error
           if grep -q "404\|error\|not found" minimax_response.json; then

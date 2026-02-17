@@ -1,5 +1,8 @@
 # Gelitik Project Guidelines
 
+## Version
+- **Version**: 1.0.0 (Test: Auto commit push PR review flow)
+
 ## 🚀 Build & Run
 
 - **Frontend**: `cd frontend && npm run dev`

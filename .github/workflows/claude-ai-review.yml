@@ -39,26 +39,31 @@ jobs:
             exit 0
           fi
 
-          # Membaca diff dan siapkan payload JSON
-          DIFF_CONTENT=$(cat pr_diff.txt | jq -sR .)
+          # Membaca diff content
+          DIFF_CONTENT=$(cat pr_diff.txt)
+
+          # Build JSON payload to file (to avoid argument list too long)
+          cat > request_body.json << EOF
+          {
+            "model": "M2-her",
+            "messages": [
+              {
+                "role": "system",
+                "content": "Kamu adalah Senior Architect & Code Reviewer. Berikan review untuk perubahan kode berikut. Fokus pada modularitas Vue 3 dan potensi bug."
+              },
+              {
+                "role": "user",
+                "content": "$DIFF_CONTENT"
+              }
+            ]
+          }
+          EOF
 
           # MiniMax API - correct endpoint
           curl -s --location "https://api.minimax.io/v1/text/chatcompletion_v2" \
           --header "Content-Type: application/json" \
           --header "Authorization: Bearer $MINIMAX_API_KEY" \
-          --data "{
-            \"model\": \"M2-her\",
-            \"messages\": [
-              {
-                \"role\": \"system\",
-                \"content\": \"Kamu adalah Senior Architect & Code Reviewer. Berikan review untuk perubahan kode berikut. Fokus pada modularitas Vue 3 dan potensi bug.\"
-              },
-              {
-                \"role\": \"user\",
-                \"content\": $DIFF_CONTENT
-              }
-            ]
-          }" > minimax_response.json
+          --data @request_body.json > minimax_response.json
 
       - name: Format & Post Comment
         env:

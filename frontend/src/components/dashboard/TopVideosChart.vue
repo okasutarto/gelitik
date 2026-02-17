@@ -3,26 +3,10 @@ import { computed, ref } from "vue";
 import { Bar } from "vue-chartjs";
 import { useTheme } from "@/composables/useTheme";
 import { formatNumber } from "@/utils/format";
+import { truncateText } from "@/utils/video";
 import type { Video } from "@/types/video";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  type TooltipItem,
-} from "chart.js";
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-);
+import "@/composables/useChart"; // Registers Chart.js components
+import type { TooltipItem } from "chart.js";
 
 interface Props {
   videos?: Video[];
@@ -69,16 +53,11 @@ const displayedVideos = computed(() => {
   return sortedVideos.value.slice(0, 5);
 });
 
-const truncateTitle = (title: string, maxLength: number = 30): string => {
-  if (!title || title.length <= maxLength) return title;
-  return title.substring(0, maxLength) + "...";
-};
-
 const chartData = computed(() => {
   const videos = displayedVideos.value;
 
   return {
-    labels: videos.map((v) => truncateTitle(v.video_description || "", 30)),
+    labels: videos.map((v) => truncateText(v.video_description || "", 30)),
     datasets: [
       {
         label: sortBy.value.charAt(0).toUpperCase() + sortBy.value.slice(1),
@@ -127,7 +106,7 @@ const chartOptions = computed(() => ({
       callbacks: {
         title: (tooltipItems: TooltipItem<'bar'>[]) => {
           const video = displayedVideos.value[tooltipItems[0].dataIndex];
-          return video ? truncateTitle(video.video_description || "", 50) : "";
+          return video ? truncateText(video.video_description || "", 50) : "";
         },
         label: (context: TooltipItem<'bar'>) => {
           const video = displayedVideos.value[context.dataIndex];
@@ -230,12 +209,12 @@ const toggleSortDirection = () => {
               :src="
                 video.cover_image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZTIeMmUyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Y2EzYWYiIGZvbnQtc2l6ZT0iMjQiPkltYWdlPC90ZXh0Pjwvc3ZnPg=='
               "
-              :alt="truncateTitle(video.video_description || '', 20)"
+              :alt="truncateText(video.video_description || '', 20)"
               class="w-12 h-12 rounded-lg object-cover" />
             <div class="min-w-0">
               <p
                 class="font-semibold text-slate-900 dark:text-white truncate text-sm">
-                {{ truncateTitle(video.video_description || "", 40) }}
+                {{ truncateText(video.video_description || "", 40) }}
               </p>
             </div>
           </div>

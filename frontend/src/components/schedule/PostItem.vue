@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { Image, Video, FileText, Layers } from "lucide-vue-next";
-import type { Post } from "@/composables/useSchedule";
+import type { Post } from "@/types/post";
 
 interface Props {
   post: Post;

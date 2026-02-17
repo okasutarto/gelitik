@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Smartphone } from "lucide-vue-next";
-import type { Platform } from "@/composables/usePlatform";
+import type { Platform } from "@/types/platform";
 
 interface DeviceData {
   name: string;

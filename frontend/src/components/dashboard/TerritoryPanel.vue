@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Globe } from "lucide-vue-next";
-import type { Platform } from "@/composables/usePlatform";
+import type { Platform } from "@/types/platform";
 
 interface TerritoryData {
   name: string;

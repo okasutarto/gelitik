@@ -1,15 +1,7 @@
 import { ref, computed } from 'vue'
-import type { Platform } from '@/composables/usePlatform'
+import type { Post } from '@/types/post'
 
-export interface Post {
-    id: string
-    title: string
-    date: Date
-    platform: Platform
-    type: 'image' | 'video' | 'reel' | 'carousel' | 'text'
-    status: 'draft' | 'scheduled' | 'published'
-    thumbnail?: string
-}
+export type { Post } from '@/types/post'
 
 // Mock data generator
 const generateMockPosts = (): Post[] => {

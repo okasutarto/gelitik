@@ -3,18 +3,9 @@ import { computed } from "vue";
 import { Doughnut } from "vue-chartjs";
 import { useTheme } from "@/composables/useTheme";
 import { formatNumber } from "@/utils/format";
-import {
-  Chart as ChartJS,
-  Tooltip,
-  Legend,
-  Title,
-  Filler,
-  ArcElement,
-} from "chart.js";
-import type { TooltipItem } from "chart.js";
 import type { Video } from "@/types/video";
-
-ChartJS.register(Tooltip, Legend, Title, Filler, ArcElement);
+import "@/composables/useChart"; // Registers Chart.js components
+import type { TooltipItem } from "chart.js";
 
 interface Props {
   videos?: Video[];

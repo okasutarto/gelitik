@@ -4,6 +4,15 @@ import type { Platform } from "@/types/platform";
 import type { Video } from "@/types/video";
 import VideoDetailModal from "./VideoDetailModal.vue";
 import { formatNumber } from "@/utils/format";
+import {
+  calculateEngagementRate,
+  formatTimeAgo,
+  getPlatformBadge,
+  capitalize,
+  truncateText,
+  formatDuration,
+  formatDate,
+} from "@/utils/video";
 
 interface Props {
   platform?: Platform;
@@ -27,37 +36,6 @@ const openVideoDetail = (videoId: string) => {
 const closeModal = () => {
   isModalOpen.value = false;
   selectedVideoId.value = null;
-};
-
-const calculateEngagementRate = (video: Video | { views?: number; likes?: number; comments?: number; shares?: number }): number => {
-  const views = video.views || 0;
-  const likes = video.likes || 0;
-  const comments = video.comments || 0;
-  const shares = video.shares || 0;
-  const totalEngagement = likes + comments + shares;
-
-  if (views === 0) {
-    return 0;
-  }
-
-  const rate = (totalEngagement / views) * 100;
-
-  return rate;
-};
-
-const formatTimeAgo = (createTime: string | number | undefined): string => {
-  if (!createTime) return "Unknown";
-  if (!createTime) return "Unknown";
-  const now = new Date();
-  const created = new Date(createTime);
-  const diffMs = now.getTime() - created.getTime();
-  const diffHours = diffMs / (1000 * 60 * 60);
-  const diffDays = diffHours / 24;
-
-  if (diffDays > 7) return `${Math.floor(diffDays)}d ago`;
-  if (diffDays >= 1) return `${Math.floor(diffDays)}d ago`;
-  if (diffHours >= 1) return `${Math.floor(diffHours)}h ago`;
-  return "Just now";
 };
 
 const filteredContent = computed(() => {
@@ -88,64 +66,6 @@ const hasVideoData = computed(() => {
     props.videos.some((v: Video) => (v.view_count || 0) > 0)
   );
 });
-
-const getPlatformBadge = (platform: Platform) => {
-  const configs: Record<Platform, { bg: string; text: string; dot: string }> = {
-    all: {
-      bg: "bg-neo-accent dark:bg-[#FFCC00] border-2 border-black dark:border-electric shadow-brutal-sm",
-      text: "text-black",
-      dot: "bg-black",
-    },
-    instagram: {
-      bg: "bg-pink-400 dark:bg-[#FF0099] border-2 border-black dark:border-electric shadow-brutal-sm",
-      text: "text-black",
-      dot: "bg-black",
-    },
-    tiktok: {
-      bg: "bg-cyan-400 dark:bg-[#00F0FF] border-2 border-black dark:border-electric shadow-brutal-sm",
-      text: "text-black",
-      dot: "bg-black",
-    },
-    linkedin: {
-      bg: "bg-blue-400 dark:bg-[#6B2CF5] border-2 border-black dark:border-electric shadow-brutal-sm",
-      text: "text-black",
-      dot: "bg-black",
-    },
-  };
-  return configs[platform];
-};
-
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
-const truncateText = (text: string, maxLength: number = 50): string => {
-  if (!text || text.length <= maxLength) return text;
-  return text.substring(0, maxLength) + "...";
-};
-
-const formatDuration = (seconds: number): string => {
-  if (!seconds) return "0:00";
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
-};
-
-const formatDate = (timestamp: string | number): string => {
-  if (!timestamp) return "Unknown";
-  const timestampNum =
-    typeof timestamp === "string" ? parseInt(timestamp, 10) : timestamp;
-  const date = new Date(timestampNum * 1000);
-
-  if (isNaN(date.getTime())) {
-    console.error("[ContentTable] Invalid timestamp:", timestamp);
-    return "Unknown";
-  }
-
-  return date.toLocaleDateString("id-ID", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-};
 </script>
 
 <template>

@@ -64,10 +64,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Debug: Show raw response
-          echo "=== Raw Response ==="
-          cat minimax_response.json
-
           # Check if valid JSON first
           if ! jq empty minimax_response.json 2>/dev/null; then
             echo "## AI Code Review\n\n⚠️ Invalid API response. Check API configuration." > review_output.md

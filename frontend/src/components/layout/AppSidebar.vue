@@ -13,12 +13,16 @@ import {
   Music2,
   Zap,
   Plus,
+  Sun,
+  Moon,
 } from "lucide-vue-next";
+import { useTheme } from "@/composables/useTheme";
 import { useSidebar } from "@/composables/useSidebar";
 
 const route = useRoute();
 const router = useRouter();
 const { isCollapsed, toggleSidebar, initSidebar } = useSidebar();
+const { isDark, toggleTheme } = useTheme();
 
 onMounted(() => {
   initSidebar();
@@ -100,22 +104,28 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
   <aside
     :class="[
       'hidden md:flex flex-col fixed h-full z-30 transition-all duration-300',
-      'bg-white dark:bg-slate-900 text-black dark:text-white',
-      'border-r-4 border-black',
+      'bg-white dark:bg-navy text-black dark:text-offwhite',
+      'border-r-4 border-black dark:border-electric',
       isCollapsed ? 'w-20' : 'w-64',
     ]">
     <!-- Logo -->
     <div
       :class="[
-        'h-20 flex items-center border-b-4 border-black',
+        'h-20 flex items-center border-b-4 border-black dark:border-electric',
         isCollapsed ? 'justify-center' : 'justify-between px-6',
       ]">
       <div class="flex items-center gap-4">
         <div
-          class="size-10 rounded-2xl bg-neo-accent border-3 border-black flex items-center justify-center shadow-brutal-sm shrink-0">
+          :class="[
+            'size-10 border-3 flex items-center justify-center shadow-brutal-sm shrink-0',
+            'bg-neo-accent border-black',
+            'dark:bg-hotpink dark:border-electric dark:shadow-brutal-cyber',
+          ]">
           <Zap :size="22" class="text-black" />
         </div>
-        <h1 v-if="!isCollapsed" class="text-2xl font-black tracking-tight">
+        <h1
+          v-if="!isCollapsed"
+          class="text-2xl font-black tracking-tight dark:text-electric">
           Gelitik
         </h1>
       </div>
@@ -124,8 +134,8 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
       <button
         v-if="!isCollapsed"
         @click="toggleSidebar"
-        class="p-2 rounded-2xl border-3 border-black hover:bg-neo-accent hover:-translate-y-1 transition-transform">
-        <ChevronLeft :size="20" />
+        class="p-2 border-3 border-black dark:border-electric hover:bg-neo-accent dark:hover:bg-hotpink hover:-translate-y-1 transition-transform shadow-brutal-sm dark:shadow-brutal-cyber">
+        <ChevronLeft :size="20" class="dark:text-electric" />
       </button>
     </div>
 
@@ -169,7 +179,7 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
       <div class="pt-2">
         <p
           v-if="!isCollapsed"
-          class="text-sm font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-3 px-3">
+          class="text-sm font-black text-black/40 dark:text-electric/60 uppercase tracking-widest mb-3 px-3">
           Platforms
         </p>
 
@@ -189,7 +199,7 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
               v-if="platform.connected"
               :class="[
                 'absolute rounded-full bg-green-500 border border-green-600 shadow-sm',
-                isCollapsed ? 'top-1 right-1 size-2' : 'top-2 right-2 size-2.5'
+                isCollapsed ? 'top-1 right-1 size-2' : 'top-2 right-2 size-2.5',
               ]"
               :title="`${platform.name} is connected`" />
 
@@ -250,7 +260,7 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
       <div class="pt-2">
         <p
           v-if="!isCollapsed"
-          class="text-sm font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-3 px-3">
+          class="text-sm font-black text-black/40 dark:text-electric/60 uppercase tracking-widest mb-3 px-3">
           Tools
         </p>
 
@@ -297,7 +307,7 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
     <!-- Bottom Section -->
     <div
       :class="[
-        'p-4 space-y-4 border-t-4 border-black',
+        'p-4 space-y-4 border-t-4 border-black dark:border-electric',
         isCollapsed ? 'px-2' : 'px-4',
       ]">
       <!-- Settings -->
@@ -333,21 +343,25 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
       <!-- User Profile -->
       <div
         :class="[
-          'flex items-center gap-4 rounded-2xl transition-all cursor-pointer group',
+          'flex items-center gap-4 transition-all cursor-pointer group',
           isCollapsed
             ? 'flex-col justify-center p-2'
-            : 'p-3 hover:border-3 hover:border-black',
+            : 'p-3 hover:border-3 hover:border-black dark:hover:border-electric',
         ]">
         <div
-          class="size-10 rounded-full bg-cover bg-center border-3 border-black shrink-0 shadow-brutal-sm"
+          :class="[
+            'size-10 rounded-full bg-cover bg-center border-3 shrink-0 shadow-brutal-sm',
+            'border-black',
+            'dark:border-electric dark:shadow-brutal-cyber-sm',
+          ]"
           :style="{ backgroundImage: `url('${userAvatar}')` }" />
         <div v-if="!isCollapsed" class="flex-1 min-w-0">
           <p
-            class="text-sm font-black uppercase text-black dark:text-white truncate">
+            class="text-sm font-black uppercase text-black dark:text-cyber truncate">
             Gelitik Team
           </p>
           <p
-            class="text-xs font-mono text-black/60 dark:text-white/60 truncate">
+            class="text-xs font-mono text-black/60 dark:text-offwhite/60 truncate">
             ADMIN_01
           </p>
         </div>
@@ -358,7 +372,7 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
     <button
       v-if="isCollapsed"
       @click="toggleSidebar"
-      class="absolute -right-4 top-20 size-7 bg-neo-accent rounded-2xl border-3 border-black flex items-center justify-center shadow-brutal-sm hover:-translate-y-1 transition-transform">
+      class="absolute -right-4 top-20 size-7 border-3 flex items-center justify-center shadow-brutal-sm hover:-translate-y-1 transition-transform bg-neo-accent border-black dark:bg-hotpink dark:border-electric dark:shadow-brutal-cyber">
       <ChevronRight :size="16" />
     </button>
   </aside>

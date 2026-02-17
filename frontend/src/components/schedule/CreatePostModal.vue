@@ -60,7 +60,7 @@ const handleSubmit = () => {
 
     <!-- Modal Content -->
     <div
-      class="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl border-neo-3 border-black shadow-neo-hard-lg scale-100 opacity-100 transition-all">
+      class="relative w-full max-w-lg bg-white dark:bg-slate-800 border-neo-3 border-black shadow-neo-hard-lg scale-100 opacity-100 transition-all">
       <!-- Header -->
       <div
         class="flex items-center justify-between p-5 border-b-4 border-black">
@@ -69,7 +69,7 @@ const handleSubmit = () => {
         </h3>
         <button
           @click="$emit('close')"
-          class="p-2 rounded-2xl border-neo-3 border-black hover:bg-neo-accent hover:-translate-y-1 transition-transform">
+          class="p-2 border-neo-3 border-black hover:bg-neo-accent hover:-translate-y-1 transition-transform">
           <X :size="22" />
         </button>
       </div>
@@ -83,7 +83,7 @@ const handleSubmit = () => {
             :key="platform.id"
             @click="selectedPlatform = platform.id"
             :class="[
-              'flex-1 py-2.5 px-4 rounded-2xl text-sm font-bold transition-transform border-neo-3',
+              'flex-1 py-2.5 px-4 text-sm font-bold transition-transform border-neo-3',
               selectedPlatform === platform.id
                 ? 'bg-neo-accent border-black text-black shadow-neo-hard-sm'
                 : 'bg-white dark:bg-slate-700 border-slate-400 dark:border-slate-500 text-slate-600 dark:text-slate-300 hover:border-black',
@@ -110,7 +110,7 @@ const handleSubmit = () => {
               <input
                 v-model="date"
                 type="date"
-                class="w-full h-12 pl-12 pr-4 rounded-2xl bg-white dark:bg-slate-700 border-neo-3 border-black text-slate-900 dark:text-white font-semibold focus:border-neo-accent outline-none text-sm" />
+                class="w-full h-12 pl-12 pr-4 bg-white dark:bg-slate-700 border-neo-3 border-black text-slate-900 dark:text-white font-semibold focus:border-neo-accent outline-none text-sm" />
               <Calendar
                 class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                 :size="20" />
@@ -124,7 +124,7 @@ const handleSubmit = () => {
               <input
                 v-model="time"
                 type="time"
-                class="w-full h-12 pl-12 pr-4 rounded-2xl bg-white dark:bg-slate-700 border-neo-3 border-black text-slate-900 dark:text-white font-semibold focus:border-neo-accent outline-none text-sm" />
+                class="w-full h-12 pl-12 pr-4 bg-white dark:bg-slate-700 border-neo-3 border-black text-slate-900 dark:text-white font-semibold focus:border-neo-accent outline-none text-sm" />
               <Clock
                 class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                 :size="20" />
@@ -141,7 +141,7 @@ const handleSubmit = () => {
             <textarea
               v-model="content"
               rows="4"
-              class="w-full p-4 rounded-2xl bg-white dark:bg-slate-700 border-neo-3 border-black text-slate-900 dark:text-white font-semibold focus:border-neo-accent outline-none text-sm resize-none"
+              class="w-full p-4 bg-white dark:bg-slate-700 border-neo-3 border-black text-slate-900 dark:text-white font-semibold focus:border-neo-accent outline-none text-sm resize-none"
               placeholder="What's on your mind?"></textarea>
             <button
               class="absolute right-4 bottom-4 text-slate-400 hover:text-neo-accent transition-colors p-2 rounded-xl">
@@ -152,7 +152,7 @@ const handleSubmit = () => {
 
         <!-- Media Upload Placeholder -->
         <div
-          class="border-neo-3 border-dashed border-slate-300 dark:border-slate-500 rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+          class="border-neo-3 border-dashed border-slate-300 dark:border-slate-500 p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
           <div
             class="size-12 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center mb-3">
             <Upload :size="24" class="text-slate-500 dark:text-slate-400" />

@@ -1,8 +1,16 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { Doughnut } from "vue-chartjs";
-import { Chart as ChartJS, Tooltip, Legend, Title, Filler, ArcElement } from "chart.js";
- 
+import { useTheme } from "@/composables/useTheme";
+import {
+  Chart as ChartJS,
+  Tooltip,
+  Legend,
+  Title,
+  Filler,
+  ArcElement,
+} from "chart.js";
+
 ChartJS.register(Tooltip, Legend, Title, Filler, ArcElement);
 
 interface Props {
@@ -40,6 +48,8 @@ const engagementData = computed(() => {
   };
 });
 
+const { isDark } = useTheme();
+
 const chartData = computed(() => {
   const data = engagementData.value;
 
@@ -48,11 +58,13 @@ const chartData = computed(() => {
     datasets: [
       {
         data: [data.likes, data.comments, data.shares],
-        backgroundColor: ["#3b82f6", "#8b5cf6", "#06b6d4"],
-        borderColor: "#ffffff",
+        backgroundColor: isDark.value
+          ? ["#FF0099", "#00F0FF", "#FFCC00"]
+          : ["#3b82f6", "#8b5cf6", "#06b6d4"],
+        borderColor: isDark.value ? "#000000" : "#ffffff",
         borderWidth: 3,
         hoverOffset: 4,
-        hoverBorderColor: "#ffffff",
+        hoverBorderColor: isDark.value ? "#00F0FF" : "#ffffff",
       },
     ],
   };
@@ -62,20 +74,21 @@ const formatNumber = (value: number) => {
   return value?.toLocaleString() || "0";
 };
 
-const chartOptions = {
+const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: true,
   cutout: "60%",
   cutoutPercentage: 60,
+  events: ["mousemove", "mouseout", "click", "touchstart", "touchmove"] as any,
   plugins: {
     legend: {
       display: true,
       position: "bottom" as const,
       labels: {
-        color: "#1e293b",
+        color: isDark.value ? "#E0E0E0" : "#1e293b",
         font: {
           size: 13,
-          weight: "600",
+          weight: "bold" as const,
         },
         padding: 20,
         usePointStyle: true,
@@ -83,14 +96,20 @@ const chartOptions = {
       },
     },
     tooltip: {
-      backgroundColor: "rgba(30, 41, 59, 0.95)",
-      titleFont: { size: 14, weight: "bold" },
+      backgroundColor: isDark.value
+        ? "rgba(10, 10, 26, 0.95)"
+        : "rgba(30, 41, 59, 0.95)",
+      titleFont: { size: 14, weight: "bold" as const },
+      titleColor: isDark.value ? "#00F0FF" : "#fff",
       bodyFont: { size: 12 },
+      bodyColor: isDark.value ? "#E0E0E0" : "#fff",
       padding: 14,
       cornerRadius: 10,
       displayColors: true,
+      borderColor: isDark.value ? "#00F0FF" : "transparent",
+      borderWidth: isDark.value ? 1 : 0,
       callbacks: {
-        label: (context) => {
+        label: (context: any) => {
           const total = engagementData.value.total;
           const value = context.parsed;
           const percentage =
@@ -100,14 +119,15 @@ const chartOptions = {
       },
     },
   },
-};
+}));
 </script>
 
 <template>
-  <div class="brutal-card brutal-hover-lift rounded-none p-6">
+  <div class="brutal-card brutal-hover-lift rounded-none p-6 h-full">
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h3 class="text-lg font-black uppercase text-slate-900 dark:text-white">
+        <h3
+          class="text-lg font-black uppercase text-slate-900 dark:text-electric/70">
           Engagement Distribution
         </h3>
         <p class="text-sm font-bold opacity-60 uppercase dark:text-slate-400">
@@ -141,15 +161,17 @@ const chartOptions = {
     <!-- Stats Summary -->
     <div
       v-if="props.videos && props.videos.length > 0"
-      class="grid grid-cols-3 gap-4 mt-6">
+      class="grid grid-cols-3 gap-4 mt-12">
       <div class="text-center">
         <div
           class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#3b82f6] dark:bg-slate-700">
           <svg class="w-6 h-6" fill="white" viewBox="0 0 24 24">
-            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+            <path
+              d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
           </svg>
         </div>
-        <p class="text-lg font-mono font-bold text-slate-900 dark:text-white mt-2">
+        <p
+          class="text-lg font-mono font-bold text-slate-900 dark:text-white mt-2">
           {{ formatNumber(engagementData.likes) }}
         </p>
         <p
@@ -161,10 +183,12 @@ const chartOptions = {
         <div
           class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#8b5cf6] dark:bg-slate-700">
           <svg class="w-6 h-6" fill="white" viewBox="0 0 24 24">
-            <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8.9h.5a8.48 8.48 0 018 8v.5z" />
+            <path
+              d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8.9h.5a8.48 8.48 0 018 8v.5z" />
           </svg>
         </div>
-        <p class="text-lg font-mono font-bold text-slate-900 dark:text-white mt-2">
+        <p
+          class="text-lg font-mono font-bold text-slate-900 dark:text-white mt-2">
           {{ formatNumber(engagementData.comments) }}
         </p>
         <p
@@ -176,10 +200,12 @@ const chartOptions = {
         <div
           class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#06b6d4] dark:bg-slate-700">
           <svg class="w-6 h-6" fill="white" viewBox="0 0 24 24">
-            <path d="M21.707 20.293l-4-4a7 7 0 10-9.9-9.9 7 7 0 000 9.9 7 7 0 009.9 0l4 4a1 1 0 001.414-1.414zM6 11a5 5 0 115-5 5 5 0 01-5 5z" />
+            <path
+              d="M21.707 20.293l-4-4a7 7 0 10-9.9-9.9 7 7 0 000 9.9 7 7 0 009.9 0l4 4a1 1 0 001.414-1.414zM6 11a5 5 0 115-5 5 5 0 01-5 5z" />
           </svg>
         </div>
-        <p class="text-lg font-mono font-bold text-slate-900 dark:text-white mt-2">
+        <p
+          class="text-lg font-mono font-bold text-slate-900 dark:text-white mt-2">
           {{ formatNumber(engagementData.shares) }}
         </p>
         <p

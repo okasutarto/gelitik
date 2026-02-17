@@ -66,7 +66,7 @@ const handleSignup = () => {
 
         <!-- Testimonial Card -->
         <div
-          class="bg-white border-[3px] border-black p-6 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-sm rotate-[-2deg]">
+          class="bg-white border-[3px] border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-sm rotate-[-2deg]">
           <p class="text-2xl font-black leading-tight">
             "Social media management that actually hits."
           </p>
@@ -98,7 +98,7 @@ const handleSignup = () => {
         <!-- Mobile Logo -->
         <div class="md:hidden flex flex-col items-center mb-8">
           <div
-            class="w-16 h-16 bg-[#FFCC00] border-[3px] border-black rounded-2xl flex items-center justify-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-4">
+            class="w-16 h-16 bg-[#FFCC00] border-[3px] border-black flex items-center justify-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-4">
             <span class="material-symbols-outlined font-black text-4xl"
               >bolt</span
             >
@@ -123,26 +123,26 @@ const handleSignup = () => {
           @forgot-password="handleForgotPassword"
           @signup="handleSignup" />
 
-         <div
-           class="md:hidden mt-12 w-full pt-8 border-t-[3px] border-black/10 text-center">
-           <p
-             class="text-[10px] font-black uppercase tracking-widest text-gray-400">
-             © 2024 Gelitik Lab. All rights reserved.
-           </p>
-           <div class="mt-3 flex justify-center gap-4">
-             <router-link
-               to="/terms"
-               class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 transition-colors">
-               Terms
-             </router-link>
-             <span class="text-gray-400">•</span>
-             <router-link
-               to="/privacy"
-               class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 transition-colors">
-               Privacy
-             </router-link>
-           </div>
-         </div>
+        <div
+          class="md:hidden mt-12 w-full pt-8 border-t-[3px] border-black/10 text-center">
+          <p
+            class="text-[10px] font-black uppercase tracking-widest text-gray-400">
+            © 2024 Gelitik Lab. All rights reserved.
+          </p>
+          <div class="mt-3 flex justify-center gap-4">
+            <router-link
+              to="/terms"
+              class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 transition-colors">
+              Terms
+            </router-link>
+            <span class="text-gray-400">•</span>
+            <router-link
+              to="/privacy"
+              class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 transition-colors">
+              Privacy
+            </router-link>
+          </div>
+        </div>
       </div>
     </div>
   </div>

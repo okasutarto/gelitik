@@ -50,7 +50,7 @@ const timeFormatted = computed(() => {
 
 <template>
   <div
-    class="relative group bg-white dark:bg-slate-800 p-2 rounded-3xl border-neo-3 border-black shadow-neo-hard hover:-translate-y-1 transition-transform cursor-move mb-1.5"
+    class="relative group bg-white dark:bg-slate-800 p-2 border-neo-3 border-black shadow-neo-hard hover:-translate-y-1 transition-transform cursor-move mb-1.5"
     draggable="true">
     <!-- Platform Indicator Strip -->
     <div

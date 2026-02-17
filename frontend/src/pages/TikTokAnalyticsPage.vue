@@ -2,6 +2,7 @@
 import { onMounted, computed } from "vue";
 import { Play, Share2, Clock, Eye } from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
+import PageHeader from "@/components/layout/PageHeader.vue";
 import StatCard from "@/components/dashboard/StatCard.vue";
 import UserProfile from "@/components/dashboard/UserProfile.vue";
 import DualChartDashboard from "@/components/dashboard/DualChartDashboard.vue";
@@ -89,18 +90,12 @@ onMounted(() => {
 
 <template>
   <DashboardLayout>
-    <!-- Page Header -->
-    <div
-      class="bg-neo-accent dark:bg-slate-800 border-b-4 border-black dark:border-white p-6 md:p-8 mb-8 -mx-4 md:-mx-8">
-      <h2
-        class="text-4xl lg:text-5xl font-black uppercase text-slate-900 dark:text-white leading-tight">
-        TikTok Analytics
-      </h2>
-      <p
-        class="text-sm font-bold opacity-60 uppercase text-slate-600 dark:text-slate-400 mt-2">
-        Analyze your TikTok trends and reach.
-      </p>
-    </div>
+    <!-- Page Header with Theme Toggle -->
+    <PageHeader
+      title="TikTok Analytics"
+      subtitle="Analyze your TikTok trends and reach."
+      :show-theme-toggle="true"
+    />
 
     <!-- User Profile -->
     <UserProfile v-if="!loading && userData" :user-info="userData" />

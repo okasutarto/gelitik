@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, type Component } from "vue";
-import { TrendingUp, TrendingDown } from "lucide-vue-next";
 import type { Platform } from "@/composables/usePlatform";
 
 interface Props {
@@ -17,22 +16,6 @@ const props = withDefaults(defineProps<Props>(), {
   platform: "all",
   subtitle: "",
 });
-
-const iconBgColor = computed(() => {
-  const colors: Record<Platform, string> = {
-    all: "text-primary-600",
-    instagram: "text-pink-500",
-    tiktok: "text-slate-800 dark:text-slate-200",
-    linkedin: "text-blue-600",
-  };
-  return colors[props.platform] || colors.all;
-});
-
-const changeBadgeClass = computed(() =>
-  props.changeType === "up"
-    ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-    : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
-);
 </script>
 
 <template>
@@ -41,7 +24,7 @@ const changeBadgeClass = computed(() =>
     <!-- Header -->
     <div class="flex items-center justify-between relative z-10">
       <p
-        class="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-tighter">
+        class="text-slate-500 dark:text-electric/70 text-xs font-black uppercase tracking-tighter">
         {{ title }}
       </p>
     </div>
@@ -49,12 +32,10 @@ const changeBadgeClass = computed(() =>
     <!-- Value -->
     <div class="relative z-10">
       <h3
-        class="text-3xl font-mono font-bold text-slate-900 dark:text-white tracking-tight">
+        class="text-3xl font-mono font-bold text-slate-900 dark:text-offwhite tracking-tight">
         {{ value }}
       </h3>
-      <p
-        v-if="subtitle"
-        class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+      <p v-if="subtitle" class="text-xs text-slate-400 dark:text-cyber/80 mt-1">
         {{ subtitle }}
       </p>
     </div>

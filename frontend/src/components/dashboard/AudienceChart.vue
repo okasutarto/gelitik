@@ -13,6 +13,7 @@ import {
   Legend,
   Filler,
 } from "chart.js";
+import { useTheme } from "@/composables/useTheme";
 import type { Platform } from "@/composables/usePlatform";
 
 ChartJS.register(
@@ -39,9 +40,11 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const selectedPeriod = ref("7days");
+const { isDark } = useTheme();
 
 const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+// Mock data - in real app, this would come from API
 // Mock data - in real app, this would come from API
 const chartData = computed(() => {
   if (props.platform === "all") {
@@ -51,14 +54,14 @@ const chartData = computed(() => {
         {
           label: "Instagram",
           data: [2000, 3000, 4000, 2500, 3500, 4500, 3000],
-          backgroundColor: "#ec4899",
+          backgroundColor: isDark.value ? "#FF0099" : "#ec4899",
           borderRadius: 4,
           barPercentage: 0.6,
         },
         {
           label: "TikTok",
           data: [2500, 3000, 4500, 3000, 3500, 4500, 3500],
-          backgroundColor: "#0f172a",
+          backgroundColor: isDark.value ? "#00F0FF" : "#0f172a",
           borderRadius: 4,
           barPercentage: 0.6,
         },
@@ -71,12 +74,14 @@ const chartData = computed(() => {
         {
           label: "Followers",
           data: [4000, 5000, 7000, 5500, 8000, 6500, 9000],
-          borderColor: "#9333ea",
-          backgroundColor: "rgba(147, 51, 234, 0.1)",
+          borderColor: isDark.value ? "#FF0099" : "#9333ea",
+          backgroundColor: isDark.value
+            ? "rgba(255, 0, 153, 0.1)"
+            : "rgba(147, 51, 234, 0.1)",
           fill: true,
           tension: 0.4,
-          pointBackgroundColor: "#fff",
-          pointBorderColor: "#9333ea",
+          pointBackgroundColor: isDark.value ? "#FF0099" : "#fff",
+          pointBorderColor: isDark.value ? "#fff" : "#9333ea",
           pointBorderWidth: 2,
           pointRadius: 4,
           pointHoverRadius: 6,
@@ -90,12 +95,14 @@ const chartData = computed(() => {
         {
           label: "Views",
           data: [2000, 3500, 2500, 6000, 4500, 7500, 9500],
-          borderColor: "#0f172a",
-          backgroundColor: "rgba(15, 23, 42, 0.1)",
+          borderColor: isDark.value ? "#00F0FF" : "#0f172a",
+          backgroundColor: isDark.value
+            ? "rgba(0, 240, 255, 0.1)"
+            : "rgba(15, 23, 42, 0.1)",
           fill: true,
           tension: 0.4,
-          pointBackgroundColor: "#fff",
-          pointBorderColor: "#0f172a",
+          pointBackgroundColor: isDark.value ? "#00F0FF" : "#fff",
+          pointBorderColor: isDark.value ? "#fff" : "#0f172a",
           pointBorderWidth: 2,
           pointRadius: 4,
           pointHoverRadius: 6,
@@ -103,7 +110,7 @@ const chartData = computed(() => {
         {
           label: "Engagement",
           data: [1000, 1500, 2000, 4000, 3000, 5000, 7000],
-          borderColor: "#14b8a6",
+          borderColor: isDark.value ? "#FFCC00" : "#14b8a6",
           borderDash: [5, 5],
           fill: false,
           tension: 0.4,
@@ -114,7 +121,7 @@ const chartData = computed(() => {
   }
 });
 
-const chartOptions = {
+const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -126,18 +133,24 @@ const chartOptions = {
         usePointStyle: true,
         pointStyle: "circle",
         padding: 20,
+        color: isDark.value ? "#E0E0E0" : "#1e293b",
         font: {
           size: 12,
+          weight: "bold" as const,
         },
       },
     },
     tooltip: {
-      backgroundColor: "#1e293b",
-      titleFont: { size: 13 },
+      backgroundColor: isDark.value ? "rgba(10, 10, 26, 0.95)" : "#1e293b",
+      titleFont: { size: 13, weight: "bold" as const },
+      titleColor: isDark.value ? "#00F0FF" : "#fff",
       bodyFont: { size: 12 },
+      bodyColor: isDark.value ? "#E0E0E0" : "#fff",
       padding: 12,
       cornerRadius: 8,
       displayColors: true,
+      borderColor: isDark.value ? "#00F0FF" : "transparent",
+      borderWidth: isDark.value ? 1 : 0,
     },
   },
   scales: {
@@ -146,16 +159,16 @@ const chartOptions = {
         display: false,
       },
       ticks: {
-        color: "#94a3b8",
+        color: isDark.value ? "#E0E0E0" : "#94a3b8",
         font: { size: 12 },
       },
     },
     y: {
       grid: {
-        color: "#f1f5f9",
+        color: isDark.value ? "rgba(255, 255, 255, 0.1)" : "#f1f5f9",
       },
       ticks: {
-        color: "#94a3b8",
+        color: isDark.value ? "#E0E0E0" : "#94a3b8",
         font: { size: 12 },
         callback: function (value: string | number) {
           const numValue = Number(value);
@@ -165,7 +178,7 @@ const chartOptions = {
       },
     },
   },
-} as const;
+}));
 
 const isBarChart = computed(() => props.platform === "all");
 </script>
@@ -192,7 +205,7 @@ const isBarChart = computed(() => props.platform === "all");
         </div>
         <select
           v-model="selectedPeriod"
-          class="bg-slate-50 dark:bg-slate-700 border-neo-3 border-black neo-shadow-hard-sm text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-300 py-2 px-3 focus:ring-2 focus:ring-primary-500 cursor-pointer outline-none">
+          class="bg-slate-50 dark:bg-navy border-neo-3 border-black dark:border-electric neo-shadow-hard-sm text-sm font-semibold text-slate-600 dark:text-white py-2 px-3 cursor-pointer outline-none brutal-hover-lift">
           <option value="7days">Last 7 Days</option>
           <option value="30days">Last 30 Days</option>
           <option value="quarter">Last Quarter</option>

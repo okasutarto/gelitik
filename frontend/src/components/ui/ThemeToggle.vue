@@ -9,8 +9,10 @@ const { isDark, toggleTheme } = useTheme();
   <button
     @click="toggleTheme"
     :class="[
-      'p-3 rounded-2xl border-neo-3 border-black cursor-pointer transition-transform shadow-neo-hard-sm',
-      isDark ? 'bg-slate-800 text-slate-200' : 'bg-neo-accent text-black',
+      'p-3 border-neo-3 border-black cursor-pointer transition-transform shadow-neo-hard-sm',
+      isDark
+        ? 'bg-navy border-electric text-electric shadow-brutal-cyber'
+        : 'bg-cyber text-black',
     ]"
     :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
     <Sun v-if="isDark" :size="24" :stroke-width="2" />

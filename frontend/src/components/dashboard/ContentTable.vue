@@ -106,24 +106,24 @@ const hasVideoData = computed(() => {
 const getPlatformBadge = (platform: Platform) => {
   const configs: Record<Platform, { bg: string; text: string; dot: string }> = {
     all: {
-      bg: "bg-primary-50 dark:bg-primary-900/30",
-      text: "text-primary-600 dark:text-primary-400",
-      dot: "bg-primary-500",
+      bg: "bg-neo-accent dark:bg-[#FFCC00] border-2 border-black dark:border-electric shadow-brutal-sm",
+      text: "text-black",
+      dot: "bg-black",
     },
     instagram: {
-      bg: "bg-pink-50 dark:bg-pink-900/30",
-      text: "text-pink-600 dark:text-pink-400",
-      dot: "bg-pink-500",
+      bg: "bg-pink-400 dark:bg-[#FF0099] border-2 border-black dark:border-electric shadow-brutal-sm",
+      text: "text-black",
+      dot: "bg-black",
     },
     tiktok: {
-      bg: "bg-slate-100 dark:bg-slate-700",
-      text: "text-slate-700 dark:text-slate-300",
-      dot: "bg-slate-900 dark:bg-white",
+      bg: "bg-cyan-400 dark:bg-[#00F0FF] border-2 border-black dark:border-electric shadow-brutal-sm",
+      text: "text-black",
+      dot: "bg-black",
     },
     linkedin: {
-      bg: "bg-blue-50 dark:bg-blue-900/30",
-      text: "text-blue-600 dark:text-blue-400",
-      dot: "bg-blue-500",
+      bg: "bg-blue-400 dark:bg-[#6B2CF5] border-2 border-black dark:border-electric shadow-brutal-sm",
+      text: "text-black",
+      dot: "bg-black",
     },
   };
   return configs[platform];
@@ -132,16 +132,16 @@ const getPlatformBadge = (platform: Platform) => {
 const getStatusBadge = (status: ContentItem["status"]) => {
   const configs: Record<typeof status, { bg: string; text: string }> = {
     viral: {
-      bg: "bg-green-50 dark:bg-green-900/30",
-      text: "text-green-600 dark:text-green-400",
+      bg: "bg-purple-400 dark:bg-[#6B2CF5] border-2 border-black dark:border-electric shadow-brutal-sm",
+      text: "text-black",
     },
     active: {
-      bg: "bg-primary-50 dark:bg-primary-900/30",
-      text: "text-primary-600 dark:text-primary-400",
+      bg: "bg-green-400 dark:bg-[#00F0FF] border-2 border-black dark:border-electric shadow-brutal-sm",
+      text: "text-black",
     },
     ended: {
-      bg: "bg-slate-100 dark:bg-slate-700",
-      text: "text-slate-500 dark:text-slate-400",
+      bg: "bg-slate-300 dark:bg-slate-600 border-2 border-black dark:border-electric shadow-brutal-sm",
+      text: "text-black dark:text-white",
     },
   };
   return configs[status];
@@ -183,12 +183,12 @@ const formatDate = (timestamp: number): string => {
   <div class="brutal-card rounded-none overflow-hidden">
     <!-- Header -->
     <div
-      class="p-6 flex items-center justify-between border-b-4 border-black bg-neo-accent">
-      <h3 class="text-lg font-bold text-slate-900 dark:text-white">
+      class="p-6 flex items-center justify-between border-b-4 border-black bg-neo-accent dark:bg-[#FF0099] dark:border-[#00F0FF]">
+      <h3 class="text-lg font-bold text-slate-900 dark:text-black">
         Top Performing Content
       </h3>
       <button
-        class="text-primary-600 dark:text-primary-400 text-sm font-semibold hover:underline">
+        class="text-primary-600 dark:text-white text-sm font-semibold hover:underline">
         View All
       </button>
     </div>
@@ -211,7 +211,7 @@ const formatDate = (timestamp: number): string => {
         <table
           class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
           <thead
-            class="bg-black dark:bg-slate-700/50 text-white dark:text-slate-400 font-bold border-b-4 border-black">
+            class="bg-black text-white dark:text-electric/70 font-bold border-b-4 border-black">
             <tr>
               <th class="px-4 py-4">Content</th>
               <th class="px-4 py-4 text-center">Date Created</th>
@@ -242,10 +242,11 @@ const formatDate = (timestamp: number): string => {
                   </span>
                 </div>
               </td>
-              <td class="px-4 py-4 whitespace-nowrap text-xs text-center">
+              <td
+                class="px-4 py-4 whitespace-nowrap font-semibold text-xs text-center">
                 {{ formatDate(item.created) }}
               </td>
-              <td class="px-4 py-4 whitespace-nowrap text-center">
+              <td class="px-4 py-4 whitespace-nowrap font-semibold text-center">
                 {{ formatDuration(item.duration || 0) }}
               </td>
               <td
@@ -293,7 +294,7 @@ const formatDate = (timestamp: number): string => {
             <div class="flex items-center gap-2 mt-1">
               <span
                 :class="[
-                  'text-[10px] font-bold uppercase px-1.5 py-0.5 rounded',
+                  'text-[10px] font-bold uppercase px-1.5 py-0.5',
                   getPlatformBadge(item.platform).bg,
                   getPlatformBadge(item.platform).text,
                 ]">

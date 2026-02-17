@@ -63,10 +63,10 @@ onMounted(() => {
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
     @click.self="emit('close')">
     <div
-      class="bg-white dark:bg-slate-800 border-4 border-black dark:border-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-none shadow-brutal">
+      class="bg-white dark:bg-navy border-4 border-black dark:border-electric w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-none shadow-brutal">
       <!-- Header -->
       <div
-        class="sticky top-0 bg-white dark:bg-slate-800 border-b-4 border-black dark:border-white p-4 flex items-center justify-between z-10">
+        class="sticky top-0 bg-white dark:bg-navy border-b-4 border-black dark:border-electric p-4 flex items-center justify-between z-10">
         <h2
           class="text-2xl font-black uppercase text-slate-900 dark:text-white">
           Video Analytics
@@ -81,8 +81,8 @@ onMounted(() => {
       <!-- Loading State -->
       <div v-if="loading" class="p-12 text-center">
         <div
-          class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-black border-t-transparent"></div>
-        <p class="mt-4 font-bold text-slate-600 dark:text-slate-400">
+          class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-black border-t-transparent dark:border-electric dark:border-t-transparent"></div>
+        <p class="mt-4 font-bold text-slate-600 dark:text-electric/70">
           Loading analytics...
         </p>
       </div>
@@ -94,7 +94,7 @@ onMounted(() => {
           <img
             :src="videoData.thumbnail || videoData.cover_image_url"
             :alt="videoData.title"
-            class="w-32 h-32 rounded-lg object-cover border-2 border-black dark:border-white shrink-0" />
+            class="w-32 h-32 object-cover border-2 border-black dark:border-electric shrink-0" />
           <div class="flex-1 min-w-0">
             <h3
               class="text-xl font-black text-slate-900 dark:text-white mb-2 line-clamp-2">
@@ -111,58 +111,58 @@ onMounted(() => {
         <!-- Stats Grid -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div
-            class="bg-blue-400 dark:bg-blue-900/40 border-2 border-black dark:border-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-transform hover:-translate-y-1">
+            class="bg-blue-400 dark:bg-[#00F0FF] border-2 border-black dark:border-electric p-4 shadow-brutal-sm transition-transform hover:-translate-y-1">
             <div class="flex items-center gap-2 mb-2">
-              <Eye :size="18" class="text-black dark:text-white" />
+              <Eye :size="18" class="text-black" />
               <span
-                class="text-xs font-black uppercase text-slate-700 dark:text-slate-300"
+                class="text-xs font-black uppercase text-slate-700 dark:text-black"
                 >Views</span
               >
             </div>
             <p
-              class="text-2xl font-mono font-bold text-slate-900 dark:text-white">
+              class="text-2xl font-mono font-bold text-slate-900 dark:text-black">
               {{ formatNumber(videoData.views) }}
             </p>
           </div>
           <div
-            class="bg-pink-400 dark:bg-pink-900/40 border-2 border-black dark:border-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-transform hover:-translate-y-1">
+            class="bg-pink-400 dark:bg-[#FF0099] border-2 border-black dark:border-electric p-4 shadow-brutal-sm transition-transform hover:-translate-y-1">
             <div class="flex items-center gap-2 mb-2">
-              <Heart :size="18" class="text-black dark:text-white" />
+              <Heart :size="18" class="text-black" />
               <span
-                class="text-xs font-black uppercase text-slate-700 dark:text-slate-300"
+                class="text-xs font-black uppercase text-slate-700 dark:text-black"
                 >Likes</span
               >
             </div>
             <p
-              class="text-2xl font-mono font-bold text-slate-900 dark:text-white">
+              class="text-2xl font-mono font-bold text-slate-900 dark:text-black">
               {{ formatNumber(videoData.likes) }}
             </p>
           </div>
           <div
-            class="bg-yellow-400 dark:bg-yellow-900/40 border-2 border-black dark:border-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-transform hover:-translate-y-1">
+            class="bg-yellow-400 dark:bg-[#FFCC00] border-2 border-black dark:border-electric p-4 shadow-brutal-sm transition-transform hover:-translate-y-1">
             <div class="flex items-center gap-2 mb-2">
-              <MessageCircle :size="18" class="text-black dark:text-white" />
+              <MessageCircle :size="18" class="text-black" />
               <span
-                class="text-xs font-black uppercase text-slate-700 dark:text-slate-300"
+                class="text-xs font-black uppercase text-slate-700 dark:text-black"
                 >Comments</span
               >
             </div>
             <p
-              class="text-2xl font-mono font-bold text-slate-900 dark:text-white">
+              class="text-2xl font-mono font-bold text-slate-900 dark:text-black">
               {{ formatNumber(videoData.comments) }}
             </p>
           </div>
           <div
-            class="bg-green-400 dark:bg-green-900/40 border-2 border-black dark:border-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-transform hover:-translate-y-1">
+            class="bg-green-400 dark:bg-[#6B2CF5] border-2 border-black dark:border-electric p-4 shadow-brutal-sm transition-transform hover:-translate-y-1">
             <div class="flex items-center gap-2 mb-2">
-              <Share2 :size="18" class="text-black dark:text-white" />
+              <Share2 :size="18" class="text-black" />
               <span
-                class="text-xs font-black uppercase text-slate-700 dark:text-slate-300"
+                class="text-xs font-black uppercase text-slate-700 dark:text-black"
                 >Shares</span
               >
             </div>
             <p
-              class="text-2xl font-mono font-bold text-slate-900 dark:text-white">
+              class="text-2xl font-mono font-bold text-slate-900 dark:text-black">
               {{ formatNumber(videoData.shares) }}
             </p>
           </div>
@@ -170,7 +170,7 @@ onMounted(() => {
 
         <!-- Engagement Rate -->
         <div
-          class="bg-cyber-yellow border-2 border-black dark:border-white p-4 mb-6">
+          class="bg-cyber-yellow border-2 border-black dark:border-electric p-4 mb-6">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-xs font-black uppercase text-black/70">
@@ -189,7 +189,7 @@ onMounted(() => {
           <!-- Age Range -->
           <div
             v-if="videoData.demographics.age_range"
-            class="border-2 border-black dark:border-white p-4">
+            class="border-2 border-black dark:border-electric p-4">
             <h4
               class="text-sm font-black uppercase mb-3 text-slate-900 dark:text-white">
               Age Distribution
@@ -220,7 +220,7 @@ onMounted(() => {
           <!-- Gender -->
           <div
             v-if="videoData.demographics.gender"
-            class="border-2 border-black dark:border-white p-4">
+            class="border-2 border-black dark:border-electric p-4">
             <h4
               class="text-sm font-black uppercase mb-3 text-slate-900 dark:text-white">
               Gender Distribution
@@ -231,7 +231,7 @@ onMounted(() => {
                 :key="item.gender"
                 class="flex-1 text-center">
                 <div
-                  class="bg-slate-100 dark:bg-slate-700 border-2 border-black dark:border-white p-3 rounded-lg">
+                  class="bg-slate-100 dark:bg-slate-700 border-2 border-black dark:border-electric p-3 rounded-lg">
                   <p class="text-2xl font-bold text-slate-900 dark:text-white">
                     {{ item.percentage }}%
                   </p>
@@ -247,7 +247,7 @@ onMounted(() => {
           <!-- Top Countries -->
           <div
             v-if="videoData.demographics.top_countries"
-            class="border-2 border-black dark:border-white p-4">
+            class="border-2 border-black dark:border-electric p-4">
             <h4
               class="text-sm font-black uppercase mb-3 text-slate-900 dark:text-white">
               Top Countries
@@ -278,7 +278,7 @@ onMounted(() => {
           <!-- Top Cities -->
           <div
             v-if="videoData.demographics.top_cities"
-            class="border-2 border-black dark:border-white p-4">
+            class="border-2 border-black dark:border-electric p-4">
             <h4
               class="text-sm font-black uppercase mb-3 text-slate-900 dark:text-white">
               Top Cities
@@ -287,7 +287,7 @@ onMounted(() => {
               <div
                 v-for="item in videoData.demographics.top_cities"
                 :key="item.city"
-                class="bg-slate-100 dark:bg-slate-700 border border-black dark:border-white p-2 text-center">
+                class="bg-slate-100 dark:bg-slate-700 border border-black dark:border-electric p-2 text-center">
                 <p class="text-lg font-bold text-slate-900 dark:text-white">
                   {{ item.percentage }}%
                 </p>
@@ -303,7 +303,7 @@ onMounted(() => {
         <!-- Traffic Sources (if available) -->
         <div
           v-if="videoData.traffic_sources"
-          class="border-2 border-black dark:border-white p-4 mt-6">
+          class="border-2 border-black dark:border-electric p-4 mt-6">
           <h4
             class="text-sm font-black uppercase mb-3 text-slate-900 dark:text-white">
             Traffic Sources

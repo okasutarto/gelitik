@@ -62,7 +62,7 @@ const formatNumber = (num: number): string => {
       class="flex items-center gap-4 px-6 pb-4 text-sm text-slate-600 dark:text-slate-300">
       <div class="flex items-center gap-1.5">
         <span
-          class="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-tighter"
+          class="text-slate-500 dark:text-electric/70 text-xs font-black uppercase tracking-tighter"
           >Followers</span
         >
         <span
@@ -74,7 +74,7 @@ const formatNumber = (num: number): string => {
         class="w-[5px] h-[5px] rounded-full bg-slate-300 dark:bg-slate-600"></div>
       <div class="flex items-center gap-1.5">
         <span
-          class="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-tighter"
+          class="text-slate-500 dark:text-electric/70 text-xs font-black uppercase tracking-tighter"
           >Following</span
         >
         <span
@@ -86,7 +86,7 @@ const formatNumber = (num: number): string => {
         class="w-[5px] h-[5px] rounded-full bg-slate-300 dark:bg-slate-600"></div>
       <div class="flex items-center gap-1.5">
         <span
-          class="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-tighter"
+          class="text-slate-500 dark:text-electric/70 text-xs font-black uppercase tracking-tighter"
           >Likes</span
         >
         <span

@@ -54,10 +54,10 @@ const togglePassword = () => {
       :required="required"
       @input="handleInput"
       :class="[
-        'w-full h-12 rounded-2xl bg-white dark:bg-slate-800',
-        'border-neo-3 border-black',
-        'text-slate-900 dark:text-white placeholder:text-slate-400 font-semibold',
-        'focus:border-neo-accent outline-none text-sm',
+        'w-full h-12 bg-white dark:bg-navy/50',
+        'border-neo-3 border-black dark:border-electric/50',
+        'text-slate-900 dark:text-offwhite placeholder:text-slate-400 dark:placeholder:text-electric/40 font-semibold',
+        'focus:border-neo-accent dark:focus:border-electric focus:shadow-brutal-sm dark:focus:shadow-brutal-cyber-sm outline-none text-sm',
         icon ? 'pl-12' : 'pl-5',
         isPasswordType ? 'pr-12' : 'pr-5',
         disabled && 'opacity-50 cursor-not-allowed',
@@ -66,7 +66,7 @@ const togglePassword = () => {
     <!-- Left Icon -->
     <div
       v-if="icon"
-      class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+      class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-electric/60 pointer-events-none">
       <component :is="icon" :size="20" />
     </div>
 
@@ -75,7 +75,7 @@ const togglePassword = () => {
       v-if="isPasswordType"
       type="button"
       @click="togglePassword"
-      class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition-colors"
+      class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-electric/60 dark:hover:text-electric cursor-pointer transition-colors"
       :aria-label="showPassword ? 'Hide password' : 'Show password'">
       <Eye v-if="showPassword" :size="20" />
       <EyeOff v-else :size="20" />

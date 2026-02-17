@@ -40,7 +40,7 @@ const navigateTo = (path: string) => {
 
 <template>
   <nav
-    class="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-slate-900 border-t-3 border-black z-50 pb-safe">
+    class="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-navy border-t-3 border-black dark:border-electric z-50 pb-safe">
     <div class="grid grid-cols-5 h-16">
       <template v-for="item in navItems" :key="item.path">
         <!-- FAB Button (Create) -->
@@ -49,8 +49,12 @@ const navigateTo = (path: string) => {
           @click="navigateTo(item.path)"
           class="flex flex-col items-center justify-center -mt-8">
           <div
-            class="size-16 bg-neo-accent rounded-2xl border-3 border-black flex items-center justify-center shadow-brutal-sm active:shadow-brutal-active active:translate-y-0.5 transition-all">
-            <component :is="item.icon" :size="32" class="text-black" :stroke-width="2.5" />
+            class="size-16 bg-neo-accent dark:bg-hotpink border-3 border-black dark:border-electric flex items-center justify-center shadow-brutal-sm dark:shadow-brutal-cyber-sm active:shadow-brutal-active dark:active:shadow-brutal-cyber-active active:translate-y-0.5 transition-all">
+            <component
+              :is="item.icon"
+              :size="32"
+              class="text-black dark:text-offwhite"
+              :stroke-width="2.5" />
           </div>
         </button>
 
@@ -61,13 +65,13 @@ const navigateTo = (path: string) => {
           :class="[
             'flex flex-col items-center justify-center gap-1 transition-all relative',
             isActive(item.path)
-              ? 'text-black font-bold'
-              : 'text-black/60 hover:text-black font-medium',
+              ? 'text-black dark:text-electric font-bold'
+              : 'text-black/60 dark:text-offwhite/60 hover:text-black dark:hover:text-electric font-medium',
           ]">
           <!-- Active state top border -->
           <div
             v-if="isActive(item.path)"
-            class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-neo-accent border-b-2 border-black" />
+            class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-neo-accent dark:bg-hotpink border-b-2 border-black dark:border-electric" />
 
           <component
             :is="item.icon"

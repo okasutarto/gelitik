@@ -3,6 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import api from "@/services/api";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
+import PageHeader from "@/components/layout/PageHeader.vue";
 import { Instagram, Music2, Plus, Trash2, CheckCircle } from "lucide-vue-next";
 
 const router = useRouter();
@@ -32,6 +33,21 @@ const platformColors = {
   tiktok: "slate",
 };
 
+const availablePlatforms = [
+  {
+    id: "instagram",
+    name: "Instagram",
+    icon: Instagram,
+    iconColor: "text-pink-600",
+  },
+  {
+    id: "tiktok",
+    name: "TikTok",
+    icon: Music2,
+    iconColor: "text-slate-900 dark:text-white",
+  },
+];
+
 const fetchAccounts = async () => {
   try {
     const { data } = await api.get("/api/accounts");
@@ -48,7 +64,7 @@ const connectPlatform = async (platform: string) => {
     console.log(`[Connections] Connecting to ${platform}...`);
     const { data } = await api.get(`/auth/${platform}/connect`);
     console.log(`[Connections] Response:`, data);
-    
+
     if (data.success && data.data.authUrl) {
       console.log(`[Connections] Redirecting to TikTok...`);
       window.location.href = data.data.authUrl;
@@ -81,14 +97,11 @@ onMounted(() => {
 
 <template>
   <DashboardLayout>
-    <div class="mb-6">
-      <h2 class="text-4xl font-black uppercase text-slate-900 dark:text-white">
-        Connected Accounts
-      </h2>
-      <p class="text-sm uppercase font-bold text-slate-500 dark:text-slate-400">
-        Manage your connected social media accounts
-      </p>
-    </div>
+    <!-- Page Header with Theme Toggle -->
+    <PageHeader
+      title="Connected Accounts"
+      subtitle="Manage your connected social media accounts"
+      :show-theme-toggle="true" />
 
     <div v-if="loading" class="flex items-center justify-center py-12">
       <div
@@ -122,8 +135,8 @@ onMounted(() => {
         <div class="flex items-center gap-3">
           <div
             v-if="account.isActive"
-            class="flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 text-sm">
-            <CheckCircle :size="12" />
+            class="flex items-center gap-1 px-3 py-1 bg-green-400 dark:bg-green-500 text-black font-bold border-2 border-black dark:border-electric shadow-brutal-sm text-sm">
+            <CheckCircle :size="14" :stroke-width="2.5" />
             Connected
           </div>
 
@@ -162,21 +175,15 @@ onMounted(() => {
       </h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button
-          @click="connectPlatform('instagram')"
-          class="flex items-center justify-center gap-3 rounded-xl h-14 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors bg-white dark:bg-slate-800">
-          <Instagram :size="24" class="text-pink-600" />
-          <span class="font-medium text-slate-700 dark:text-slate-300"
-            >Connect Instagram</span
-          >
-        </button>
-
-        <button
-          @click="connectPlatform('tiktok')"
-          class="flex items-center justify-center gap-3 rounded-xl h-14 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors bg-white dark:bg-slate-800">
-          <Music2 :size="24" class="text-slate-900 dark:text-white" />
-          <span class="font-medium text-slate-700 dark:text-slate-300"
-            >Connect TikTok</span
-          >
+          v-for="platform in availablePlatforms"
+          :key="platform.id"
+          @click="connectPlatform(platform.id)"
+          class="flex items-center justify-center gap-3 h-14 bg-white dark:bg-navy shadow-brutal-sm dark:shadow-brutal-cyber border-3 border-black dark:border-electric brutal-hover-lift">
+          <component
+            :is="platform.icon"
+            :size="24"
+            :class="platform.iconColor" />
+          <span class="font-bold">Connect {{ platform.name }}</span>
         </button>
       </div>
     </div>

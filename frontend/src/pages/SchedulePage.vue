@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
+import PageHeader from "@/components/layout/PageHeader.vue";
 import CalendarHeader from "@/components/schedule/CalendarHeader.vue";
 import CalendarView from "@/components/schedule/CalendarView.vue";
 import CreatePostModal from "@/components/schedule/CreatePostModal.vue";
@@ -29,16 +30,12 @@ const handleCreatePost = () => {
 <template>
   <DashboardLayout>
     <div class="h-full flex flex-col">
-      <!-- Header -->
-      <div class="mb-12">
-        <h2
-          class="text-4xl font-black uppercase hidden lg:block dark:text-white">
-          Content Planner
-        </h2>
-        <p class="text-sm font-bold opacity-60 uppercase dark:text-slate-400">
-          Schedule and manage your posts across all platforms.
-        </p>
-      </div>
+      <!-- Page Header with Theme Toggle -->
+      <PageHeader
+        title="Content Planner"
+        subtitle="Schedule and manage your posts across all platforms."
+        :show-theme-toggle="true"
+      />
 
       <!-- Calendar Controls -->
       <CalendarHeader

@@ -21,17 +21,17 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const baseClasses =
-  "inline-flex items-center justify-center font-bold rounded-2xl cursor-pointer focus:outline-none active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100";
+  "inline-flex items-center justify-center font-bold cursor-pointer focus:outline-none active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100";
 
 const variantClasses = {
   primary:
-    "bg-neo-accent text-black border-neo-3 border-black shadow-neo-hard hover:shadow-neo-hard-lg hover:-translate-y-1",
+    "bg-neo-accent text-black border-neo-3 border-black shadow-neo-hard hover:shadow-neo-hard-lg hover:-translate-y-1 dark:bg-hotpink dark:border-electric dark:text-offwhite dark:shadow-brutal-cyber dark:hover:shadow-brutal-cyber-md",
   secondary:
-    "bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-neo-3 border-black shadow-neo-hard hover:bg-slate-50 dark:hover:bg-slate-700",
+    "bg-white dark:bg-navy text-slate-900 dark:text-offwhite border-neo-3 border-black dark:border-electric shadow-neo-hard dark:shadow-brutal-cyber hover:bg-slate-50 dark:hover:bg-purple/30",
   outline:
-    "bg-white dark:bg-slate-800 border-neo-3 border-black text-slate-900 dark:text-slate-200 shadow-neo-hard hover:bg-neo-accent hover:-translate-y-1",
+    "bg-white dark:bg-navy border-neo-3 border-black dark:border-electric text-slate-900 dark:text-electric shadow-neo-hard dark:shadow-brutal-cyber hover:bg-neo-accent dark:hover:bg-cyber dark:hover:text-black hover:-translate-y-1",
   ghost:
-    "bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border-neo-3 border-transparent",
+    "bg-transparent hover:bg-slate-100 dark:hover:bg-purple/20 text-slate-700 dark:text-electric border-neo-3 border-transparent hover:border-black dark:hover:border-electric",
 };
 
 const sizeClasses = {

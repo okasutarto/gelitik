@@ -41,7 +41,7 @@ const handleClick = () => {
   <button
     @click="handleClick"
     :disabled="loading"
-    class="group flex w-full cursor-pointer items-center justify-center rounded-2xl h-14 px-6 bg-white dark:bg-slate-800 border-neo-3 border-black hover:bg-neo-accent hover:-translate-y-1 transition-transform shadow-neo-hard disabled:opacity-50 disabled:cursor-not-allowed">
+    class="group flex w-full cursor-pointer items-center justify-center h-14 px-6 bg-white dark:bg-slate-800 border-neo-3 border-black hover:bg-neo-accent hover:-translate-y-1 transition-transform shadow-neo-hard disabled:opacity-50 disabled:cursor-not-allowed">
     <!-- Google SVG -->
     <svg
       v-if="provider === 'google'"

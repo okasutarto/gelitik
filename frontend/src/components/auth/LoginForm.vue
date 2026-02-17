@@ -30,7 +30,7 @@ const handleSubmit = () => {
   <div class="space-y-6">
     <button
       @click="$emit('google-login')"
-      class="w-full bg-white border-[3px] border-black p-4 rounded-3xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-3 font-black text-lg transition-all active:translate-x-1 active:translate-y-1 active:shadow-none">
+      class="w-full bg-white border-[3px] border-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-3 font-black text-lg transition-all active:translate-x-1 active:translate-y-1 active:shadow-none">
       <svg
         width="24"
         height="24"
@@ -70,7 +70,7 @@ const handleSubmit = () => {
           v-model="email"
           type="email"
           placeholder="name@company.com"
-          class="w-full bg-white border-[3px] border-black p-4 rounded-3xl font-bold placeholder:text-gray-400 focus:outline-none focus:bg-[#FFCC00] transition-colors" />
+          class="w-full bg-white border-[3px] border-black p-4 font-bold placeholder:text-gray-400 focus:outline-none focus:bg-[#FFCC00] transition-colors" />
       </div>
 
       <div class="space-y-2">
@@ -89,12 +89,12 @@ const handleSubmit = () => {
           v-model="password"
           type="password"
           placeholder="••••••••"
-          class="w-full bg-white border-[3px] border-black p-4 rounded-3xl font-bold placeholder:text-gray-400 focus:outline-none focus:bg-[#FFCC00] transition-colors" />
+          class="w-full bg-white border-[3px] border-black p-4 font-bold placeholder:text-gray-400 focus:outline-none focus:bg-[#FFCC00] transition-colors" />
       </div>
 
       <button
         type="submit"
-        class="w-full bg-[#FFCC00] border-[4px] border-black p-5 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] font-[900] text-2xl uppercase tracking-tighter transition-all active:translate-x-1 active:translate-y-1 active:shadow-none mt-6">
+        class="w-full bg-[#FFCC00] border-[4px] border-black p-5 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] font-[900] text-2xl uppercase tracking-tighter transition-all active:translate-x-1 active:translate-y-1 active:shadow-none mt-6">
         Sign In
       </button>
     </form>

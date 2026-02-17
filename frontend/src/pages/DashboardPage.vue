@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Users, Heart, FileText, MousePointerClick } from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
+import PageHeader from "@/components/layout/PageHeader.vue";
 import StatCard from "@/components/dashboard/StatCard.vue";
 import AudienceChart from "@/components/dashboard/AudienceChart.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
@@ -44,18 +45,12 @@ const overviewStats = [
 
 <template>
   <DashboardLayout>
-    <!-- Page Header -->
-    <div
-      class="bg-neo-accent dark:bg-slate-800 border-b-4 border-black dark:border-white p-6 md:p-8 mb-8 -mx-4 md:-mx-8">
-      <h2
-        class="text-4xl lg:text-5xl font-black uppercase text-slate-900 dark:text-white leading-tight">
-        Overview
-      </h2>
-      <p
-        class="text-sm font-bold opacity-60 uppercase text-slate-600 dark:text-slate-400 mt-2">
-        Welcome back to your master dashboard.
-      </p>
-    </div>
+    <!-- Page Header with Theme Toggle -->
+    <PageHeader
+      title="Overview"
+      subtitle="Welcome back to your master dashboard."
+      :show-theme-toggle="true"
+    />
 
     <!-- Bento Grid Layout -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">

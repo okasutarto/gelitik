@@ -12,16 +12,24 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 dark:bg-slate-600 rounded;
+  @apply bg-slate-300 rounded;
+}
+
+.dark::-webkit-scrollbar-thumb {
+  background: #6B2CF5;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-400 dark:bg-slate-500;
+  @apply bg-slate-400;
+}
+
+.dark::-webkit-scrollbar-thumb:hover {
+  background: #00F0FF;
 }
 
 /* Base styles */
 body {
-  @apply bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased;
+  @apply bg-background-light dark:bg-navy text-slate-900 dark:text-offwhite font-display antialiased;
   min-height: 100dvh;
 }
 
@@ -38,8 +46,13 @@ html {
 }
 
 .dark {
-  --neo-black: #FFFFFF;
-  --neo-white: #1a1a1a;
+  --neo-accent: #FFCC00;
+  --neo-black: #E0E0E0;
+  --neo-white: #0A0A1A;
+  --cyber-navy: #0A0A1A;
+  --cyber-electric: #00F0FF;
+  --cyber-purple: #6B2CF5;
+  --cyber-hotpink: #FF0099;
 }
 
 /* Thick borders */
@@ -65,15 +78,15 @@ html {
 }
 
 .dark .shadow-neo-hard {
-  box-shadow: 8px 8px 0px 0px rgba(255, 255, 255, 0.15);
+  box-shadow: 8px 8px 0px 0px #6B2CF5;
 }
 
 .dark .shadow-neo-hard-lg {
-  box-shadow: 12px 12px 0px 0px rgba(255, 255, 255, 0.15);
+  box-shadow: 12px 12px 0px 0px #6B2CF5;
 }
 
 .dark .shadow-neo-hard-sm {
-  box-shadow: 6px 6px 0px 0px rgba(255, 255, 255, 0.15);
+  box-shadow: 6px 6px 0px 0px #6B2CF5;
 }
 
 .hover\:shadow-neo-hard-sm:hover {
@@ -81,7 +94,7 @@ html {
 }
 
 .dark .hover\:shadow-neo-hard-sm:hover {
-  box-shadow: 6px 6px 0px 0px rgba(255, 255, 255, 0.15);
+  box-shadow: 6px 6px 0px 0px #6B2CF5;
 }
 
 .hover\:shadow-neo-hard:hover {
@@ -89,7 +102,7 @@ html {
 }
 
 .dark .hover\:shadow-neo-hard:hover {
-  box-shadow: 8px 8px 0px 0px rgba(255, 255, 255, 0.15);
+  box-shadow: 8px 8px 0px 0px #6B2CF5;
 }
 
 .hover\:shadow-neo-hard-lg:hover {
@@ -97,32 +110,32 @@ html {
 }
 
 .dark .hover\:shadow-neo-hard-lg:hover {
-  box-shadow: 12px 12px 0px 0px rgba(255, 255, 255, 0.15);
+  box-shadow: 12px 12px 0px 0px #6B2CF5;
 }
 
-/* Brutal shadows dark mode support */
+/* Brutal shadows dark mode support - Cyber/Neon purple */
 .dark .shadow-brutal {
-  box-shadow: 8px 8px 0px 0px rgba(255, 255, 255, 0.15);
+  box-shadow: 8px 8px 0px 0px #6B2CF5;
 }
 
 .dark .shadow-brutal-md {
-  box-shadow: 6px 6px 0px 0px rgba(255, 255, 255, 0.15);
+  box-shadow: 6px 6px 0px 0px #6B2CF5;
 }
 
 .dark .shadow-brutal-sm {
-  box-shadow: 4px 4px 0px 0px rgba(255, 255, 255, 0.15);
+  box-shadow: 4px 4px 0px 0px #6B2CF5;
 }
 
 .dark .shadow-brutal-active {
-  box-shadow: 2px 2px 0px 0px rgba(255, 255, 255, 0.15);
+  box-shadow: 2px 2px 0px 0px #6B2CF5;
 }
 
 .dark .hover\:shadow-brutal-sm:hover {
-  box-shadow: 4px 4px 0px 0px rgba(255, 255, 255, 0.15);
+  box-shadow: 4px 4px 0px 0px #00F0FF;
 }
 
 .dark .hover\:shadow-brutal-md:hover {
-  box-shadow: 6px 6px 0px 0px rgba(255, 255, 255, 0.15);
+  box-shadow: 6px 6px 0px 0px #00F0FF;
 }
 
 /* Accent utilities */
@@ -141,13 +154,14 @@ html {
 /* Neo-Brutalist base card */
 .neo-card {
   background-color: var(--neo-white);
-  border-radius: 1.5rem;
   padding: 1.25rem;
   box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
 }
 
 .dark .neo-card {
-  background-color: #1e293b;
+  background-color: #0A0A1A;
+  box-shadow: 8px 8px 0px 0px #6B2CF5;
+  border: 3px solid #00F0FF;
 }
 
 /* Brutal card (sharp corners for Neo-Brutalist aesthetic) */
@@ -156,7 +170,9 @@ html {
 }
 
 .dark .brutal-card {
-  @apply bg-slate-800 border-white;
+  background-color: #0A0A1A;
+  border-color: #00F0FF;
+  box-shadow: 8px 8px 0px 0px #6B2CF5;
 }
 
 /* Brutal button with interactive states */
@@ -165,7 +181,16 @@ html {
 }
 
 .dark .brutal-btn {
-  @apply border-white;
+  border-color: #00F0FF;
+  box-shadow: 4px 4px 0px 0px #6B2CF5;
+}
+
+.dark .brutal-btn:hover {
+  box-shadow: 4px 4px 0px 0px #00F0FF;
+}
+
+.dark .brutal-btn:active {
+  box-shadow: 2px 2px 0px 0px #6B2CF5;
 }
 
 /* Brutal hover lift effect */
@@ -178,7 +203,7 @@ html {
 }
 
 .dark .brutal-hover-lift:hover {
-  box-shadow: 6px 6px 0px 0px rgba(255, 255, 255, 0.15);
+  box-shadow: 6px 6px 0px 0px #6B2CF5;
 }
 
 /* Hover lift (instant, no fade) */
@@ -225,7 +250,7 @@ html {
   }
 }
 
-:global(.dark) .skeleton-pulse {
+.dark .skeleton-pulse {
   background: linear-gradient(
     90deg,
     rgb(51, 65, 85) 0%,
@@ -244,9 +269,111 @@ html {
   opacity: 0.15;
 }
 
+.dark .halftone-pattern {
+  background-image: radial-gradient(circle, #00F0FF 2px, transparent 2.5px);
+  opacity: 0.3;
+}
+
 /* Sticker badge */
 .sticker-badge {
   @apply absolute -top-3 -right-3 bg-black text-white text-[10px] font-bold px-2 py-1 rotate-12 z-20 shadow-brutal-sm border-2 border-white;
+}
+
+.dark .sticker-badge {
+  background-color: #FF0099;
+  border-color: #00F0FF;
+  box-shadow: 4px 4px 0px 0px #6B2CF5;
+}
+
+/* Brutal badge component styles */
+.brutal-badge {
+  @apply inline-flex items-center gap-1 font-black border-2 shadow-brutal-sm transition-all;
+  background-color: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+.dark .brutal-badge {
+  background-color: #6B2CF5;
+  color: #E0E0E0;
+  border-color: #00F0FF;
+  box-shadow: 4px 4px 0px 0px #FF0099;
+}
+
+.brutal-badge.live {
+  background-color: #ef4444;
+  border-color: #dc2626;
+}
+
+.dark .brutal-badge.live {
+  background-color: #FF0099;
+  border-color: #FF0099;
+  box-shadow: 4px 4px 0px 0px #00F0FF;
+  animation: pulse-badge 1.5s ease-in-out infinite;
+}
+
+.brutal-badge.new {
+  background-color: #FFCC00;
+  color: #000;
+  border-color: #000;
+}
+
+.dark .brutal-badge.new {
+  background-color: #FFCC00;
+  border-color: #00F0FF;
+  box-shadow: 4px 4px 0px 0px #6B2CF5;
+}
+
+.brutal-badge.viral {
+  background: linear-gradient(135deg, #FF0099 0%, #6B2CF5 100%);
+  border-color: #FF0099;
+}
+
+.dark .brutal-badge.viral {
+  background: linear-gradient(135deg, #FF0099 0%, #00F0FF 100%);
+  border-color: #FF0099;
+  box-shadow: 4px 4px 0px 0px #6B2CF5;
+}
+
+.brutal-badge.trending {
+  background-color: #6B2CF5;
+  border-color: #6B2CF5;
+}
+
+.dark .brutal-badge.trending {
+  background-color: #00F0FF;
+  border-color: #00F0FF;
+  color: #0A0A1A;
+  box-shadow: 4px 4px 0px 0px #FF0099;
+}
+
+.brutal-badge.top-performer {
+  background-color: #FFCC00;
+  color: #000;
+  border-color: #FFCC00;
+}
+
+.dark .brutal-badge.top-performer {
+  background-color: #FFCC00;
+  border-color: #FF0099;
+  box-shadow: 4px 4px 0px 0px #FF0099;
+}
+
+.brutal-badge.rotated {
+  transform: rotate(-3deg);
+}
+
+.brutal-badge.pulse {
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 /* Navigation items */
@@ -287,27 +414,29 @@ html {
 }
 
 .dark .nav-item {
-  color: rgb(255 255 255 / 0.6);
+  color: #00F0FF;
+  border-color: transparent;
 }
 
 .dark .nav-item:hover {
-  color: rgb(255 255 255);
-  background-color: rgb(255 255 255 / 0.05);
+  color: #0A0A1A;
+  background-color: #00F0FF;
   transform: translateY(-2px);
-  box-shadow: 4px 4px 0px 0px rgb(255 255 255 / 0.15);
-  border-color: rgb(255 255 255);
+  box-shadow: 4px 4px 0px 0px #6B2CF5;
+  border-color: #00F0FF;
   border-radius: 0;
 }
 
 .dark .nav-item.active {
-  background-color: var(--neo-accent);
-  border-color: rgb(255 255 255);
-  box-shadow: 6px 6px 0px 0px rgb(255 255 255 / 0.15);
-  color: rgb(0 0 0);
+  background-color: #FF0099;
+  border-color: #FF0099;
+  box-shadow: 6px 6px 0px 0px #6B2CF5;
+  color: #E0E0E0;
 }
 
 .dark .nav-item.active:hover {
-  box-shadow: 6px 6px 0px 0px rgb(255 255 255 / 0.15);
+  box-shadow: 6px 6px 0px 0px #00F0FF;
+  background-color: #FF0099;
 }
 
 .sub-nav-item {
@@ -348,28 +477,29 @@ html {
 }
 
 .dark .sub-nav-item {
-  color: rgb(255 255 255 / 0.6);
+  color: #00F0FF;
+  border-color: transparent;
 }
 
 .dark .sub-nav-item:hover {
-  color: rgb(255 255 255);
-  background-color: rgb(255 255 255 / 0.05);
+  color: #0A0A1A;
+  background-color: #00F0FF;
   transform: translateY(-2px);
-  box-shadow: 4px 4px 0px 0px rgb(255 255 255 / 0.15);
-  border-color: rgb(255 255 255);
+  box-shadow: 4px 4px 0px 0px #6B2CF5;
+  border-color: #00F0FF;
   border-radius: 0;
 }
 
 .dark .sub-nav-item.active {
-  background-color: var(--neo-accent);
-  border-color: rgb(255 255 255);
-  box-shadow: 6px 6px 0px 0px rgb(255 255 255 / 0.15);
-  color: rgb(0 0 0);
+  background-color: #FF0099;
+  border-color: #FF0099;
+  box-shadow: 6px 6px 0px 0px #6B2CF5;
+  color: #E0E0E0;
   border-radius: 0;
 }
 
 .dark .sub-nav-item.active:hover {
-  box-shadow: 6px 6px 0px 0px rgb(255 255 255 / 0.15);
+  box-shadow: 6px 6px 0px 0px #00F0FF;
   border-radius: 0;
 }
 
@@ -400,31 +530,37 @@ html {
 
 .dark .sub-nav-item.border-dashed {
   border-left: none;
-  border: 2px dashed rgb(255 255 255 / 0.3);
+  border: 2px dashed #00F0FF;
 }
 
 .dark .sub-nav-item.border-dashed:hover {
-  border: 3px dashed rgb(255 255 255);
+  border: 3px dashed #FF0099;
+  box-shadow: 4px 4px 0px 0px #6B2CF5;
 }
 
 .dark .sub-nav-item.border-dashed.active {
-  background-color: var(--neo-accent);
-  border: 3px solid rgb(255 255 255);
-  box-shadow: 6px 6px 0px 0px rgb(255 255 255 / 0.15);
-  color: rgb(0 0 0);
+  background-color: #FF0099;
+  border: 3px solid #FF0099;
+  box-shadow: 6px 6px 0px 0px #6B2CF5;
+  color: #E0E0E0;
   border-radius: 0;
 }
 
 .dark .sub-nav-item.border-dashed.active:hover {
-  box-shadow: 6px 6px 0px 0px rgb(255 255 255 / 0.15);
+  box-shadow: 6px 6px 0px 0px #00F0FF;
 }
 
 /* Background texture pattern for main content area */
 .bg-texture-pattern {
-  background-image: url("https://www.transparenttextures.com/patterns/graphy.png");
-  background-repeat: repeat;
+    background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
 .dark .bg-texture-pattern {
-  background-image: none;
+  background-image: 
+    linear-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
 }

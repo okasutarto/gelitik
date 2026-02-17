@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { Bar } from "vue-chartjs";
+import { useTheme } from "@/composables/useTheme";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -30,6 +31,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const sortBy = ref<"views" | "likes" | "shares" | "engagement">("views");
 const sortDirection = ref<"desc" | "asc">("desc");
+const { isDark } = useTheme();
 
 const sortedVideos = computed(() => {
   if (!props.videos || props.videos.length === 0) return [];
@@ -96,7 +98,7 @@ const chartData = computed(() => {
             100
           );
         }),
-        backgroundColor: "#0f172a",
+        backgroundColor: isDark.value ? "#00F0FF" : "#0f172a",
         borderRadius: 6,
         barThickness: 20,
         borderWidth: 0,
@@ -105,21 +107,27 @@ const chartData = computed(() => {
   };
 });
 
-const chartOptions = {
+const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
-  indexAxis: "y",
+  indexAxis: "y" as const,
   plugins: {
     legend: {
       display: false,
     },
     tooltip: {
-      backgroundColor: "rgba(30, 41, 59, 0.95)",
-      titleFont: { size: 14, weight: "bold" },
+      backgroundColor: isDark.value
+        ? "rgba(10, 10, 26, 0.95)"
+        : "rgba(30, 41, 59, 0.95)",
+      titleFont: { size: 14, weight: "bold" as const },
+      titleColor: isDark.value ? "#00F0FF" : "#fff",
       bodyFont: { size: 12 },
+      bodyColor: isDark.value ? "#E0E0E0" : "#fff",
       padding: 12,
       cornerRadius: 8,
       displayColors: true,
+      borderColor: isDark.value ? "#00F0FF" : "transparent",
+      borderWidth: isDark.value ? 1 : 0,
       callbacks: {
         title: (tooltipItems: any) => {
           const video = displayedVideos.value[tooltipItems[0].dataIndex];
@@ -145,10 +153,10 @@ const chartOptions = {
     y: {
       beginAtZero: true,
       grid: {
-        color: "#f1f5f9",
+        color: isDark.value ? "rgba(255, 255, 255, 0.1)" : "#f1f5f9",
       },
       ticks: {
-        color: "#94a3b8",
+        color: isDark.value ? "#E0E0E0" : "#94a3b8",
         font: { size: 11 },
         callback: (value: string | number) => {
           const numValue = Number(value);
@@ -159,7 +167,7 @@ const chartOptions = {
       },
     },
   },
-} as const;
+}));
 
 const toggleSortDirection = () => {
   sortDirection.value = sortDirection.value === "asc" ? "desc" : "asc";
@@ -173,7 +181,8 @@ const toggleSortDirection = () => {
     <div
       class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
       <div>
-        <h3 class="text-lg font-black uppercase text-slate-900 dark:text-white">
+        <h3
+          class="text-lg font-black uppercase text-slate-900 dark:text-electric/70">
           Top 5 Videos by Performance
         </h3>
         <p class="text-sm font-bold opacity-60 uppercase dark:text-slate-400">
@@ -183,7 +192,7 @@ const toggleSortDirection = () => {
       <div class="flex gap-2">
         <select
           v-model="sortBy"
-          class="bg-slate-50 dark:bg-slate-700 border-neo-3 border-black neo-shadow-hard-sm text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-300 py-2 px-3 focus:ring-2 focus:ring-primary-500 cursor-pointer outline-none hover:ne-hover-lift">
+          class="bg-slate-50 dark:bg-navy border-neo-3 border-black dark:border-electric neo-shadow-hard-sm text-sm font-semibold text-slate-600 dark:text-white py-2 px-3 cursor-pointer outline-none brutal-hover-lift">
           <option value="views">Views</option>
           <option value="likes">Likes</option>
           <option value="shares">Shares</option>
@@ -191,7 +200,7 @@ const toggleSortDirection = () => {
         </select>
         <button
           @click="toggleSortDirection"
-          class="bg-slate-50 dark:bg-slate-700 border-neo-3 border-black neo-shadow-hard-sm text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-300 py-2 px-4 focus:ring-2 focus:ring-primary-500 cursor-pointer outline-none hover:ne-hover-lift flex items-center gap-2">
+          class="bg-slate-50 dark:bg-navy border-neo-3 border-black dark:border-electric neo-shadow-hard-sm text-sm font-semibold text-slate-600 dark:text-white py-2 px-4 cursor-pointer outline-none brutal-hover-lift flex items-center gap-2">
           {{ sortDirection === "asc" ? "↓ Ascending" : "↓ Descending" }}
         </button>
       </div>

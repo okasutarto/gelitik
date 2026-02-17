@@ -69,14 +69,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Debug: Show raw response
-          echo "=== RAW RESPONSE ===" && cat minimax_response.json && echo "=== END ==="
-
           # Check if valid JSON first
           if ! jq empty minimax_response.json 2>/dev/null; then
             echo "## AI Code Review\n\n⚠️ Invalid API response. Check API configuration." > review_output.md
-          elif grep -q "404\|error\|not found\|invalid" minimax_response.json; then
-            echo "## AI Code Review\n\n⚠️ MiniMax API not available. Please configure API key." > review_output.md
+            echo "DEBUG: Invalid JSON - $(cat minimax_response.json | head -c 200)" >> review_output.md
+          elif grep -q "404\|error\|not found\|invalid\|Unauthorized" minimax_response.json; then
+            echo "## AI Code Review\n\n⚠️ MiniMax API error. Check API key." > review_output.md
+            echo "DEBUG: Error response - $(cat minimax_response.json)" >> review_output.md
           else
             # Try to extract review from various response formats
             set +e

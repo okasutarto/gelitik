@@ -1,0 +1,32 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    branches: [main]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    # Runs automatically on every PR to main (no manual comment needed)
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--max-turns 10 --dangerouslyAllowAnthropicKey"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

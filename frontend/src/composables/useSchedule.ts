@@ -102,12 +102,19 @@ export function useSchedule() {
         )
     })
 
+    // Reset state - call this on logout
+    const resetSchedule = () => {
+        scheduledPosts.value = generateMockPosts()
+        selectedDate.value = new Date()
+    }
+
     return {
         scheduledPosts,
         selectedDate,
         getPostsByDate,
         addPost,
         updatePostDate,
-        currentMonthPosts
+        currentMonthPosts,
+        resetSchedule
     }
 }

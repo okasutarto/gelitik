@@ -62,7 +62,9 @@ const onDrop = (e: DragEvent, date: Date) => {
   e.preventDefault();
   // In a real app, we'd transfer the post ID via dataTransfer
   // For strict types, we mock it here assuming the last dragged item is moved
-  console.log("Dropped on", date);
+  if (import.meta.env.DEV) {
+    console.log("Dropped on", date);
+  }
   // Logic to update post date would go here
 };
 </script>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import api from "@/services/api";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
@@ -28,10 +28,19 @@ const platformIcons = {
   tiktok: Music2,
 };
 
-const platformColors = {
-  instagram: "pink",
-  tiktok: "slate",
+// Static color mappings for Tailwind (avoid dynamic classes)
+const platformBgColors: Record<string, string> = {
+  instagram: 'bg-pink-100 dark:bg-pink-900/30',
+  tiktok: 'bg-slate-100 dark:bg-slate-800',
 };
+
+const platformIconColors: Record<string, string> = {
+  instagram: 'text-pink-600 dark:text-pink-400',
+  tiktok: 'text-slate-600 dark:text-slate-300',
+};
+
+const getPlatformBgColor = (platform: string) => platformBgColors[platform] || 'bg-gray-100';
+const getPlatformIconColor = (platform: string) => platformIconColors[platform] || 'text-gray-600';
 
 const availablePlatforms = [
   {
@@ -61,12 +70,18 @@ const fetchAccounts = async () => {
 
 const connectPlatform = async (platform: string) => {
   try {
-    console.log(`[Connections] Connecting to ${platform}...`);
+    if (import.meta.env.DEV) {
+      console.log(`[Connections] Connecting to ${platform}...`);
+    }
     const { data } = await api.get(`/auth/${platform}/connect`);
-    console.log(`[Connections] Response:`, data);
+    if (import.meta.env.DEV) {
+      console.log(`[Connections] Response:`, data);
+    }
 
     if (data.success && data.data.authUrl) {
-      console.log(`[Connections] Redirecting to TikTok...`);
+      if (import.meta.env.DEV) {
+        console.log(`[Connections] Redirecting to TikTok...`);
+      }
       window.location.href = data.data.authUrl;
     } else {
       console.error(`[Connections] Failed - No authUrl in response`, data);
@@ -115,12 +130,12 @@ onMounted(() => {
         class="flex items-center justify-between neo-card border-neo-3 border-black">
         <div class="flex items-center gap-4">
           <div
-            :class="`w-12 h-12 rounded-full flex items-center justify-center bg-${platformColors[account.platform as keyof typeof platformColors]}-100`">
+            :class="['w-12 h-12 rounded-full flex items-center justify-center', getPlatformBgColor(account.platform)]">
             <component
               :is="
                 platformIcons[account.platform as keyof typeof platformIcons]
               "
-              :class="`w-6 h-6 text-${platformColors[account.platform as keyof typeof platformColors]}-600`" />
+              :class="['w-6 h-6', getPlatformIconColor(account.platform)]" />
           </div>
           <div>
             <h3 class="font-semibold text-slate-900 dark:text-white">

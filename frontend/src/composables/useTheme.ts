@@ -5,14 +5,39 @@ export type Theme = 'light' | 'dark' | 'system'
 const theme = ref<Theme>('system')
 const isDark = ref(false)
 
+const STORAGE_KEY = 'gelitik-theme'
+
+/**
+ * Initialize theme synchronously - call this BEFORE app mount to prevent FOUC
+ * This is the key fix for the flash of unstyled content issue
+ */
+export function initTheme() {
+    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null
+    if (stored && ['light', 'dark', 'system'].includes(stored)) {
+        theme.value = stored
+    }
+
+    // Apply theme immediately (synchronous)
+    if (theme.value === 'system') {
+        isDark.value = window.matchMedia('(prefers-color-scheme: dark)').matches
+    } else {
+        isDark.value = theme.value === 'dark'
+    }
+
+    // Update HTML class
+    if (isDark.value) {
+        document.documentElement.classList.add('dark')
+    } else {
+        document.documentElement.classList.add('light')
+    }
+}
+
 /**
  * Composable for managing dark/light theme
  * Persists user preference to localStorage
  * Supports system preference detection
  */
 export function useTheme() {
-    const STORAGE_KEY = 'gelitik-theme'
-
     const updateDarkMode = () => {
         if (theme.value === 'system') {
             isDark.value = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -41,24 +66,14 @@ export function useTheme() {
         setTheme(nextTheme)
     }
 
-    const initTheme = () => {
-        const stored = localStorage.getItem(STORAGE_KEY) as Theme | null
-        if (stored && ['light', 'dark', 'system'].includes(stored)) {
-            theme.value = stored
-        }
-        updateDarkMode()
-
-        // Listen for system preference changes
+    // Set up system preference listener (only needed once)
+    if (typeof window !== 'undefined') {
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
             if (theme.value === 'system') {
                 updateDarkMode()
             }
         })
     }
-
-    onMounted(() => {
-        initTheme()
-    })
 
     return {
         theme,

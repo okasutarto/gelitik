@@ -226,7 +226,7 @@ const toggleSortDirection = () => {
           <div class="flex-1 flex items-center gap-3 min-w-0">
             <img
               :src="
-                video.cover_image_url || 'https://via.placeholder.com/64x64'
+                video.cover_image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZTIeMmUyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5Y2EzYWYiIGZvbnQtc2l6ZT0iMjQiPkltYWdlPC90ZXh0Pjwvc3ZnPg=='
               "
               :alt="truncateTitle(video.video_description || '', 20)"
               class="w-12 h-12 rounded-lg object-cover" />

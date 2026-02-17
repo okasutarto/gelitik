@@ -67,20 +67,21 @@ const mainDashboardItem: NavItem = {
 };
 
 // Platform items (sub-nav under Platforms section)
+// TODO: Fetch actual connection status from API
 const platformItems: SubNavItem[] = [
   {
     name: "Instagram",
     path: "/dashboard/instagram",
     icon: Instagram,
     color: "pink",
-    connected: false, // Will be fetched from API
+    connected: false,
   },
   {
     name: "TikTok",
     path: "/dashboard/tiktok",
     icon: Music2,
     color: "slate",
-    connected: true, // TikTok is connected
+    connected: false,
   },
 ];
 

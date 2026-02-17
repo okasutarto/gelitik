@@ -12,7 +12,7 @@ import {
   useVideoAnalytics,
   type VideoDetailData,
 } from "@/composables/useVideoAnalytics";
-import BrutalBadge from "./BrutalBadge.vue";
+import { BrutalBadge } from "@/components/dashboard";
 import { formatNumber } from "@/utils/format";
 
 interface Props {

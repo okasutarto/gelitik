@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import type { Platform } from "@/types/platform";
 import type { Video } from "@/types/video";
-import VideoDetailModal from "./VideoDetailModal.vue";
+import { VideoDetailModal } from "@/components/dashboard";
 import { formatNumber } from "@/utils/format";
 import {
   calculateEngagementRate,

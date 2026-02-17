@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { Download } from "lucide-vue-next";
-import TopVideosChart from "./TopVideosChart.vue";
-import EngagementDoughnutChart from "./EngagementDoughnutChart.vue";
+import { TopVideosChart, EngagementDoughnutChart } from "@/components/dashboard";
 import type { Video } from "@/types/video";
 
 interface Props {

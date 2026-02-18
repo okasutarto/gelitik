@@ -24,7 +24,10 @@
       "Bash(gh secret list:*)",
       "Bash(gh api:*)",
       "Bash(~/.claude/hooks/auto-pr-review.sh:*)",
-      "Bash(unset:*)"
+      "Bash(unset:*)",
+      "Bash(npx prisma generate:*)",
+      "mcp__plugin_supabase_supabase__get_project",
+      "Bash(npx prisma db push:*)"
     ]
   }
 }

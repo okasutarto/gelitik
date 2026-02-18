@@ -24,6 +24,14 @@ const sortedVideos = computed(() => {
   if (!props.videos || props.videos.length === 0) return [];
 
   return [...props.videos].sort((a, b) => {
+    // Map sortBy values to actual field names
+    const getField = (item: typeof a, sort: string) => {
+      if (sort === "views") return item.view_count || 0;
+      if (sort === "likes") return item.like_count || 0;
+      if (sort === "shares") return item.share_count || 0;
+      return item.view_count || 0;
+    };
+
     const metricA =
       sortBy.value === "engagement"
         ? (((a.like_count || 0) +
@@ -31,7 +39,7 @@ const sortedVideos = computed(() => {
             (a.share_count || 0)) /
             (a.view_count || 0.00001)) *
           100
-        : a[sortBy.value === "views" ? "view_count" : sortBy.value];
+        : getField(a, sortBy.value);
     const metricB =
       sortBy.value === "engagement"
         ? (((b.like_count || 0) +
@@ -39,7 +47,7 @@ const sortedVideos = computed(() => {
             (b.share_count || 0)) /
             (b.view_count || 0.00001)) *
           100
-        : b[sortBy.value === "views" ? "view_count" : sortBy.value];
+        : getField(b, sortBy.value);
 
     if (sortDirection.value === "asc") {
       return metricA - metricB;
@@ -240,12 +248,5 @@ const toggleSortDirection = () => {
 </template>
 
 <style scoped>
-/* Custom line clamp utility - renamed to avoid conflict with Tailwind's .truncate */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+/* Custom line clamp for video descriptions - uses Tailwind's line-clamp-2 */
 </style>

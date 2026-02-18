@@ -6,6 +6,7 @@ import { authenticateJwt } from '../middleware/auth.middleware';
 import { validate, schemas } from '../middleware/validation';
 import { InstagramService } from '../services/instagram.service';
 import { TikTokService } from '../services/tiktokService';
+import { tokenManager } from '../services/tokenManager';
 import prisma from '../config/prisma';
 import { JWT_SECRET, FRONTEND_URL } from '../config/env';
 import { generateOAuthState, validateOAuthState } from '../config/oauthState';
@@ -89,6 +90,7 @@ router.get('/:platform/callback', async (req, res) => {
 
         const userId = stateData.userId;
 
+        // First, create or update the account to get the ID
         const account = await prisma.socialAccount.upsert({
             where: {
                 userId_platform_accountId: {
@@ -98,9 +100,6 @@ router.get('/:platform/callback', async (req, res) => {
                 }
             },
             update: {
-                accessToken: result.accessToken,
-                refreshToken: result.refreshToken,
-                expiresAt: result.expiresIn ? new Date(Date.now() + result.expiresIn * 1000) : null,
                 displayName: result.displayName,
                 username: result.username,
                 avatar: result.avatar,
@@ -114,13 +113,16 @@ router.get('/:platform/callback', async (req, res) => {
                 displayName: result.displayName,
                 username: result.username,
                 avatar: result.avatar,
-                accessToken: result.accessToken,
-                refreshToken: result.refreshToken,
+                accessToken: result.accessToken, // Legacy field - will be migrated
+                refreshToken: result.refreshToken, // Legacy field - will be migrated
                 expiresAt: result.expiresIn ? new Date(Date.now() + result.expiresIn * 1000) : null,
                 scope: result.scope,
                 isActive: true
             }
         });
+
+        // Store tokens with encryption
+        await tokenManager.storeTokens(account.id, result.accessToken, result.refreshToken);
 
         res.redirect(`${FRONTEND_URL}/dashboard/${platform}`);
 

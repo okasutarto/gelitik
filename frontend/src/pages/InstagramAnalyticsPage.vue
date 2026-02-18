@@ -12,6 +12,7 @@ import { usePlatformAnalytics } from "@/composables/usePlatformAnalytics";
 import { useRouter } from "vue-router";
 import { formatNumber } from "@/utils/format";
 import { useToast } from "@/composables/useToast";
+import type { AxiosError } from "axios";
 
 const router = useRouter();
 const toast = useToast();
@@ -59,8 +60,9 @@ const instagramStats = computed(() => {
 });
 
 onMounted(() => {
-  fetchAnalytics().catch((err) => {
-    if ((err as any)?.response?.status === 404) {
+  fetchAnalytics().catch((err: unknown) => {
+    const axiosErr = err as AxiosError;
+    if (axiosErr.response?.status === 404) {
       toast.error(
         "Instagram account not connected. Please connect your account first.",
       );

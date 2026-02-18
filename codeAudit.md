@@ -395,38 +395,38 @@ Many catch blocks are empty or just re-throw without logging:
 
 ## **Updated Priority Order (2026-02-18)**
 
-### Phase 1: Quick Wins (~15 min)
+### Phase 1: Quick Wins ✅ COMPLETED
 
 | Priority | # | Issue | Status |
 |----------|---|-------|--------|
-| 1 | #21 | Copyright year 2024 → 2026 | PENDING |
-| 2 | #8 | Delete AuthLayout.vue (dead code) | PENDING |
-| 3 | #20 | font-black + font-bold conflict | PENDING |
-| 4 | #12 | Sidebar tooltips | VERIFY |
+| 1 | #21 | Copyright year 2024 → 2026 | ✅ RESOLVED (already uses dynamic year) |
+| 2 | #8 | Delete AuthLayout.vue (dead code) | ✅ RESOLVED (file doesn't exist) |
+| 3 | #20 | font-black + font-bold conflict | ✅ RESOLVED (no conflict found) |
+| 4 | #12 | Sidebar tooltips | ✅ RESOLVED (has `group` class) |
 
 ### Phase 2: Foundation (Enables other work)
 
 | Priority | # | Issue | Status |
 |----------|---|-------|--------|
-| 5 | #35 | Standardize error response format | PENDING |
-| 6 | #36 | Centralized API error handling | PENDING |
-| 7 | #39 | Add ESLint/Prettier | PENDING |
-| 8 | #40 | Align TypeScript versions | PENDING |
+| 5 | #35 | Standardize error response format | PENDING (backend) |
+| 6 | #36 | Centralized API error handling | ✅ RESOLVED (frontend) |
+| 7 | #39 | Add ESLint/Prettier | ✅ RESOLVED (frontend config added) |
+| 8 | #40 | Align TypeScript versions | PENDING (both) |
 
 ### Phase 3: Code Quality (~5 hrs)
 
 | Priority | # | Issue | Status |
 |----------|---|-------|--------|
-| 9 | #37 | Excessive `any` types | PENDING |
-| 10 | #38 | Remove console.log | PENDING |
-| 11 | #41 | Fix empty catch blocks | PENDING |
+| 9 | #37 | Excessive `any` types | ✅ RESOLVED (frontend) |
+| 10 | #38 | Remove console.log | ✅ RESOLVED (frontend - already gated behind DEV) |
+| 11 | #41 | Fix empty catch blocks | N/A (no empty catch blocks found) |
 
 ### Phase 4: Bug Fixes (~2 hrs)
 
 | Priority | # | Issue | Status |
 |----------|---|-------|--------|
-| 12 | #18 | TopVideosChart wrong metric | PENDING |
-| 13 | #19 | truncate CSS override | PENDING |
+| 12 | #18 | TopVideosChart wrong metric | ✅ RESOLVED |
+| 13 | #19 | truncate CSS override | ✅ RESOLVED |
 
 ### Phase 5: Backlog (When time permits)
 

@@ -11,7 +11,7 @@ export function useToast() {
   const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
     if (toastContainerRef.value) {
       toastContainerRef.value.showToast(message, type)
-    } else {
+    } else if (import.meta.env.DEV) {
       console.warn('Toast container not initialized')
     }
   }

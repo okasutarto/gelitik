@@ -54,20 +54,21 @@ const availablePlatforms = [
   {
     id: "instagram-graph",
     name: "Instagram Business",
-    description: "Connect for insights, analytics & publishing",
+    description: "Advanced insights, analytics & publishing (coming soon)",
     icon: Instagram,
     iconColor: "text-pink-600",
-    badge: "Recommended",
-    badgeColor: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+    badge: "Coming Soon",
+    badgeColor: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+    disabled: true,
   },
   {
     id: "instagram",
     name: "Instagram",
-    description: "Basic account connection",
+    description: "Basic profile & media access",
     icon: Instagram,
     iconColor: "text-pink-400",
-    badge: "Basic",
-    badgeColor: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+    badge: "Available",
+    badgeColor: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
   },
   {
     id: "tiktok",
@@ -229,8 +230,8 @@ onMounted(() => {
         <button
           v-for="platform in availablePlatforms"
           :key="platform.id"
-          @click="connectPlatform(platform.id)"
-          :disabled="isConnected(platform.id)"
+          @click="!platform.disabled && connectPlatform(platform.id)"
+          :disabled="isConnected(platform.id) || platform.disabled"
           class="relative flex flex-col items-start justify-center p-4 h-auto min-h-[80px] bg-white dark:bg-navy shadow-brutal-sm dark:shadow-brutal-cyber border-3 border-black dark:border-electric brutal-hover-lift disabled:opacity-50 disabled:cursor-not-allowed">
           <div class="flex items-center gap-3 w-full">
             <component

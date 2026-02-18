@@ -3,12 +3,14 @@ import prisma from '../config/prisma';
 import { InstagramService } from '../services/instagram.service';
 import { InstagramGraphService } from '../services/instagramGraph.service';
 import { TikTokService } from '../services/tiktokService';
+import { InstagramGraphService } from '../services/instagramGraph.service';
 import { tokenManager } from '../services/tokenManager';
 
 const router = Router();
 const instagramService = new InstagramService();
 const instagramGraphService = new InstagramGraphService();
 const tiktokService = new TikTokService();
+const instagramGraphService = new InstagramGraphService();
 
 /**
  * GET /api/analytics/overview
@@ -142,10 +144,14 @@ router.get('/:platform/video/:videoId', async (req, res) => {
                 shares: videoDetails.share_count || 0,
                 engagement_rate: Math.round(engagementRate * 10) / 10
             });
-        } else if (platform === 'instagram') {
-            // Instagram doesn't have the same video detail API
-            // You would need to use Instagram Graph API for media insights
-            res.status(501).json({ error: 'Instagram video details not implemented yet' });
+        } else if (platform === 'instagram' || platform === 'instagram-graph') {
+            // Instagram Graph API can get media details
+            if (platform === 'instagram-graph') {
+                const mediaInsights = await instagramGraphService.getMediaInsights(accessToken, videoId);
+                res.json(mediaInsights);
+            } else {
+                res.status(501).json({ error: 'Instagram video details not implemented yet' });
+            }
         } else {
             res.status(400).json({ error: 'Unsupported platform' });
         }

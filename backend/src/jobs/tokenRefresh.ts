@@ -3,11 +3,14 @@ import prisma from '../config/prisma';
 import { InstagramService } from '../services/instagram.service';
 import { InstagramGraphService } from '../services/instagramGraph.service';
 import { TikTokService } from '../services/tiktokService';
+import { InstagramGraphService } from '../services/instagramGraph.service';
 import { tokenManager } from '../services/tokenManager';
+import { encrypt, decrypt } from '../config/encryption';
 
 const instagramService = new InstagramService();
 const instagramGraphService = new InstagramGraphService();
 const tiktokService = new TikTokService();
+const instagramGraphService = new InstagramGraphService();
 
 async function refreshTokens() {
   console.log('[Token Refresh] Starting token refresh job...');

@@ -39,7 +39,7 @@ model SocialAccount {
   displayName        String
   username           String?
   avatar             String?
-  accessToken        String      // Deprecated: use accessTokenEncrypted
+  accessToken        String?     // Deprecated: use accessTokenEncrypted
   accessTokenEncrypted String?   // AES-256-GCM encrypted access token
   refreshToken       String?     // Deprecated: use refreshTokenEncrypted
   refreshTokenEncrypted String?  // AES-256-GCM encrypted refresh token

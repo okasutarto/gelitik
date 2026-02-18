@@ -39,6 +39,15 @@ const routes: RouteRecordRaw[] = [
         }
     },
     {
+        path: '/dashboard/instagram-graph',
+        name: 'instagram-graph-analytics',
+        component: () => import('@/pages/InstagramAnalyticsPage.vue'),
+        meta: {
+            title: 'Instagram Business Insights - Gelitik',
+            requiresAuth: true
+        }
+    },
+    {
         path: '/dashboard/tiktok',
         name: 'tiktok-analytics',
         component: () => import('@/pages/TikTokAnalyticsPage.vue'),

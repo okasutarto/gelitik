@@ -44,16 +44,35 @@ const platformIconColors: Record<string, string> = {
 const getPlatformBgColor = (platform: string) => platformBgColors[platform] || 'bg-gray-100';
 const getPlatformIconColor = (platform: string) => platformIconColors[platform] || 'text-gray-600';
 
+const isConnected = (platformId: string) => {
+  return accounts.value.some(
+    (acc) => acc.platform === platformId || (platformId === 'instagram-graph' && acc.platform === 'instagram-graph')
+  );
+};
+
 const availablePlatforms = [
+  {
+    id: "instagram-graph",
+    name: "Instagram Business",
+    description: "Connect for insights, analytics & publishing",
+    icon: Instagram,
+    iconColor: "text-pink-600",
+    badge: "Recommended",
+    badgeColor: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+  },
   {
     id: "instagram",
     name: "Instagram",
+    description: "Basic account connection",
     icon: Instagram,
-    iconColor: "text-pink-600",
+    iconColor: "text-pink-400",
+    badge: "Basic",
+    badgeColor: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
   },
   {
     id: "tiktok",
     name: "TikTok",
+    description: "Connect your TikTok account",
     icon: Music2,
     iconColor: "text-slate-900 dark:text-white",
   },
@@ -211,12 +230,26 @@ onMounted(() => {
           v-for="platform in availablePlatforms"
           :key="platform.id"
           @click="connectPlatform(platform.id)"
-          class="flex items-center justify-center gap-3 h-14 bg-white dark:bg-navy shadow-brutal-sm dark:shadow-brutal-cyber border-3 border-black dark:border-electric brutal-hover-lift">
-          <component
-            :is="platform.icon"
-            :size="24"
-            :class="platform.iconColor" />
-          <span class="font-bold">Connect {{ platform.name }}</span>
+          :disabled="isConnected(platform.id)"
+          class="relative flex flex-col items-start justify-center p-4 h-auto min-h-[80px] bg-white dark:bg-navy shadow-brutal-sm dark:shadow-brutal-cyber border-3 border-black dark:border-electric brutal-hover-lift disabled:opacity-50 disabled:cursor-not-allowed">
+          <div class="flex items-center gap-3 w-full">
+            <component
+              :is="platform.icon"
+              :size="24"
+              :class="platform.iconColor" />
+            <span class="font-bold text-lg">Connect {{ platform.name }}</span>
+            <span
+              v-if="platform.badge"
+              :class="platform.badgeColor"
+              class="ml-auto text-xs font-bold px-2 py-0.5 rounded uppercase">
+              {{ platform.badge }}
+            </span>
+          </div>
+          <p
+            v-if="platform.description"
+            class="text-sm text-slate-500 dark:text-slate-400 mt-1 ml-9">
+            {{ platform.description }}
+          </p>
         </button>
       </div>
     </div>

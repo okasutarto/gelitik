@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
 import { Eye, Users, UserPlus, Layers } from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
@@ -14,15 +15,68 @@ import { formatNumber } from "@/utils/format";
 import { useToast } from "@/composables/useToast";
 import type { AxiosError } from "axios";
 
+const route = useRoute();
 const router = useRouter();
 const toast = useToast();
-const { loading, accountData, fetchAnalytics } =
-  usePlatformAnalytics("instagram");
+
+// Determine platform from route path - supports both instagram and instagram-graph
+const platform = computed(() => {
+  const path = route.path;
+  if (path.includes('instagram-graph')) return 'instagram-graph';
+  return 'instagram';
+});
+
+const { loading, accountData, fetchAnalytics } = usePlatformAnalytics(platform.value);
+
+// Determine if we're using Instagram Graph API
+const isGraphApi = computed(() => platform.value === 'instagram-graph');
 
 const instagramStats = computed(() => {
-  if (!accountData.value?.data.analytics) return [];
+  const data = accountData.value?.data;
 
-  const analytics = accountData.value.data.analytics;
+  // Handle Instagram Graph API format
+  if (isGraphApi.value && data?.insights) {
+    const insights = data.insights;
+    return [
+      {
+        title: "Impressions",
+        value: formatNumber(insights.impressions || 0),
+        change: "12%",
+        changeType: "up" as const,
+        icon: Eye,
+        subtitle: "+12% vs last week",
+      },
+      {
+        title: "Accounts Reached",
+        value: formatNumber(insights.followersCount || 0),
+        change: "5%",
+        changeType: "up" as const,
+        icon: Users,
+        subtitle: "+5% new accounts",
+      },
+      {
+        title: "Profile Visits",
+        value: formatNumber(insights.reach || 0),
+        change: "8.4%",
+        changeType: "up" as const,
+        icon: UserPlus,
+        subtitle: "Total reach",
+      },
+      {
+        title: "Engagement",
+        value: `${(insights.engagement || 0).toFixed(1)}%`,
+        change: "18%",
+        changeType: "up" as const,
+        icon: Layers,
+        subtitle: "Engagement rate",
+      },
+    ];
+  }
+
+  // Handle Instagram Basic API format
+  if (!data?.analytics) return [];
+
+  const analytics = data.analytics;
   return [
     {
       title: "Impressions",

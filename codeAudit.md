@@ -232,11 +232,9 @@ Input validation is now implemented using Joi in `middleware/validation.ts`. Rou
 
 ---
 
-#### **32. No Authorization Checks on Analytics Routes**
+#### ~~32. No Authorization Checks on Analytics Routes~~ ✅ RESOLVED
 
-`analytics.routes.ts` doesn't verify that requested videos belong to the authenticated user's connected accounts. Any user could access any video by ID.
-
-**Recommendation:** Add ownership verification before returning video data.
+All analytics routes already verify user ownership by filtering with `userId` in Prisma queries.
 
 ---
 
@@ -253,12 +251,9 @@ Input validation is now implemented using Joi in `middleware/validation.ts`. Rou
 
 ---
 
-#### **34. Hardcoded Ngrok URLs in Production Code**
+#### ~~34. Hardcoded Ngrok URLs in Production Code~~ ✅ RESOLVED
 
-- `app.ts:23` - hardcoded ngrok URL
-- `vite.config.ts:8` - hardcoded allowedHosts
-
-**Recommendation:** Use environment variables only.
+vite.config.ts now uses `ALLOWED_HOSTS` env var with fallback to `true` (allow all). Backend already uses env vars for FRONTEND_URL.
 
 ---
 
@@ -379,20 +374,20 @@ Many catch blocks are empty or just re-throw without logging:
 
 | **Severity**  | **Count** | **Remaining** |
 | ------------- | --------- | ------------- |
-| Security      | 7         | 3             |
+| Security      | 7         | 1             |
 | Architecture  | 2         | 2             |
 | Code Quality  | 6         | 6             |
-| **Total New** | **15**    | **11**        |
+| **Total New** | **15**    | **9**         |
 
 ### Combined Total
 
 | **Severity**        | **Count** | **Remaining** |
 | ------------------- | --------- | ------------- |
-| Critical + Security | 11        | 2             |
+| Critical + Security | 11        | 1             |
 | Architecture        | 6         | 5             |
 | Code Quality        | 17        | 15            |
 | Minor / Style       | 8         | 7             |
-| **Grand Total**     | **42**    | **29**        |
+| **Grand Total**     | **42**    | **27**        |
 
 ---
 

@@ -32,26 +32,28 @@ model Session {
 }
 
 model SocialAccount {
-  id           String      @id @default(cuid())
-  userId       String
-  platform     String
-  accountId    String
-  displayName  String
-  username     String?
-  avatar       String?
-  accessToken  String
-  refreshToken String?
-  expiresAt    DateTime?
-  tokenType    String?
-  scope        String?
-  isActive     Boolean     @default(true)
-  metadata     Json?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  analytics    Analytics[]
-  content      Content[]
-  posts        Post[]
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String      @id @default(cuid())
+  userId             String
+  platform           String
+  accountId          String
+  displayName        String
+  username           String?
+  avatar             String?
+  accessToken        String      // Deprecated: use accessTokenEncrypted
+  accessTokenEncrypted String?   // AES-256-GCM encrypted access token
+  refreshToken       String?     // Deprecated: use refreshTokenEncrypted
+  refreshTokenEncrypted String?  // AES-256-GCM encrypted refresh token
+  expiresAt          DateTime?
+  tokenType          String?
+  scope              String?
+  isActive           Boolean     @default(true)
+  metadata           Json?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  analytics          Analytics[]
+  content            Content[]
+  posts              Post[]
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, platform, accountId])
 }

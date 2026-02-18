@@ -25,11 +25,14 @@ const handleGoogleLogin = () => {
 };
 
 const handleForgotPassword = () => {
-  // TODO: Implement forgot password flow
+  // TODO: Implement forgot password flow - redirect to password reset page or open modal
+  // For now, show a toast or redirect to signup page
+  window.location.href = '/register';
 };
 
 const handleSignup = () => {
-  // TODO: Implement signup flow
+  // TODO: Implement signup flow - redirect to registration page
+  window.location.href = '/register';
 };
 </script>
 

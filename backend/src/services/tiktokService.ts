@@ -22,7 +22,9 @@ export class TikTokService implements PlatformService {
       const tokenData = await this.exchangeCodeForToken(code);
       const userInfo = await this.getUserInfo(tokenData.access_token) as TikTokUserInfo;
 
-      console.log('[TikTok] userInfo object:', userInfo);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[TikTok] userInfo object:', userInfo);
+      }
 
       return {
         accessToken: tokenData.access_token,
@@ -66,8 +68,10 @@ export class TikTokService implements PlatformService {
         }
       });
 
-      console.log('[TikTok] Token response:', response.data);
-      console.log('[TikTok] Token scopes:', response.data.scope);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[TikTok] Token response:', response.data);
+        console.log('[TikTok] Token scopes:', response.data.scope);
+      }
 
       return response.data;
     } catch (error) {
@@ -137,7 +141,9 @@ export class TikTokService implements PlatformService {
         }
       );
 
-      console.log('[TikTok] Videos response:', response.data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[TikTok] Videos response:', response.data);
+      }
 
       const videos = response.data?.data?.videos || [];
       return {
@@ -249,7 +255,9 @@ export class TikTokService implements PlatformService {
         }
       );
 
-      console.log('[TikTok] Video query response:', response.data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[TikTok] Video query response:', response.data);
+      }
 
       const videos = response.data?.data?.videos || [];
 

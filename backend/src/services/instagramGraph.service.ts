@@ -19,7 +19,7 @@ export class InstagramGraphService implements PlatformService {
     private readonly appSecret: string;
     private readonly redirectUri: string;
     private readonly graphUrl = 'https://graph.facebook.com/v18.0';
-    private readonly authUrl = 'https://www.facebook.com/v18.0/dialog/oauth';
+    private readonly authUrl = 'https://www.instagram.com/oauth/authorize';
 
     constructor() {
         this.appId = process.env.INSTAGRAM_GRAPH_APP_ID || '';
@@ -35,7 +35,7 @@ export class InstagramGraphService implements PlatformService {
         const params = new URLSearchParams({
             client_id: this.appId,
             redirect_uri: this.redirectUri,
-            scope: 'instagram_basic,instagram_manage_insights,pages_show_list,pages_read_engagement',
+            scope: 'instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish,instagram_business_manage_insights',
             response_type: 'code',
             state: state || ''
         });

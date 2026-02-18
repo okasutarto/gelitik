@@ -2,6 +2,7 @@ import { Router } from 'express';
 import prisma from '../config/prisma';
 import { InstagramService } from '../services/instagram.service';
 import { TikTokService } from '../services/tiktokService';
+import { tokenManager } from '../services/tokenManager';
 
 const router = Router();
 const instagramService = new InstagramService();
@@ -57,11 +58,18 @@ router.get('/:platform', async (req, res) => {
 
         if (!account) return res.status(404).json({ error: 'Account not connected' });
 
+        // Get decrypted access token
+        const accessToken = await tokenManager.getAccessToken(account.id);
+
+        if (!accessToken) {
+            return res.status(401).json({ error: 'Access token not available. Please reconnect your account.' });
+        }
+
         let data;
         if (platform === 'instagram') {
-            data = await instagramService.getAnalytics(account.accessToken, account.accountId, new Date(), new Date());
+            data = await instagramService.getAnalytics(accessToken, account.accountId, new Date(), new Date());
         }         else if (platform === 'tiktok') {
-            const videosData = await tiktokService.getAnalytics(account.accessToken, account.accountId, new Date(), new Date());
+            const videosData = await tiktokService.getAnalytics(accessToken, account.accountId, new Date(), new Date());
             data = {
                 userInfo: videosData.userInfo,
                 videos: videosData.videos,
@@ -93,9 +101,16 @@ router.get('/:platform/video/:videoId', async (req, res) => {
             return res.status(404).json({ error: 'Account not found for this platform' });
         }
 
+        // Get decrypted access token
+        const accessToken = await tokenManager.getAccessToken(account.id);
+
+        if (!accessToken) {
+            return res.status(401).json({ error: 'Access token not available. Please reconnect your account.' });
+        }
+
         if (platform === 'tiktok') {
             // Fetch video details from TikTok API
-            const videoDetails = await tiktokService.getVideoDetails(account.accessToken, videoId);
+            const videoDetails = await tiktokService.getVideoDetails(accessToken, videoId);
 
             // Calculate engagement rate
             const engagementRate = videoDetails.view_count > 0

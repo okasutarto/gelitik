@@ -1,6 +1,7 @@
 import express from 'express';
 import prisma from '../config/prisma';
 import { TikTokService } from '../services/tiktokService';
+import { tokenManager } from '../services/tokenManager';
 import { authenticateJwt } from '../middleware/auth.middleware';
 import { FRONTEND_URL } from '../config/env';
 
@@ -81,8 +82,6 @@ router.post('/tiktok/connect', authenticateJwt, async (req, res) => {
           displayName: display_name,
           username: username || userInfo.display_name,
           avatar: avatar_url || userInfo.avatar_url,
-          accessToken: access_token,
-          refreshToken: refresh_token,
           expiresAt,
           isActive: true
         }
@@ -96,13 +95,16 @@ router.post('/tiktok/connect', authenticateJwt, async (req, res) => {
           displayName: display_name,
           username: username || userInfo.display_name,
           avatar: avatar_url || userInfo.avatar_url,
-          accessToken: access_token,
-          refreshToken: refresh_token,
+          accessToken: access_token, // Legacy field - will be migrated
+          refreshToken: refresh_token, // Legacy field - will be migrated
           expiresAt,
           isActive: true
         }
       });
     }
+
+    // Store tokens with encryption
+    await tokenManager.storeTokens(socialAccount.id, access_token, refresh_token);
 
     await prisma.analytics.create({
       data: {

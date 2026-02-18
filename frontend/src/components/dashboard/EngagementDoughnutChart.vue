@@ -6,6 +6,7 @@ import { formatNumber } from "@/utils/format";
 import type { Video } from "@/types/video";
 import "@/composables/useChart"; // Registers Chart.js components
 import type { TooltipItem } from "chart.js";
+import type { ChartOptions } from "chart.js";
 
 interface Props {
   videos?: Video[];
@@ -64,12 +65,12 @@ const chartData = computed(() => {
   };
 });
 
-const chartOptions = computed(() => ({
+const chartOptions = computed<ChartOptions<'doughnut'>>(() => ({
   responsive: true,
   maintainAspectRatio: true,
   cutout: "60%",
   cutoutPercentage: 60,
-  events: ["mousemove", "mouseout", "click", "touchstart", "touchmove"] as any,
+  events: ["mousemove", "mouseout", "click", "touchstart", "touchmove"],
   plugins: {
     legend: {
       display: true,

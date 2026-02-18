@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import prisma from '../config/prisma';
 import { InstagramService } from '../services/instagram.service';
 import { TikTokService } from '../services/tiktokService';
+import { tokenManager } from '../services/tokenManager';
 
 const instagramService = new InstagramService();
 const tiktokService = new TikTokService();
@@ -24,35 +25,45 @@ async function refreshTokens() {
 
     for (const account of accounts) {
       try {
-        let result;
+        // Get decrypted refresh token using tokenManager
+        const refreshToken = await tokenManager.getRefreshToken(account.id);
 
-        if (account.platform === 'instagram' && account.refreshToken) {
-          console.log(`[Token Refresh] Refreshing Instagram token for account ${account.id}`);
-          result = await instagramService.refreshToken(account.refreshToken);
-
-          await prisma.socialAccount.update({
-            where: { id: account.id },
-            data: {
-              accessToken: result.accessToken,
-              refreshToken: result.refreshToken || account.refreshToken,
-              expiresAt: result.expiresIn ? new Date(Date.now() + result.expiresIn * 1000) : null
-            }
-          });
-        } else if (account.platform === 'tiktok' && account.refreshToken) {
-          console.log(`[Token Refresh] Refreshing TikTok token for account ${account.id}`);
-          const tokenData = await tiktokService.refreshToken(account.refreshToken);
-
-          await prisma.socialAccount.update({
-            where: { id: account.id },
-            data: {
-              accessToken: tokenData.access_token,
-              refreshToken: tokenData.refresh_token || account.refreshToken,
-              expiresAt: new Date(Date.now() + tokenData.expires_in * 1000)
-            }
-          });
-        } else {
+        if (!refreshToken) {
           console.log(`[Token Refresh] Skipping ${account.platform} account ${account.id} - no refresh token`);
+          continue;
         }
+
+        let newAccessToken: string;
+        let newRefreshToken: string | undefined;
+        let newExpiresAt: Date | null;
+
+        if (account.platform === 'instagram') {
+          console.log(`[Token Refresh] Refreshing Instagram token for account ${account.id}`);
+          const result = await instagramService.refreshToken(refreshToken);
+          newAccessToken = result.accessToken;
+          newRefreshToken = result.refreshToken;
+          newExpiresAt = result.expiresIn ? new Date(Date.now() + result.expiresIn * 1000) : null;
+        } else if (account.platform === 'tiktok') {
+          console.log(`[Token Refresh] Refreshing TikTok token for account ${account.id}`);
+          const tokenData = await tiktokService.refreshToken(refreshToken);
+          newAccessToken = tokenData.accessToken;
+          newRefreshToken = tokenData.refreshToken;
+          newExpiresAt = tokenData.expiresIn ? new Date(Date.now() + tokenData.expiresIn * 1000) : null;
+        } else {
+          console.log(`[Token Refresh] Skipping ${account.platform} account ${account.id} - unsupported platform`);
+          continue;
+        }
+
+        // Store encrypted tokens
+        await tokenManager.updateTokens(account.id, newAccessToken, newRefreshToken);
+
+        // Update expiresAt in database (not sensitive, no encryption needed)
+        await prisma.socialAccount.update({
+          where: { id: account.id },
+          data: {
+            expiresAt: newExpiresAt
+          }
+        });
 
         console.log(`[Token Refresh] Successfully refreshed ${account.platform} account ${account.id}`);
       } catch (error) {

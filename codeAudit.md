@@ -417,9 +417,9 @@ Many catch blocks are empty or just re-throw without logging:
 
 | Priority | # | Issue | Status |
 |----------|---|-------|--------|
-| 9 | #37 | Excessive `any` types | PENDING |
-| 10 | #38 | Remove console.log | PENDING |
-| 11 | #41 | Fix empty catch blocks | PENDING |
+| 9 | #37 | Excessive `any` types | ✅ RESOLVED (frontend) |
+| 10 | #38 | Remove console.log | ✅ RESOLVED (frontend - already gated behind DEV) |
+| 11 | #41 | Fix empty catch blocks | N/A (no empty catch blocks found) |
 
 ### Phase 4: Bug Fixes (~2 hrs)
 

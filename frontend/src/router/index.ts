@@ -106,13 +106,19 @@ const router = createRouter({
  
       const authStore = useAuthStore()
  
-      // Handle Google OAuth callback (e.g. /login?token=xyz)
-      if (to.path === '/login' && to.query.token) {
-         const token = to.query.token as string
-         localStorage.setItem('token', token)
-         authStore.token = token
+      // Handle Google OAuth callback (e.g. /login?auth=success)
+      // Tokens are now stored server-side, no token in URL
+      if (to.path === '/login' && to.query.auth === 'success') {
          await authStore.checkSession()
-         return next('/dashboard')
+         if (authStore.isAuthenticated) {
+           return next('/dashboard')
+         }
+         return next('/login')
+      }
+
+      // Handle auth errors (e.g. /login?error=invalid_state)
+      if ((to.path === '/login' || to.path === '/connections') && to.query.error) {
+         // Error will be handled by the page component
       }
  
       // Handle platform connection success (e.g., ?connected=tiktok)

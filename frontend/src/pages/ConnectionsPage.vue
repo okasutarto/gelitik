@@ -108,6 +108,22 @@ const disconnectAccount = async (accountId: string) => {
 };
 
 onMounted(() => {
+  // Handle OAuth errors from URL query params
+  const error = router.currentRoute.value.query.error as string;
+  if (error) {
+    toast.error(`Connection failed: ${error}`);
+    // Clear the error from URL
+    router.replace({ query: {} });
+  }
+
+  // Handle successful connection
+  const connected = router.currentRoute.value.query.connected as string;
+  if (connected) {
+    toast.success(`${connected} connected successfully!`);
+    sessionStorage.setItem('connection-success', connected);
+    router.replace({ query: {} });
+  }
+
   fetchAccounts();
 });
 </script>

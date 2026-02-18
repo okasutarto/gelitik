@@ -28,9 +28,9 @@ router.get('/google', (req, res, next) => {
 });
 
 router.get('/google/callback', passport.authenticate('google', { session: false, failureRedirect: '/login' }), (req, res) => {
-    const user = req.user as any;
-    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
-    res.redirect(`${FRONTEND_URL}/login?token=${token}`);
+    // User is serialized by Passport - redirect to login with success flag
+    // Token is stored server-side in session, no token in URL
+    res.redirect(`${FRONTEND_URL}/login?auth=success`);
 });
 
 // === Platform Connection (Protected) ===

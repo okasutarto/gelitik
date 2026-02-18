@@ -23,10 +23,10 @@ router.get('/tiktok/auth-url', authenticateJwt, (req, res) => {
   }
 });
 
-// Handle TikTok OAuth callback
-// SECURITY NOTE: Tokens are passed in URL query params here.
-// For production, this should use session-based token handling or
-// short-lived temporary codes to avoid exposing tokens in logs/history.
+// Handle TikTok OAuth callback - DEPRECATED
+// SECURITY: This endpoint is deprecated. Use /auth/tiktok/callback instead
+// which stores tokens securely in the database without exposing them in the URL.
+// This endpoint now redirects to the secure callback.
 router.get('/tiktok/callback', async (req, res) => {
   const { code, state, error } = req.query;
 
@@ -38,21 +38,9 @@ router.get('/tiktok/callback', async (req, res) => {
     return res.redirect(`${FRONTEND_URL}/auth/error?error=missing_code`);
   }
 
-  try {
-    const tokenData = await tiktokService.exchangeCodeForToken(code as string);
-    const userInfo = await tiktokService.getUserInfo(tokenData.access_token);
-
-    // Pass tokens via URL (security concern - see note above)
-    // TODO: Implement session-based token handling for production
-    res.redirect(`${FRONTEND_URL}/auth/tiktok/callback?` +
-      `access_token=${tokenData.access_token}` +
-      `&refresh_token=${tokenData.refresh_token || ''}` +
-      `&expires_in=${tokenData.expires_in}` +
-      `&user_id=${userInfo.open_id}` +
-      `&display_name=${encodeURIComponent(userInfo.display_name)}`);
-  } catch (error) {
-    res.redirect(`${FRONTEND_URL}/auth/error?error=token_exchange_failed`);
-  }
+  // Redirect to the secure callback endpoint that stores tokens in DB
+  // The frontend should use /auth/:platform/connect -> /auth/:platform/callback instead
+  res.redirect(`${FRONTEND_URL}/auth/tiktok/callback?code=${code}&state=${state || ''}`);
 });
 
 // Connect TikTok account (after OAuth callback)

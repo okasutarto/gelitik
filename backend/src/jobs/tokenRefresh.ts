@@ -89,7 +89,10 @@ export function startTokenRefreshCron() {
 
   console.log('[Token Refresh] Cron job scheduled to run every 6 hours');
 
-  refreshTokens();
+  // Don't run on startup if DB is unavailable - will run on cron schedule
+  refreshTokens().catch(err => {
+    console.log('[Token Refresh] Startup refresh skipped (DB unavailable):', err.message);
+  });
 }
 
 export { refreshTokens };

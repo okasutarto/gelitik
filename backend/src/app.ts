@@ -33,18 +33,26 @@ const loginRateLimiter = rateLimit({
 });
 
 // CORS Configuration
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  FRONTEND_URL,
+  process.env.ALLOWED_ORIGINS?.split(',') // Allow additional origins via env
+].flat().filter(Boolean);
+
 app.use(cors({
   origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      FRONTEND_URL
-    ].filter(Boolean);
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // In development, allow all origins
+      if (process.env.NODE_ENV === 'development') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
     }
   },
   credentials: true,

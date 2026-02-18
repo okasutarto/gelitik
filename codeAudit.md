@@ -425,8 +425,8 @@ Many catch blocks are empty or just re-throw without logging:
 
 | Priority | # | Issue | Status |
 |----------|---|-------|--------|
-| 12 | #18 | TopVideosChart wrong metric | PENDING |
-| 13 | #19 | truncate CSS override | PENDING |
+| 12 | #18 | TopVideosChart wrong metric | ✅ RESOLVED |
+| 13 | #19 | truncate CSS override | ✅ RESOLVED |
 
 ### Phase 5: Backlog (When time permits)
 

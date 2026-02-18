@@ -1,10 +1,12 @@
 import cron from 'node-cron';
 import prisma from '../config/prisma';
 import { InstagramService } from '../services/instagram.service';
+import { InstagramGraphService } from '../services/instagramGraph.service';
 import { TikTokService } from '../services/tiktokService';
 import { tokenManager } from '../services/tokenManager';
 
 const instagramService = new InstagramService();
+const instagramGraphService = new InstagramGraphService();
 const tiktokService = new TikTokService();
 
 async function refreshTokens() {
@@ -40,6 +42,12 @@ async function refreshTokens() {
         if (account.platform === 'instagram') {
           console.log(`[Token Refresh] Refreshing Instagram token for account ${account.id}`);
           const result = await instagramService.refreshToken(refreshToken);
+          newAccessToken = result.accessToken;
+          newRefreshToken = result.refreshToken;
+          newExpiresAt = result.expiresIn ? new Date(Date.now() + result.expiresIn * 1000) : null;
+        } else if (account.platform === 'instagram-graph') {
+          console.log(`[Token Refresh] Refreshing Instagram Graph token for account ${account.id}`);
+          const result = await instagramGraphService.refreshToken(refreshToken);
           newAccessToken = result.accessToken;
           newRefreshToken = result.refreshToken;
           newExpiresAt = result.expiresIn ? new Date(Date.now() + result.expiresIn * 1000) : null;

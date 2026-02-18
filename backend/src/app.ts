@@ -10,6 +10,7 @@ import { FRONTEND_URL, PORT as CONFIG_PORT } from './config/env';
 import authRoutes from './routes/auth.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import socialAccountsRoutes from './routes/socialAccounts';
+import instagramGraphRoutes from './routes/instagramGraph.routes';
 import { startTokenRefreshCron } from './jobs/tokenRefresh';
 
 const app = express();
@@ -70,6 +71,7 @@ app.use(passport.initialize()); // Initialize Passport
 // Routes
 // Apply rate limiting to auth routes
 app.use('/auth', authRateLimiter, authRoutes);
+app.use('/auth/instagram-graph', instagramGraphRoutes);
 app.use('/api/analytics', authenticateJwt, analyticsRoutes);
 app.use('/api/accounts', authenticateJwt, socialAccountsRoutes);
 

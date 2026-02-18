@@ -1,4 +1,5 @@
 import axios from 'axios';
+import crypto from 'crypto';
 import { TikTokUserInfo, TikTokVideo, PlatformAnalytics } from '../types';
 import { PlatformService } from './platform.interface';
 
@@ -8,18 +9,38 @@ export class TikTokService implements PlatformService {
   private redirectUri = process.env.TIKTOK_REDIRECT_URI;
   private baseUrl = 'https://open.tiktokapis.com/v2';
 
-  getAuthUrl(state?: string): string {
+  getAuthUrl(state?: string, codeChallenge?: string): string {
     const scopes = ['user.info.profile', 'user.info.stats', 'video.list'];
     const authState = state || Math.random().toString(36).substring(7);
     const clientId = this.clientId || '';
     const redirectUri = this.redirectUri || '';
 
-    return `https://www.tiktok.com/v2/auth/authorize/?client_key=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes.join(',')}&response_type=code&state=${authState}`;
+    let url = `https://www.tiktok.com/v2/auth/authorize/?client_key=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes.join(',')}&response_type=code&state=${authState}`;
+
+    if (codeChallenge) {
+      url += `&code_challenge=${codeChallenge}&code_challenge_method=S256`;
+    }
+
+    return url;
   }
 
-  async exchangeCode(code: string): Promise<any> {
+  generateCodeVerifier(): string {
+    return crypto.randomBytes(32).toString('hex');
+  }
+
+  generateCodeChallenge(verifier: string): string {
+    return crypto
+      .createHash('sha256')
+      .update(verifier)
+      .digest('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+  }
+
+  async exchangeCode(code: string, codeVerifier?: string): Promise<any> {
     try {
-      const tokenData = await this.exchangeCodeForToken(code);
+      const tokenData = await this.exchangeCodeForToken(code, codeVerifier);
       const userInfo = await this.getUserInfo(tokenData.access_token) as TikTokUserInfo;
 
       if (process.env.NODE_ENV === 'development') {
@@ -46,7 +67,7 @@ export class TikTokService implements PlatformService {
     }
   }
 
-  async exchangeCodeForToken(code: string): Promise<{
+  async exchangeCodeForToken(code: string, codeVerifier?: string): Promise<{
     access_token: string;
     refresh_token?: string;
     expires_in: number;
@@ -61,6 +82,9 @@ export class TikTokService implements PlatformService {
       params.append('code', code);
       params.append('grant_type', 'authorization_code');
       params.append('redirect_uri', this.redirectUri || '');
+      if (codeVerifier) {
+        params.append('code_verifier', codeVerifier);
+      }
 
       const response = await axios.post(`${this.baseUrl}/oauth/token/`, params, {
         headers: {
@@ -188,17 +212,25 @@ export class TikTokService implements PlatformService {
     token_type: string;
   }> {
     try {
-      const response = await axios.post(`${this.baseUrl}/oauth/refresh_token/`, null, {
-        params: {
-          client_key: this.clientId,
-          client_secret: this.clientSecret,
-          grant_type: 'refresh_token',
-          refresh_token: refreshToken
+      const params = new URLSearchParams();
+      params.append('client_key', this.clientId || '');
+      params.append('client_secret', this.clientSecret || '');
+      params.append('grant_type', 'refresh_token');
+      params.append('refresh_token', refreshToken);
+
+      const response = await axios.post(`${this.baseUrl}/oauth/token/`, params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
         }
       });
 
       return response.data;
     } catch (error) {
+      console.error('[TikTok] Refresh token error detail:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('[TikTok] Response data:', error.response?.data);
+        console.error('[TikTok] Response status:', error.response?.status);
+      }
       throw new Error('Failed to refresh token');
     }
   }

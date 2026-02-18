@@ -1,62 +1,25 @@
-import crypto from 'crypto';
-
-// Simple in-memory store for OAuth state validation
-// NOTE: For production, use proper session management (e.g., express-session)
-const stateStore = new Map<string, { userId: string; platform: string; expiresAt: number }>();
-
-const STATE_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
+import { oauthStateDb } from './oauthStateDb';
 
 /**
- * Generate a random state string for OAuth security
+ * OAuth State Management - Database-backed
+ *
+ * This module provides database-backed OAuth state storage for CSRF protection.
+ * It replaces the previous in-memory Map implementation to support horizontal scaling.
  */
-export function generateOAuthState(userId: string, platform: string): string {
-    const state = crypto.randomBytes(32).toString('hex');
-    stateStore.set(state, {
-        userId,
-        platform,
-        expiresAt: Date.now() + STATE_EXPIRY_MS
-    });
 
-    // Clean up expired states periodically
-    cleanupExpiredStates();
+// Re-export for backward compatibility
+export { oauthStateDb };
 
-    return state;
+/**
+ * Generate a random state string for OAuth security (async wrapper)
+ */
+export async function generateOAuthState(userId: string, platform: string, codeVerifier?: string): Promise<string> {
+    return await oauthStateDb.generateState(userId, platform, codeVerifier);
 }
 
 /**
- * Validate and consume an OAuth state string
- * Returns the associated data if valid, null otherwise
+ * Validate and consume an OAuth state string (async wrapper)
  */
-export function validateOAuthState(state: string): { userId: string; platform: string } | null {
-    const data = stateStore.get(state);
-
-    if (!data) {
-        return null;
-    }
-
-    // Check if expired
-    if (Date.now() > data.expiresAt) {
-        stateStore.delete(state);
-        return null;
-    }
-
-    // Delete after validation (one-time use)
-    stateStore.delete(state);
-
-    return {
-        userId: data.userId,
-        platform: data.platform
-    };
-}
-
-/**
- * Clean up expired state entries
- */
-function cleanupExpiredStates(): void {
-    const now = Date.now();
-    for (const [state, data] of stateStore.entries()) {
-        if (now > data.expiresAt) {
-            stateStore.delete(state);
-        }
-    }
+export async function validateOAuthState(state: string): Promise<{ userId: string; platform: string; codeVerifier?: string } | null> {
+    return await oauthStateDb.validateState(state);
 }

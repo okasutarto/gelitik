@@ -36,20 +36,28 @@ router.get('/google/callback', passport.authenticate('google', { session: false,
 
 // === Platform Connection (Protected) ===
 // Initiate Auth Flow
-router.get('/:platform/connect', authenticateJwt, (req, res) => {
+router.get('/:platform/connect', authenticateJwt, async (req, res) => {
     const { platform } = req.params;
     const userId = (req.user as any)?.id;
 
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     // Generate secure OAuth state with CSRF protection
-    const state = generateOAuthState(userId, platform);
+    let codeVerifier: string | undefined;
+    let codeChallenge: string | undefined;
+
+    if (platform === 'tiktok') {
+        codeVerifier = tiktokService.generateCodeVerifier();
+        codeChallenge = tiktokService.generateCodeChallenge(codeVerifier);
+    }
+
+    const state = await generateOAuthState(userId, platform, codeVerifier);
 
     let authUrl;
     if (platform === 'instagram') {
         authUrl = instagramService.getAuthUrl(state);
     } else if (platform === 'tiktok') {
-        authUrl = tiktokService.getAuthUrl(state);
+        authUrl = tiktokService.getAuthUrl(state, codeChallenge);
     } else {
         return res.status(400).json({ error: 'Unsupported platform' });
     }
@@ -64,7 +72,7 @@ router.get('/:platform/callback', async (req, res) => {
     const { code, state, error } = req.query;
 
     // Validate OAuth state for CSRF protection
-    const stateData = typeof state === 'string' ? validateOAuthState(state) : null;
+    const stateData = typeof state === 'string' ? await validateOAuthState(state) : null;
     if (!stateData) {
         return res.redirect(`${FRONTEND_URL}/auth/error?error=invalid_state`);
     }
@@ -83,7 +91,7 @@ router.get('/:platform/callback', async (req, res) => {
         if (platform === 'instagram') {
             result = await instagramService.exchangeCode(code);
         } else if (platform === 'tiktok') {
-            result = await tiktokService.exchangeCode(code);
+            result = await tiktokService.exchangeCode(code, stateData.codeVerifier);
         } else {
             throw new Error('Unsupported platform');
         }

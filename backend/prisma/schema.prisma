@@ -117,3 +117,15 @@ model Post {
   updatedAt    DateTime      @updatedAt
   account      SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 }
+
+model OAuthState {
+  id        String   @id @default(cuid())
+  state     String   @unique
+  userId    String
+  platform  String
+  expiresAt DateTime
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}

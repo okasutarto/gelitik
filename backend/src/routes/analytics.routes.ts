@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import prisma from '../config/prisma';
 import { InstagramService } from '../services/instagram.service';
+import { InstagramGraphService } from '../services/instagramGraph.service';
 import { TikTokService } from '../services/tiktokService';
 import { tokenManager } from '../services/tokenManager';
 
 const router = Router();
 const instagramService = new InstagramService();
+const instagramGraphService = new InstagramGraphService();
 const tiktokService = new TikTokService();
 
 /**
@@ -67,8 +69,17 @@ router.get('/:platform', async (req, res) => {
 
         let data;
         if (platform === 'instagram') {
+            // Use Basic Display API
             data = await instagramService.getAnalytics(accessToken, account.accountId, new Date(), new Date());
-        }         else if (platform === 'tiktok') {
+        } else if (platform === 'instagram-graph') {
+            // Use Graph API for full insights
+            const analyticsData = await instagramGraphService.getAnalytics(accessToken, account.accountId, new Date(), new Date());
+            data = {
+                profile: analyticsData.profile,
+                insights: analyticsData.insights,
+                media: analyticsData.media
+            };
+        } else if (platform === 'tiktok') {
             const videosData = await tiktokService.getAnalytics(accessToken, account.accountId, new Date(), new Date());
             data = {
                 userInfo: videosData.userInfo,

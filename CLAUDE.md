@@ -11,6 +11,7 @@
 ## Project Overview
 
 Gelitik is a full-stack social media analytics platform that:
+
 - Connects to TikTok and Instagram via OAuth
 - Displays analytics (followers, engagement, views, demographics)
 - Allows scheduling posts across platforms
@@ -33,6 +34,7 @@ cd frontend
 npm install
 npm run dev
 ```
+
 - Runs on: http://localhost:5173
 - Stack: Vue 3 + Vite + TypeScript + Pinia + Tailwind CSS
 
@@ -43,6 +45,7 @@ cd backend
 npm install
 npm run dev
 ```
+
 - Runs on: http://localhost:3000
 - Stack: Node.js + Express + TypeScript + Prisma
 
@@ -188,32 +191,32 @@ The UI follows a strict Neo-Brutalist aesthetic.
 
 ### Authentication
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/register` | Register new user |
-| POST | `/auth/login` | Login user |
-| GET | `/auth/google` | Google OAuth |
-| GET | `/auth/google/callback` | Google OAuth callback |
-| GET | `/auth/tiktok` | TikTok OAuth |
-| GET | `/auth/tiktok/callback` | TikTok OAuth callback |
-| GET | `/auth/instagram` | Instagram OAuth |
-| GET | `/auth/instagram/callback` | Instagram OAuth callback |
+| Method | Endpoint                   | Description              |
+| ------ | -------------------------- | ------------------------ |
+| POST   | `/auth/register`           | Register new user        |
+| POST   | `/auth/login`              | Login user               |
+| GET    | `/auth/google`             | Google OAuth             |
+| GET    | `/auth/google/callback`    | Google OAuth callback    |
+| GET    | `/auth/tiktok`             | TikTok OAuth             |
+| GET    | `/auth/tiktok/callback`    | TikTok OAuth callback    |
+| GET    | `/auth/instagram`          | Instagram OAuth          |
+| GET    | `/auth/instagram/callback` | Instagram OAuth callback |
 
 ### Analytics
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/analytics/tiktok/:accountId` | Get TikTok analytics |
-| GET | `/analytics/instagram/:accountId` | Get Instagram analytics |
-| GET | `/analytics/overview` | Get combined overview |
+| Method | Endpoint                          | Description             |
+| ------ | --------------------------------- | ----------------------- |
+| GET    | `/analytics/tiktok/:accountId`    | Get TikTok analytics    |
+| GET    | `/analytics/instagram/:accountId` | Get Instagram analytics |
+| GET    | `/analytics/overview`             | Get combined overview   |
 
 ### Social Accounts
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/social-accounts` | List user's connected accounts |
-| POST | `/social-accounts/connect` | Connect new account |
-| DELETE | `/social-accounts/:id` | Disconnect account |
+| Method | Endpoint                   | Description                    |
+| ------ | -------------------------- | ------------------------------ |
+| GET    | `/social-accounts`         | List user's connected accounts |
+| POST   | `/social-accounts/connect` | Connect new account            |
+| DELETE | `/social-accounts/:id`     | Disconnect account             |
 
 ---
 

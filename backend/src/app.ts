@@ -12,6 +12,7 @@ import analyticsRoutes from './routes/analytics.routes';
 import socialAccountsRoutes from './routes/socialAccounts';
 import instagramGraphRoutes from './routes/instagramGraph.routes';
 import { startTokenRefreshCron } from './jobs/tokenRefresh';
+import session from 'express-session';
 
 const app = express();
 
@@ -68,12 +69,22 @@ app.use(cors({
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // false for local/ngrok
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
 app.use(passport.initialize()); // Initialize Passport
 
 // Routes
 // Apply rate limiting to auth routes
-app.use('/auth', authRateLimiter, authRoutes);
 app.use('/auth/instagram-graph', instagramGraphRoutes);
+app.use('/auth', authRateLimiter, authRoutes);
 app.use('/api/analytics', authenticateJwt, analyticsRoutes);
 app.use('/api/accounts', authenticateJwt, socialAccountsRoutes);
 

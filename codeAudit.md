@@ -430,14 +430,14 @@ Many catch blocks are empty or just re-throw without logging:
 
 ### Phase 5: Backlog (When time permits)
 
-| # | Issue |
-|---|-------|
-| #11 | Line endings (cosmetic) |
-| #13 | Hardcoded connection status |
-| #14 | Unused functions in ContentTable |
-| #15 | useTheme FOUC |
-| #17 | useSchedule state leak |
-| #23 | Bell icon for all settings |
-| #24 | Dynamic Tailwind classes |
-| #25 | placeholder.com reference |
-| #26 | No global error boundary |
+| # | Issue | Status |
+|---|-------|--------|
+| #11 | Line endings (cosmetic) | N/A |
+| #13 | Hardcoded connection status | ✅ RESOLVED |
+| #14 | Unused functions in ContentTable | N/A (not found) |
+| #15 | useTheme FOUC | Low priority |
+| #17 | useSchedule state leak | Low priority |
+| #23 | Bell icon for all settings | ✅ RESOLVED |
+| #24 | Dynamic Tailwind classes | N/A (uses function) |
+| #25 | placeholder.com reference | N/A (not found) |
+| #26 | No global error boundary | N/A (already exists) |

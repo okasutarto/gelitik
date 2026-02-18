@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   LayoutDashboard,
@@ -19,6 +19,7 @@ import {
 } from "lucide-vue-next";
 import { useTheme } from "@/composables/useTheme";
 import { useSidebar } from "@/composables/useSidebar";
+import api from "@/services/api";
 
 const route = useRoute();
 const router = useRouter();
@@ -40,8 +41,17 @@ const toggleTools = () => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   initSidebar();
+  // Fetch connection status from API
+  try {
+    const { data } = await api.get("/api/accounts/status");
+    if (data.success && data.data.connected) {
+      connectedPlatforms.value = data.data.connected;
+    }
+  } catch (error) {
+    // Silently fail - will show disconnected status
+  }
 });
 
 interface NavItem {
@@ -66,24 +76,25 @@ const mainDashboardItem: NavItem = {
   icon: LayoutDashboard,
 };
 
-// Platform items (sub-nav under Platforms section)
-// TODO: Fetch actual connection status from API
-const platformItems: SubNavItem[] = [
+// Platform items (sub-nav under Platforms section) - fetched from API
+const connectedPlatforms = ref<string[]>([]);
+
+const platformItems = computed<SubNavItem[]>(() => [
   {
     name: "Instagram",
     path: "/dashboard/instagram",
     icon: Instagram,
     color: "pink",
-    connected: false,
+    connected: connectedPlatforms.value.includes("instagram"),
   },
   {
     name: "TikTok",
     path: "/dashboard/tiktok",
     icon: Music2,
     color: "slate",
-    connected: false,
+    connected: connectedPlatforms.value.includes("tiktok"),
   },
-];
+]);
 
 // Tools section items
 const toolsItems: NavItem[] = [

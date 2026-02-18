@@ -408,10 +408,10 @@ Many catch blocks are empty or just re-throw without logging:
 
 | Priority | # | Issue | Status |
 |----------|---|-------|--------|
-| 5 | #35 | Standardize error response format | PENDING |
-| 6 | #36 | Centralized API error handling | PENDING |
-| 7 | #39 | Add ESLint/Prettier | PENDING |
-| 8 | #40 | Align TypeScript versions | PENDING |
+| 5 | #35 | Standardize error response format | PENDING (backend) |
+| 6 | #36 | Centralized API error handling | ✅ RESOLVED (frontend) |
+| 7 | #39 | Add ESLint/Prettier | ✅ RESOLVED (frontend config added) |
+| 8 | #40 | Align TypeScript versions | PENDING (both) |
 
 ### Phase 3: Code Quality (~5 hrs)
 

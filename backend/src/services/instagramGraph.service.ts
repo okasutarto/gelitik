@@ -201,6 +201,40 @@ export class InstagramGraphService implements PlatformService {
     }
 
     /**
+     * Get insights for a specific media item
+     */
+    async getMediaInsights(accessToken: string, mediaId: string): Promise<any> {
+        const response = await axios.get(`${this.graphUrl}/${mediaId}`, {
+            params: {
+                fields: 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,like_count,comment_count,share_count,save_count,reach,impressions',
+                access_token: accessToken
+            }
+        });
+
+        const data = response.data;
+        
+        // Match the shape returned by the TikTok endpoint for frontend compatibility
+        const engagement = (data.like_count || 0) + (data.comment_count || 0) + (data.share_count || 0);
+        const views = data.impressions || data.reach || 0; // impressions or reach as proxy for views in frontend
+        const engagementRate = views > 0 ? (engagement / views) * 100 : 0;
+
+        return {
+            id: data.id,
+            title: data.caption || 'Untitled Post',
+            description: data.caption || '',
+            thumbnail: data.thumbnail_url || data.media_url || '',
+            cover_image_url: data.thumbnail_url || data.media_url || '',
+            create_time: new Date(data.timestamp).getTime() / 1000,
+            duration: 0, // Images don't have duration
+            views: views,
+            likes: data.like_count || 0,
+            comments: data.comment_count || 0,
+            shares: data.share_count || 0,
+            engagement_rate: Math.round(engagementRate * 10) / 10
+        };
+    }
+
+    /**
      * Get analytics data (combines profile + insights)
      */
     async getAnalytics(accessToken: string, accountId: string, startDate: Date, endDate: Date): Promise<any> {

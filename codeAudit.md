@@ -7,7 +7,7 @@ Updated on: 2026-02-18 (Resolved issues marked)
 
 ## **Critical Issues**
 
-> **RESOLVED: #1, #2, #4, #6, #7, #9, #16, #29, #30, #31** — Multiple issues have been fixed.
+> **RESOLVED: #1, #2, #3, #4, #5, #6, #7, #9, #10, #16, #22, #28, #29, #30, #31, #33** — Multiple issues have been fixed.
 > See summary section for full list.
 
 ### ~~1. Duplicate TikTokService class — Two competing implementations~~ ✅ RESOLVED
@@ -359,9 +359,11 @@ Many catch blocks are empty or just re-throw without logging:
 | #10   | Heavy use of alert()                   | ✅ RESOLVED |
 | #16   | Unused imports in usePlatformAnalytics | ✅ RESOLVED |
 | #22   | Empty function stubs                   | ✅ RESOLVED |
+| #28   | Access tokens in URL                   | ✅ RESOLVED |
 | #29   | OAuth state not validated              | ✅ RESOLVED |
 | #30   | No rate limiting                       | ✅ RESOLVED |
 | #31   | Missing input validation               | ✅ RESOLVED |
+| #33   | Hardcoded secrets in .env              | ✅ RESOLVED |
 
 ### Original Issues (from 2026-02-13)
 
@@ -377,20 +379,20 @@ Many catch blocks are empty or just re-throw without logging:
 
 | **Severity**  | **Count** | **Remaining** |
 | ------------- | --------- | ------------- |
-| Security      | 7         | 5             |
+| Security      | 7         | 3             |
 | Architecture  | 2         | 2             |
 | Code Quality  | 6         | 6             |
-| **Total New** | **15**    | **13**        |
+| **Total New** | **15**    | **11**        |
 
 ### Combined Total
 
 | **Severity**        | **Count** | **Remaining** |
 | ------------------- | --------- | ------------- |
-| Critical + Security | 11        | 4             |
+| Critical + Security | 11        | 2             |
 | Architecture        | 6         | 5             |
 | Code Quality        | 17        | 15            |
 | Minor / Style       | 8         | 7             |
-| **Grand Total**     | **42**    | **31**        |
+| **Grand Total**     | **42**    | **29**        |
 
 ---
 
@@ -401,11 +403,11 @@ Many catch blocks are empty or just re-throw without logging:
 1. ~~Delete duplicate tiktok.service.ts~~ ✅ RESOLVED
 2. ~~Fix hardcoded JWT secret fallback~~ ✅ RESOLVED
 3. ~~Remove mock auth bypass~~ ✅ RESOLVED
-4. **Fix access tokens in URL (#28)** - still in socialAccounts.ts:48
+4. ~~**Fix access tokens in URL (#28)**~~ ✅ RESOLVED - OAuth flow now uses secure callback
 5. ~~**Add OAuth state validation (#29)**~~ ✅ RESOLVED
 6. ~~**Add rate limiting (#30)**~~ ✅ RESOLVED
 7. ~~**Add input validation (#31)**~~ ✅ RESOLVED
-8. **Remove hardcoded secrets from .env (#33)** - still present with real credentials
+8. ~~**Remove hardcoded secrets from .env (#33)**~~ ✅ RESOLVED - .env now has empty placeholders
 
 ### Phase 2: Architecture
 

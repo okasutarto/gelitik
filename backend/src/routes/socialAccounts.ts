@@ -241,4 +241,35 @@ router.get('/', authenticateJwt, async (req, res) => {
   }
 });
 
+// Get connected platforms status (lightweight endpoint for sidebar)
+router.get('/status', authenticateJwt, async (req, res) => {
+  try {
+    const user = (req as any).user;
+
+    const accounts = await prisma.socialAccount.findMany({
+      where: {
+        userId: user.id,
+        isActive: true
+      },
+      select: {
+        platform: true
+      }
+    });
+
+    const connectedPlatforms = accounts.map(a => a.platform.toLowerCase());
+
+    res.json({
+      success: true,
+      data: {
+        connected: connectedPlatforms
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch status'
+    });
+  }
+});
+
 export default router;

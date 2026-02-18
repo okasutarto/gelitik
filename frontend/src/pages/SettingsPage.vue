@@ -1,6 +1,18 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { Settings, LogOut, User, Bell, Shield } from "lucide-vue-next";
+import {
+  Settings,
+  LogOut,
+  User,
+  Bell,
+  Shield,
+  Key,
+  Link2,
+  BellRing,
+  Lock,
+  ShieldCheck,
+  Smartphone,
+} from "lucide-vue-next";
 import { useAuthStore } from "@/stores/auth";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
@@ -15,11 +27,13 @@ const settings = ref([
       {
         label: "Edit Profile",
         description: "Update your personal information",
+        icon: User,
       },
-      { label: "Change Password", description: "Update your password" },
+      { label: "Change Password", description: "Update your password", icon: Key },
       {
         label: "Connected Accounts",
         description: "Manage your social connections",
+        icon: Link2,
       },
     ],
   },
@@ -30,8 +44,9 @@ const settings = ref([
       {
         label: "Notifications",
         description: "Manage your notification preferences",
+        icon: BellRing,
       },
-      { label: "Privacy", description: "Control your data and privacy" },
+      { label: "Privacy", description: "Control your data and privacy", icon: Lock },
     ],
   },
   {
@@ -41,10 +56,12 @@ const settings = ref([
       {
         label: "Two-Factor Authentication",
         description: "Add an extra layer of security",
+        icon: ShieldCheck,
       },
       {
         label: "Active Sessions",
         description: "View and manage active sessions",
+        icon: Smartphone,
       },
     ],
   },
@@ -89,7 +106,7 @@ const settings = ref([
                       {{ item.description }}
                     </p>
                   </div>
-                  <Bell :size="18" class="text-slate-400 shrink-0" />
+                  <component :is="item.icon" :size="18" class="text-slate-400 shrink-0" />
                 </button>
               </template>
             </div>

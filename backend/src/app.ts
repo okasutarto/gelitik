@@ -91,7 +91,7 @@ app.use(errorHandler);
 
 if (require.main === module) {
   app.listen(CONFIG_PORT, () => {
-    console.log(`Server running on port ${CONFIG_PORT}`);
+    console.log(`Server running on port ${CONFIG_PORT}`); // Gelitik Backend Ready
   });
 }
 

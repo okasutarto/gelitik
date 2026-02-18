@@ -230,7 +230,9 @@ const toggleSortDirection = () => {
             class="text-right min-w-[80px] flex flex-col justify-center items-end">
             <p
               class="text-xl font-mono font-black text-slate-900 dark:text-white">
-              {{ formatNumber(video[sortBy === 'views' ? 'view_count' : sortBy === 'likes' ? 'like_count' : sortBy === 'shares' ? 'share_count' : 'view_count'] || 0) }}
+              {{ sortBy === 'engagement'
+                ? `${((((video.like_count || 0) + (video.comment_count || 0) + (video.share_count || 0)) / (video.view_count || 1)) * 100).toFixed(2)}%`
+                : formatNumber(Number(video[sortBy === 'views' ? 'view_count' : sortBy === 'likes' ? 'like_count' : sortBy === 'shares' ? 'share_count' : 'view_count']) || 0) }}
             </p>
             <p
               class="text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">

@@ -31,7 +31,14 @@
       "Bash(curl:*)",
       "Bash(npm run dev)",
       "mcp__plugin_supabase_supabase__execute_sql",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(npx vue-tsc:*)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(powershell -Command \"Stop-Process -Name node -Force -ErrorAction SilentlyContinue\")",
+      "Bash(npx tsc:*)",
+      "Bash(netstat:*)",
+      "Bash(powershell -Command \"Stop-Process -Id 5172 -Force\")",
+      "Bash(powershell -Command \"Stop-Process -Id 30312 -Force\":*)"
     ]
   }
 }

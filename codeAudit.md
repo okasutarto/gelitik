@@ -393,41 +393,51 @@ Many catch blocks are empty or just re-throw without logging:
 
 ---
 
-## **Recommended Priority Order**
+## **Updated Priority Order (2026-02-18)**
 
-### Phase 1: Critical Security (COMPLETED ✅)
+### Phase 1: Quick Wins (~15 min)
 
-All Critical + Security issues resolved!
+| Priority | # | Issue | Status |
+|----------|---|-------|--------|
+| 1 | #21 | Copyright year 2024 → 2026 | PENDING |
+| 2 | #8 | Delete AuthLayout.vue (dead code) | PENDING |
+| 3 | #20 | font-black + font-bold conflict | PENDING |
+| 4 | #12 | Sidebar tooltips | VERIFY |
 
-1. ~~Delete duplicate tiktok.service.ts~~ ✅ RESOLVED
-2. ~~Fix hardcoded JWT secret fallback~~ ✅ RESOLVED
-3. ~~Remove mock auth bypass~~ ✅ RESOLVED
-4. ~~**Fix access tokens in URL (#28)**~~ ✅ RESOLVED
-5. ~~**Add OAuth state validation (#29)**~~ ✅ RESOLVED
-6. ~~**Add rate limiting (#30)**~~ ✅ RESOLVED
-7. ~~**Add input validation (#31)**~~ ✅ RESOLVED
-8. ~~**Authorization checks (#32)**~~ ✅ RESOLVED
-9. ~~**Remove hardcoded secrets from .env (#33)**~~ ✅ RESOLVED
-10. ~~**Hardcoded ngrok URLs (#34)**~~ ✅ RESOLVED
+### Phase 2: Foundation (Enables other work)
 
-### Phase 2: Architecture
+| Priority | # | Issue | Status |
+|----------|---|-------|--------|
+| 5 | #35 | Standardize error response format | PENDING |
+| 6 | #36 | Centralized API error handling | PENDING |
+| 7 | #39 | Add ESLint/Prettier | PENDING |
+| 8 | #40 | Align TypeScript versions | PENDING |
 
-9. ~~Remove verbose debug logging~~ ✅ RESOLVED
-10. ~~Register errorHandler middleware~~ ✅ RESOLVED
-11. ~~Create shared PrismaClient singleton~~ ✅ RESOLVED
-12. **Standardize error responses (#35)**
-13. **Add centralized API error handling (#36)**
+### Phase 3: Code Quality (~5 hrs)
 
-### Phase 3: Code Quality
+| Priority | # | Issue | Status |
+|----------|---|-------|--------|
+| 9 | #37 | Excessive `any` types | PENDING |
+| 10 | #38 | Remove console.log | PENDING |
+| 11 | #41 | Fix empty catch blocks | PENDING |
 
-14. ~~Extract formatNumber to shared utility~~ ✅ RESOLVED
-15. ~~Replace alert() with toast~~ ✅ RESOLVED
-16. ~~Fix sidebar tooltips~~ ✅ RESOLVED (already has `group` class)
-17. **Fix excessive use of any (#37)**
-18. **Add ESLint/Prettier (#39)**
-19. Fix TypeScript versions
+### Phase 4: Bug Fixes (~2 hrs)
 
-### Phase 4: Minor Improvements
+| Priority | # | Issue | Status |
+|----------|---|-------|--------|
+| 12 | #18 | TopVideosChart wrong metric | PENDING |
+| 13 | #19 | truncate CSS override | PENDING |
 
-20. Fix line endings
-21. Fix remaining minor issues
+### Phase 5: Backlog (When time permits)
+
+| # | Issue |
+|---|-------|
+| #11 | Line endings (cosmetic) |
+| #13 | Hardcoded connection status |
+| #14 | Unused functions in ContentTable |
+| #15 | useTheme FOUC |
+| #17 | useSchedule state leak |
+| #23 | Bell icon for all settings |
+| #24 | Dynamic Tailwind classes |
+| #25 | placeholder.com reference |
+| #26 | No global error boundary |

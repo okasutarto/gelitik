@@ -23,10 +23,11 @@ export class InstagramGraphService implements PlatformService {
     private readonly authUrl = 'https://www.facebook.com/dialog/oauth';
 
     constructor() {
-        // Use the same app credentials as Basic API
+        // Use the same app credentials as Basic API (client_id 1216837513935124)
         this.appId = process.env.INSTAGRAM_APP_ID || '';
         this.appSecret = process.env.INSTAGRAM_APP_SECRET || '';
-        this.redirectUri = process.env.INSTAGRAM_REDIRECT_URI || 'http://localhost:3000/auth/instagram-graph/callback';
+        // But use the Graph API callback URL
+        this.redirectUri = process.env.INSTAGRAM_GRAPH_REDIRECT_URI || 'http://localhost:3000/auth/instagram-graph/callback';
     }
 
     /**

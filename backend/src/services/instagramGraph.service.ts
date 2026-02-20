@@ -196,15 +196,14 @@ export class InstagramGraphService implements PlatformService {
             // API returns: data[0].values = [{value: X, end_time: ...}, {value: Y, end_time: ...}]
             // We want the most recent (last one)
 
-            // Try follower_count first (most reliable)
-            // Use period=28_days for follower count as it's more reliable for business accounts
+            // Try follower_count - use days_28 period (API uses days_28, not 28_days)
             let followers = 0;
             try {
-                console.log('[InstagramGraph] Fetching follower_count with 28_days...');
+                console.log('[InstagramGraph] Fetching follower_count with days_28...');
                 const followerResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: {
                         metric: 'follower_count',
-                        period: '28_days',
+                        period: 'days_28',
                         access_token: accessToken
                     }
                 });
@@ -212,19 +211,23 @@ export class InstagramGraphService implements PlatformService {
                 const followerValues = followerResponse.data.data?.[0]?.values || [];
                 followers = followerValues.length > 0 ? followerValues[followerValues.length - 1]?.value || 0 : 0;
             } catch (e: any) {
-                console.log('[InstagramGraph] follower_count 28_days failed, trying lifetime...', e.response?.data?.error?.message);
-                // Fallback: try lifetime
+                console.log('[InstagramGraph] follower_count days_28 failed:', e.response?.data?.error?.message);
+            }
+
+            // If still 0, try to get from profile
+            if (followers === 0) {
                 try {
-                    const followerResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    console.log('[InstagramGraph] Trying to get followers from profile...');
+                    const profileResponse = await axios.get(`${this.graphUrl}/${igAccount.id}`, {
                         params: {
-                            metric: 'follower_count',
-                            period: 'lifetime',
+                            fields: 'followers_count,follows_count,media_count',
                             access_token: accessToken
                         }
                     });
-                    followers = parseMetricValue(followerResponse.data);
+                    console.log('[InstagramGraph] profile response:', JSON.stringify(profileResponse.data));
+                    followers = profileResponse.data.followers_count || 0;
                 } catch (e2: any) {
-                    console.error('[InstagramGraph] follower_count lifetime error:', e2.response?.data || e2.message);
+                    console.log('[InstagramGraph] profile followers_count error:', e2.response?.data?.error?.message || e2.message);
                 }
             }
 

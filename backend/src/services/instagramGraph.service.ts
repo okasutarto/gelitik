@@ -219,11 +219,11 @@ export class InstagramGraphService implements PlatformService {
             // Try engagement metrics - get individual metrics
             let totalInteractions = 0, likes = 0, comments = 0, shares = 0;
 
-            // Try likes
+            // Try likes (requires metric_type=total_value)
             try {
                 console.log('[InstagramGraph] Fetching likes...');
                 const likesResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: { metric: 'likes', period: 'day', access_token: accessToken }
+                    params: { metric: 'likes', period: 'day', metric_type: 'total_value', access_token: accessToken }
                 });
                 console.log('[InstagramGraph] likes response:', JSON.stringify(likesResponse.data));
                 const likesValues = likesResponse.data.data?.[0]?.values || [];
@@ -232,11 +232,11 @@ export class InstagramGraphService implements PlatformService {
                 console.error('[InstagramGraph] likes error:', e.response?.data || e.message);
             }
 
-            // Try comments
+            // Try comments (requires metric_type=total_value)
             try {
                 console.log('[InstagramGraph] Fetching comments...');
                 const commentsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: { metric: 'comments', period: 'day', access_token: accessToken }
+                    params: { metric: 'comments', period: 'day', metric_type: 'total_value', access_token: accessToken }
                 });
                 console.log('[InstagramGraph] comments response:', JSON.stringify(commentsResponse.data));
                 const commentsValues = commentsResponse.data.data?.[0]?.values || [];
@@ -245,11 +245,11 @@ export class InstagramGraphService implements PlatformService {
                 console.error('[InstagramGraph] comments error:', e.response?.data || e.message);
             }
 
-            // Try shares
+            // Try shares (requires metric_type=total_value)
             try {
                 console.log('[InstagramGraph] Fetching shares...');
                 const sharesResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: { metric: 'shares', period: 'day', access_token: accessToken }
+                    params: { metric: 'shares', period: 'day', metric_type: 'total_value', access_token: accessToken }
                 });
                 console.log('[InstagramGraph] shares response:', JSON.stringify(sharesResponse.data));
                 const sharesValues = sharesResponse.data.data?.[0]?.values || [];

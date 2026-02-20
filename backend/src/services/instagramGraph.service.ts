@@ -23,9 +23,10 @@ export class InstagramGraphService implements PlatformService {
     private readonly authUrl = 'https://www.facebook.com/dialog/oauth';
 
     constructor() {
-        this.appId = process.env.INSTAGRAM_GRAPH_APP_ID || '';
-        this.appSecret = process.env.INSTAGRAM_GRAPH_APP_SECRET || '';
-        this.redirectUri = process.env.INSTAGRAM_GRAPH_REDIRECT_URI || 'http://localhost:3000/auth/instagram-graph/callback';
+        // Use the same app credentials as Basic API
+        this.appId = process.env.INSTAGRAM_APP_ID || '';
+        this.appSecret = process.env.INSTAGRAM_APP_SECRET || '';
+        this.redirectUri = process.env.INSTAGRAM_REDIRECT_URI || 'http://localhost:3000/auth/instagram-graph/callback';
     }
 
     /**
@@ -38,7 +39,8 @@ export class InstagramGraphService implements PlatformService {
             redirect_uri: this.redirectUri,
             // Scopes for Instagram Graph API via Facebook OAuth
             // These require the Facebook Page + linked Instagram Business/Creator account
-            scope: 'instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list,pages_read_engagement,business_management',
+            scope: 'instagram_basic,pages_show_list',
+            // scope: 'instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list,pages_read_engagement,business_management',
             response_type: 'code',
             state: state || ''
         });

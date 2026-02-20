@@ -55,10 +55,19 @@ const isConnected = (platformId: string) => {
 const availablePlatforms = [
   {
     id: "instagram-graph",
-    name: "Instagram",
-    description: "Connect your Instagram account for insights & analytics",
+    name: "Instagram Business",
+    description: "Advanced insights, analytics & publishing (requires Facebook page)",
     icon: Instagram,
     iconColor: "text-pink-600",
+    badge: "Available",
+    badgeColor: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+  },
+  {
+    id: "instagram",
+    name: "Instagram",
+    description: "Basic profile & media access",
+    icon: Instagram,
+    iconColor: "text-pink-400",
     badge: "Available",
     badgeColor: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
   },

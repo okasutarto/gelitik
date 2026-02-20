@@ -179,7 +179,10 @@ export class InstagramGraphService implements PlatformService {
         console.log('[InstagramGraph] Getting insights for account:', igAccount.id, igAccount.username);
 
         try {
-            // Use day period with lifetime metric (most recent data point)
+            // Use day period - get most recent value (last item in array)
+            // API returns: data[0].values = [{value: X, end_time: ...}, {value: Y, end_time: ...}]
+            // We want the most recent (last one)
+
             // Try follower_count first (most reliable)
             console.log('[InstagramGraph] Fetching follower_count...');
             const followerResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
@@ -190,6 +193,9 @@ export class InstagramGraphService implements PlatformService {
                 }
             });
             console.log('[InstagramGraph] follower_count response:', JSON.stringify(followerResponse.data));
+            // Get the LAST value (most recent)
+            const followerValues = followerResponse.data.data?.[0]?.values || [];
+            const followers = followerValues.length > 0 ? followerValues[followerValues.length - 1]?.value || 0 : 0;
 
             // Try reach
             let reach = 0;
@@ -203,7 +209,8 @@ export class InstagramGraphService implements PlatformService {
                     }
                 });
                 console.log('[InstagramGraph] reach response:', JSON.stringify(reachResponse.data));
-                reach = reachResponse.data.data?.[0]?.value || 0;
+                const reachValues = reachResponse.data.data?.[0]?.values || [];
+                reach = reachValues.length > 0 ? reachValues[reachValues.length - 1]?.value || 0 : 0;
             } catch (e: any) {
                 console.error('[InstagramGraph] reach error:', e.response?.data || e.message);
                 // reach not available, continue
@@ -217,18 +224,18 @@ export class InstagramGraphService implements PlatformService {
                     params: {
                         metric: 'total_interactions',
                         period: 'day',
+                        metric_type: 'total_value',
                         access_token: accessToken
                     }
                 });
                 console.log('[InstagramGraph] total_interactions response:', JSON.stringify(engagementResponse.data));
-                totalInteractions = engagementResponse.data.data?.[0]?.value || 0;
+                const engagementValues = engagementResponse.data.data?.[0]?.values || [];
+                totalInteractions = engagementValues.length > 0 ? engagementValues[engagementValues.length - 1]?.value || 0 : 0;
             } catch (e: any) {
                 console.error('[InstagramGraph] total_interactions error:', e.response?.data || e.message);
                 // engagement not available
             }
 
-            const followerData = followerResponse.data.data?.[0];
-            const followers = followerData?.value || 0;
             console.log('[InstagramGraph] Final values - followers:', followers, 'reach:', reach, 'interactions:', totalInteractions);
 
             return {

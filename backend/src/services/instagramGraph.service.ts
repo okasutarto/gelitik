@@ -178,40 +178,77 @@ export class InstagramGraphService implements PlatformService {
     async getInsights(accessToken: string): Promise<any> {
         const igAccount = await this.getInstagramAccount(accessToken);
 
-        // Make separate calls - some metrics are incompatible with total_value
-        // Call 1: follower_count and reach (no metric_type needed)
-        const basicMetricsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-            params: {
-                metric: 'follower_count,reach',
-                period: 'day',
-                access_token: accessToken
+        try {
+            // Use lifetime period with single metric call for reliability
+            // Try follower_count first (most reliable)
+            const followerResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                params: {
+                    metric: 'follower_count',
+                    period: 'lifetime',
+                    access_token: accessToken
+                }
+            });
+
+            // Try reach
+            let reach = 0;
+            try {
+                const reachResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    params: {
+                        metric: 'reach',
+                        period: 'lifetime',
+                        access_token: accessToken
+                    }
+                });
+                reach = reachResponse.data.data?.[0]?.value || 0;
+            } catch {
+                // reach not available, continue
             }
-        });
 
-        // Call 2: engagement metrics (require total_value)
-        const engagementMetricsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-            params: {
-                metric: 'total_interactions,likes,comments,shares',
-                period: 'day',
-                metric_type: 'total_value',
-                access_token: accessToken
+            // Try engagement metrics
+            let totalInteractions = 0, likes = 0, comments = 0, shares = 0;
+            try {
+                const engagementResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    params: {
+                        metric: 'total_interactions',
+                        period: 'lifetime',
+                        metric_type: 'total_value',
+                        access_token: accessToken
+                    }
+                });
+                totalInteractions = engagementResponse.data.data?.[0]?.value || 0;
+            } catch {
+                // engagement not available
             }
-        });
 
-        const basicInsights = basicMetricsResponse.data.data || [];
-        const engagementInsights = engagementMetricsResponse.data.data || [];
+            const followerData = followerResponse.data.data?.[0];
+            const followers = followerData?.value || 0;
 
-        return {
-            followers: basicInsights.find((i: any) => i.name === 'follower_count')?.value || 0,
-            following: 0, // Not available via insights
-            mediaCount: 0, // Not available via insights (use profile.media_count instead)
-            reach: basicInsights.find((i: any) => i.name === 'reach')?.value || 0,
-            impressions: basicInsights.find((i: any) => i.name === 'reach')?.value || 0, // Use reach as proxy
-            totalInteractions: engagementInsights.find((i: any) => i.name === 'total_interactions')?.value || 0,
-            likes: engagementInsights.find((i: any) => i.name === 'likes')?.value || 0,
-            comments: engagementInsights.find((i: any) => i.name === 'comments')?.value || 0,
-            shares: engagementInsights.find((i: any) => i.name === 'shares')?.value || 0
-        };
+            return {
+                followers,
+                following: 0,
+                mediaCount: 0,
+                reach,
+                impressions: reach,
+                totalInteractions,
+                likes: 0,
+                comments: 0,
+                shares: 0
+            };
+        } catch (error) {
+            console.error('[InstagramGraph] getInsights error:', error);
+            // Return empty insights on failure
+            return {
+                followers: 0,
+                following: 0,
+                mediaCount: 0,
+                reach: 0,
+                impressions: 0,
+                totalInteractions: 0,
+                likes: 0,
+                comments: 0,
+                shares: 0
+            };
+        }
     }
 
     /**

@@ -19,7 +19,8 @@ export class InstagramGraphService implements PlatformService {
     private readonly appSecret: string;
     private readonly redirectUri: string;
     private readonly graphUrl = 'https://graph.facebook.com/v18.0';
-    private readonly authUrl = 'https://www.instagram.com/oauth/authorize';
+    // Graph API requires Facebook OAuth dialog (NOT Instagram's own OAuth)
+    private readonly authUrl = 'https://www.facebook.com/dialog/oauth';
 
     constructor() {
         this.appId = process.env.INSTAGRAM_GRAPH_APP_ID || '';
@@ -35,7 +36,9 @@ export class InstagramGraphService implements PlatformService {
         const params = new URLSearchParams({
             client_id: this.appId,
             redirect_uri: this.redirectUri,
-            scope: 'instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish,instagram_business_manage_insights',
+            // Scopes for Instagram Graph API via Facebook OAuth
+            // These require the Facebook Page + linked Instagram Business/Creator account
+            scope: 'instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list,pages_read_engagement,business_management',
             response_type: 'code',
             state: state || ''
         });
@@ -46,19 +49,24 @@ export class InstagramGraphService implements PlatformService {
      * Exchange authorization code for access token
      */
     async exchangeCode(code: string): Promise<PlatformAuthResult> {
-        // 1. Exchange code for short-lived token
-        const tokenResponse = await axios.get(`${this.graphUrl}/oauth/access_token`, {
-            params: {
-                client_id: this.appId,
-                client_secret: this.appSecret,
-                redirect_uri: this.redirectUri,
-                code
+        // 1. Exchange code for short-lived User Access Token (POST required by Meta)
+        const tokenResponse = await axios.post(
+            `https://graph.facebook.com/v18.0/oauth/access_token`,
+            null,
+            {
+                params: {
+                    client_id: this.appId,
+                    client_secret: this.appSecret,
+                    redirect_uri: this.redirectUri,
+                    code
+                }
             }
-        });
+        );
 
         const shortLivedToken = tokenResponse.data.access_token;
+        console.log('[Instagram Graph] Short-lived token obtained');
 
-        // 2. Exchange for long-lived token
+        // 2. Exchange for long-lived User Access Token (60 days)
         const longLivedResponse = await axios.get(`${this.graphUrl}/oauth/access_token`, {
             params: {
                 grant_type: 'fb_exchange_token',
@@ -70,21 +78,23 @@ export class InstagramGraphService implements PlatformService {
 
         const accessToken = longLivedResponse.data.access_token;
         const expiresIn = longLivedResponse.data.expires_in;
+        console.log('[Instagram Graph] Long-lived token obtained, expires in:', expiresIn, 'seconds');
 
-        // 3. Get user info (Instagram Business Account)
+        // 3. Get Instagram Business Account linked to Facebook Pages
         const userInfo = await this.getInstagramAccount(accessToken);
+        console.log('[Instagram Graph] Instagram account found:', userInfo.username);
 
-        // 4. Get profile picture
+        // 4. Get full profile details
         const profile = await this.getProfile(accessToken);
 
         return {
             accessToken,
-            refreshToken: accessToken, // Instagram Graph uses same token for refresh
+            refreshToken: accessToken, // Graph API long-lived tokens are refreshed with same token
             expiresIn,
             platformUserId: userInfo.id,
             username: userInfo.username,
             displayName: userInfo.name || userInfo.username,
-            avatar: profile?.picture?.url
+            avatar: profile?.profile_picture_url || undefined
         };
     }
 

@@ -44,7 +44,7 @@ const handleSignup = () => {
           <div
             class="w-12 h-12 bg-white border-[3px] border-black rounded-xl flex items-center justify-center shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
           >
-            <span class="material-symbols-outlined font-black text-3xl">bolt</span>
+            <span class="material-symbols-outlined font-black text-3xl text-slate-900">bolt</span>
           </div>
         </div>
       </div>

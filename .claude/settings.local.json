@@ -39,7 +39,8 @@
       "Bash(netstat:*)",
       "Bash(powershell -Command \"Stop-Process -Id 5172 -Force\")",
       "Bash(powershell -Command \"Stop-Process -Id 30312 -Force\":*)",
-      "Bash(npx ts-node:*)"
+      "Bash(npx ts-node:*)",
+      "Bash(python3 -c:*)"
     ]
   }
 }

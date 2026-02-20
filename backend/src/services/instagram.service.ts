@@ -18,7 +18,8 @@ export class InstagramService implements PlatformService {
         const params = new URLSearchParams({
             client_id: this.appId,
             redirect_uri: this.redirectUri,
-            scope: 'user_profile,user_media',
+            // Instagram Basic Display API scopes (for test app with test users)
+            scope: 'instagram_basic,instagram_content_publish',
             response_type: 'code',
             state: state || ''
         });
@@ -26,18 +27,22 @@ export class InstagramService implements PlatformService {
     }
 
     async exchangeCode(code: string): Promise<PlatformAuthResult> {
-        // 1. Get Short-lived Token
-        const tokenResponse = await axios.post('https://api.instagram.com/oauth/access_token', new URLSearchParams({
-            client_id: this.appId,
-            client_secret: this.appSecret,
-            grant_type: 'authorization_code',
-            redirect_uri: this.redirectUri,
-            code
-        }));
+        // 1. Get Short-lived Token (POST to Instagram's token endpoint)
+        const tokenResponse = await axios.post(
+            'https://api.instagram.com/oauth/access_token',
+            new URLSearchParams({
+                client_id: this.appId,
+                client_secret: this.appSecret,
+                grant_type: 'authorization_code',
+                redirect_uri: this.redirectUri,
+                code
+            })
+        );
 
         const { access_token, user_id } = tokenResponse.data;
+        console.log('[Instagram Basic] Short-lived token obtained for user_id:', user_id);
 
-        // 2. Exchange for Long-lived Token
+        // 2. Exchange for Long-lived Token (valid for 60 days)
         const longLivedResponse = await axios.get('https://graph.instagram.com/access_token', {
             params: {
                 grant_type: 'ig_exchange_token',
@@ -48,17 +53,19 @@ export class InstagramService implements PlatformService {
 
         const longLivedToken = longLivedResponse.data.access_token;
         const expiresIn = longLivedResponse.data.expires_in;
+        console.log('[Instagram Basic] Long-lived token obtained, expires in:', expiresIn, 'seconds');
 
         // 3. Get User Profile
         const userProfile = await this.getProfile(longLivedToken);
+        console.log('[Instagram Basic] Profile fetched:', userProfile.username);
 
         return {
             accessToken: longLivedToken,
             expiresIn,
-            platformUserId: userProfile.id,
+            platformUserId: String(userProfile.id),
             username: userProfile.username,
-            displayName: userProfile.username, // IG Basic Display doesn't always give display name
-            avatar: undefined // IG Basic Display doesn't give avatar directly
+            displayName: userProfile.username, // Basic Display API doesn't give display name
+            avatar: userProfile.profile_picture_url || undefined
         };
     }
 
@@ -82,7 +89,8 @@ export class InstagramService implements PlatformService {
     async getProfile(accessToken: string): Promise<any> {
         const response = await axios.get(`${this.baseUrl}/me`, {
             params: {
-                fields: 'id,username,account_type,media_count',
+                // profile_picture_url available with instagram_basic scope
+                fields: 'id,username,account_type,media_count,profile_picture_url',
                 access_token: accessToken
             }
         });

@@ -216,25 +216,49 @@ export class InstagramGraphService implements PlatformService {
                 // reach not available, continue
             }
 
-            // Try engagement metrics
+            // Try engagement metrics - get individual metrics
             let totalInteractions = 0, likes = 0, comments = 0, shares = 0;
+
+            // Try likes
             try {
-                console.log('[InstagramGraph] Fetching total_interactions...');
-                const engagementResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: {
-                        metric: 'total_interactions',
-                        period: 'day',
-                        metric_type: 'total_value',
-                        access_token: accessToken
-                    }
+                console.log('[InstagramGraph] Fetching likes...');
+                const likesResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    params: { metric: 'likes', period: 'day', access_token: accessToken }
                 });
-                console.log('[InstagramGraph] total_interactions response:', JSON.stringify(engagementResponse.data));
-                const engagementValues = engagementResponse.data.data?.[0]?.values || [];
-                totalInteractions = engagementValues.length > 0 ? engagementValues[engagementValues.length - 1]?.value || 0 : 0;
+                console.log('[InstagramGraph] likes response:', JSON.stringify(likesResponse.data));
+                const likesValues = likesResponse.data.data?.[0]?.values || [];
+                likes = likesValues.length > 0 ? likesValues[likesValues.length - 1]?.value || 0 : 0;
             } catch (e: any) {
-                console.error('[InstagramGraph] total_interactions error:', e.response?.data || e.message);
-                // engagement not available
+                console.error('[InstagramGraph] likes error:', e.response?.data || e.message);
             }
+
+            // Try comments
+            try {
+                console.log('[InstagramGraph] Fetching comments...');
+                const commentsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    params: { metric: 'comments', period: 'day', access_token: accessToken }
+                });
+                console.log('[InstagramGraph] comments response:', JSON.stringify(commentsResponse.data));
+                const commentsValues = commentsResponse.data.data?.[0]?.values || [];
+                comments = commentsValues.length > 0 ? commentsValues[commentsValues.length - 1]?.value || 0 : 0;
+            } catch (e: any) {
+                console.error('[InstagramGraph] comments error:', e.response?.data || e.message);
+            }
+
+            // Try shares
+            try {
+                console.log('[InstagramGraph] Fetching shares...');
+                const sharesResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    params: { metric: 'shares', period: 'day', access_token: accessToken }
+                });
+                console.log('[InstagramGraph] shares response:', JSON.stringify(sharesResponse.data));
+                const sharesValues = sharesResponse.data.data?.[0]?.values || [];
+                shares = sharesValues.length > 0 ? sharesValues[sharesValues.length - 1]?.value || 0 : 0;
+            } catch (e: any) {
+                console.error('[InstagramGraph] shares error:', e.response?.data || e.message);
+            }
+
+            totalInteractions = likes + comments + shares;
 
             console.log('[InstagramGraph] Final values - followers:', followers, 'reach:', reach, 'interactions:', totalInteractions);
 
@@ -245,9 +269,9 @@ export class InstagramGraphService implements PlatformService {
                 reach,
                 impressions: reach,
                 totalInteractions,
-                likes: 0,
-                comments: 0,
-                shares: 0
+                likes,
+                comments,
+                shares
             };
         } catch (error: any) {
             console.error('[InstagramGraph] getInsights error:', error.response?.data || error.message);

@@ -178,21 +178,39 @@ export class InstagramGraphService implements PlatformService {
     async getInsights(accessToken: string): Promise<any> {
         const igAccount = await this.getInstagramAccount(accessToken);
 
-        const response = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+        // Make separate calls - some metrics are incompatible with total_value
+        // Call 1: follower_count and reach (no metric_type needed)
+        const basicMetricsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
             params: {
-                fields: 'follower_count,following_count,media_count,total_reach,total_impressions',
+                metric: 'follower_count,reach',
+                period: 'day',
                 access_token: accessToken
             }
         });
 
-        const insights = response.data.data || [];
+        // Call 2: engagement metrics (require total_value)
+        const engagementMetricsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+            params: {
+                metric: 'total_interactions,likes,comments,shares',
+                period: 'day',
+                metric_type: 'total_value',
+                access_token: accessToken
+            }
+        });
+
+        const basicInsights = basicMetricsResponse.data.data || [];
+        const engagementInsights = engagementMetricsResponse.data.data || [];
 
         return {
-            followers: insights.find((i: any) => i.name === 'follower_count')?.value || 0,
-            following: insights.find((i: any) => i.name === 'following_count')?.value || 0,
-            mediaCount: insights.find((i: any) => i.name === 'media_count')?.value || 0,
-            reach: insights.find((i: any) => i.name === 'total_reach')?.value || 0,
-            impressions: insights.find((i: any) => i.name === 'total_impressions')?.value || 0
+            followers: basicInsights.find((i: any) => i.name === 'follower_count')?.value || 0,
+            following: 0, // Not available via insights
+            mediaCount: 0, // Not available via insights (use profile.media_count instead)
+            reach: basicInsights.find((i: any) => i.name === 'reach')?.value || 0,
+            impressions: basicInsights.find((i: any) => i.name === 'reach')?.value || 0, // Use reach as proxy
+            totalInteractions: engagementInsights.find((i: any) => i.name === 'total_interactions')?.value || 0,
+            likes: engagementInsights.find((i: any) => i.name === 'likes')?.value || 0,
+            comments: engagementInsights.find((i: any) => i.name === 'comments')?.value || 0,
+            shares: engagementInsights.find((i: any) => i.name === 'shares')?.value || 0
         };
     }
 

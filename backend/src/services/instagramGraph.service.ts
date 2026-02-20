@@ -19,11 +19,14 @@ export class InstagramGraphService implements PlatformService {
     private readonly appSecret: string;
     private readonly redirectUri: string;
     private readonly graphUrl = 'https://graph.facebook.com/v18.0';
-    private readonly authUrl = 'https://www.facebook.com/v18.0/dialog/oauth';
+    // Graph API requires Facebook OAuth dialog (NOT Instagram's own OAuth)
+    private readonly authUrl = 'https://www.facebook.com/dialog/oauth';
 
     constructor() {
-        this.appId = process.env.INSTAGRAM_GRAPH_APP_ID || '';
-        this.appSecret = process.env.INSTAGRAM_GRAPH_APP_SECRET || '';
+        // Use the same app credentials as Basic API (client_id 1216837513935124)
+        this.appId = process.env.INSTAGRAM_APP_ID || '';
+        this.appSecret = process.env.INSTAGRAM_APP_SECRET || '';
+        // But use the Graph API callback URL
         this.redirectUri = process.env.INSTAGRAM_GRAPH_REDIRECT_URI || 'http://localhost:3000/auth/instagram-graph/callback';
     }
 
@@ -35,6 +38,8 @@ export class InstagramGraphService implements PlatformService {
         const params = new URLSearchParams({
             client_id: this.appId,
             redirect_uri: this.redirectUri,
+            // Scopes for Instagram Graph API via Facebook OAuth
+            // These require the Facebook Page + linked Instagram Business/Creator account
             scope: 'instagram_basic,instagram_manage_insights,pages_show_list,pages_read_engagement',
             response_type: 'code',
             state: state || ''
@@ -46,19 +51,24 @@ export class InstagramGraphService implements PlatformService {
      * Exchange authorization code for access token
      */
     async exchangeCode(code: string): Promise<PlatformAuthResult> {
-        // 1. Exchange code for short-lived token
-        const tokenResponse = await axios.get(`${this.graphUrl}/oauth/access_token`, {
-            params: {
-                client_id: this.appId,
-                client_secret: this.appSecret,
-                redirect_uri: this.redirectUri,
-                code
+        // 1. Exchange code for short-lived User Access Token (POST required by Meta)
+        const tokenResponse = await axios.post(
+            `https://graph.facebook.com/v18.0/oauth/access_token`,
+            null,
+            {
+                params: {
+                    client_id: this.appId,
+                    client_secret: this.appSecret,
+                    redirect_uri: this.redirectUri,
+                    code
+                }
             }
-        });
+        );
 
         const shortLivedToken = tokenResponse.data.access_token;
+        console.log('[Instagram Graph] Short-lived token obtained');
 
-        // 2. Exchange for long-lived token
+        // 2. Exchange for long-lived User Access Token (60 days)
         const longLivedResponse = await axios.get(`${this.graphUrl}/oauth/access_token`, {
             params: {
                 grant_type: 'fb_exchange_token',
@@ -70,21 +80,23 @@ export class InstagramGraphService implements PlatformService {
 
         const accessToken = longLivedResponse.data.access_token;
         const expiresIn = longLivedResponse.data.expires_in;
+        console.log('[Instagram Graph] Long-lived token obtained, expires in:', expiresIn, 'seconds');
 
-        // 3. Get user info (Instagram Business Account)
+        // 3. Get Instagram Business Account linked to Facebook Pages
         const userInfo = await this.getInstagramAccount(accessToken);
+        console.log('[Instagram Graph] Instagram account found:', userInfo.username);
 
-        // 4. Get profile picture
+        // 4. Get full profile details
         const profile = await this.getProfile(accessToken);
 
         return {
             accessToken,
-            refreshToken: accessToken, // Instagram Graph uses same token for refresh
+            refreshToken: accessToken, // Graph API long-lived tokens are refreshed with same token
             expiresIn,
             platformUserId: userInfo.id,
             username: userInfo.username,
             displayName: userInfo.name || userInfo.username,
-            avatar: profile?.picture?.url
+            avatar: profile?.profile_picture_url || undefined
         };
     }
 
@@ -164,23 +176,151 @@ export class InstagramGraphService implements PlatformService {
      */
     async getInsights(accessToken: string): Promise<any> {
         const igAccount = await this.getInstagramAccount(accessToken);
+        console.log('[InstagramGraph] Getting insights for account:', igAccount.id, igAccount.username);
 
-        const response = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-            params: {
-                fields: 'follower_count,following_count,media_count,total_reach,total_impressions',
-                access_token: accessToken
+        // Helper to parse metric value - handles both regular and total_value formats
+        const parseMetricValue = (responseData: any): number => {
+            const data = responseData?.data?.[0];
+            if (!data) return 0;
+            // For metric_type=total_value: response has total_value.value
+            if (data.total_value?.value !== undefined) {
+                return data.total_value.value;
             }
-        });
-
-        const insights = response.data.data || [];
-
-        return {
-            followers: insights.find((i: any) => i.name === 'follower_count')?.value || 0,
-            following: insights.find((i: any) => i.name === 'following_count')?.value || 0,
-            mediaCount: insights.find((i: any) => i.name === 'media_count')?.value || 0,
-            reach: insights.find((i: any) => i.name === 'total_reach')?.value || 0,
-            impressions: insights.find((i: any) => i.name === 'total_impressions')?.value || 0
+            // For regular metrics: response has values array
+            const values = data.values || [];
+            return values.length > 0 ? values[values.length - 1]?.value || 0 : 0;
         };
+
+        try {
+            // Use day period - get most recent value (last item in array)
+            // API returns: data[0].values = [{value: X, end_time: ...}, {value: Y, end_time: ...}]
+            // We want the most recent (last one)
+
+            // Try follower_count - use days_28 period (API uses days_28, not 28_days)
+            let followers = 0;
+            try {
+                console.log('[InstagramGraph] Fetching follower_count with days_28...');
+                const followerResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    params: {
+                        metric: 'follower_count',
+                        period: 'days_28',
+                        access_token: accessToken
+                    }
+                });
+                console.log('[InstagramGraph] follower_count response:', JSON.stringify(followerResponse.data));
+                const followerValues = followerResponse.data.data?.[0]?.values || [];
+                followers = followerValues.length > 0 ? followerValues[followerValues.length - 1]?.value || 0 : 0;
+            } catch (e: any) {
+                console.log('[InstagramGraph] follower_count days_28 failed:', e.response?.data?.error?.message);
+            }
+
+            // Also get media count from profile
+            let mediaCount = 0;
+            try {
+                console.log('[InstagramGraph] Trying to get profile data...');
+                const profileResponse = await axios.get(`${this.graphUrl}/${igAccount.id}`, {
+                    params: {
+                        fields: 'followers_count,follows_count,media_count',
+                        access_token: accessToken
+                    }
+                });
+                console.log('[InstagramGraph] profile response:', JSON.stringify(profileResponse.data));
+                if (followers === 0) {
+                    followers = profileResponse.data.followers_count || 0;
+                }
+                mediaCount = profileResponse.data.media_count || 0;
+            } catch (e2: any) {
+                console.log('[InstagramGraph] profile error:', e2.response?.data?.error?.message || e2.message);
+            }
+
+            // Try reach
+            let reach = 0;
+            try {
+                console.log('[InstagramGraph] Fetching reach...');
+                const reachResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    params: {
+                        metric: 'reach',
+                        period: 'day',
+                        access_token: accessToken
+                    }
+                });
+                console.log('[InstagramGraph] reach response:', JSON.stringify(reachResponse.data));
+                const reachValues = reachResponse.data.data?.[0]?.values || [];
+                reach = reachValues.length > 0 ? reachValues[reachValues.length - 1]?.value || 0 : 0;
+            } catch (e: any) {
+                console.error('[InstagramGraph] reach error:', e.response?.data || e.message);
+                // reach not available, continue
+            }
+
+            // Try engagement metrics - get individual metrics
+            let totalInteractions = 0, likes = 0, comments = 0, shares = 0;
+
+            // Try likes (requires metric_type=total_value)
+            try {
+                console.log('[InstagramGraph] Fetching likes...');
+                const likesResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    params: { metric: 'likes', period: 'day', metric_type: 'total_value', access_token: accessToken }
+                });
+                console.log('[InstagramGraph] likes response:', JSON.stringify(likesResponse.data));
+                likes = parseMetricValue(likesResponse.data);
+            } catch (e: any) {
+                console.error('[InstagramGraph] likes error:', e.response?.data || e.message);
+            }
+
+            // Try comments (requires metric_type=total_value)
+            try {
+                console.log('[InstagramGraph] Fetching comments...');
+                const commentsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    params: { metric: 'comments', period: 'day', metric_type: 'total_value', access_token: accessToken }
+                });
+                console.log('[InstagramGraph] comments response:', JSON.stringify(commentsResponse.data));
+                comments = parseMetricValue(commentsResponse.data);
+            } catch (e: any) {
+                console.error('[InstagramGraph] comments error:', e.response?.data || e.message);
+            }
+
+            // Try shares (requires metric_type=total_value)
+            try {
+                console.log('[InstagramGraph] Fetching shares...');
+                const sharesResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    params: { metric: 'shares', period: 'day', metric_type: 'total_value', access_token: accessToken }
+                });
+                console.log('[InstagramGraph] shares response:', JSON.stringify(sharesResponse.data));
+                shares = parseMetricValue(sharesResponse.data);
+            } catch (e: any) {
+                console.error('[InstagramGraph] shares error:', e.response?.data || e.message);
+            }
+
+            totalInteractions = likes + comments + shares;
+
+            console.log('[InstagramGraph] Final values - followers:', followers, 'reach:', reach, 'interactions:', totalInteractions);
+
+            return {
+                followers,
+                following: 0,
+                mediaCount,
+                reach,
+                impressions: reach,
+                totalInteractions,
+                likes,
+                comments,
+                shares
+            };
+        } catch (error: any) {
+            console.error('[InstagramGraph] getInsights error:', error.response?.data || error.message);
+            // Return empty insights on failure
+            return {
+                followers: 0,
+                following: 0,
+                mediaCount: 0,
+                reach: 0,
+                impressions: 0,
+                totalInteractions: 0,
+                likes: 0,
+                comments: 0,
+                shares: 0
+            };
+        }
     }
 
     /**

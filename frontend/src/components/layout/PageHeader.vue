@@ -18,44 +18,18 @@ const { isDark, toggleTheme } = useTheme();
 
 <template>
   <div
-    class="bg-neo-accent dark:bg-hotpink border-b-4 border-black dark:border-electric p-6 md:p-8 mb-8 -mx-4 md:-mx-8 relative">
-    <div class="flex items-center justify-between gap-4">
+    class="bg-neo-accent dark:bg-hotpink border-b-4 border-black dark:border-electric p-6 md:p-8 mb-8 -mx-4 md:-mx-8 relative"
+  >
+    <div class="flex items-center">
       <!-- Title Section -->
       <div class="flex-1 min-w-0">
-        <h2
-          class="text-4xl lg:text-5xl font-black uppercase text-slate-900 leading-tight">
+        <h2 class="text-4xl lg:text-5xl font-black uppercase text-slate-900 leading-tight">
           {{ title }}
         </h2>
-        <p
-          v-if="subtitle"
-          class="text-sm font-bold opacity-60 uppercase text-slate-900 mt-2">
+        <p v-if="subtitle" class="text-sm font-bold opacity-60 uppercase text-slate-900 mt-2">
           {{ subtitle }}
         </p>
       </div>
-
-      <!-- Theme Toggle -->
-      <button
-        v-if="showThemeToggle"
-        @click="toggleTheme"
-        :class="[
-          'flex-shrink-0 size-12 border-3 flex items-center justify-center transition-all',
-          'bg-white dark:bg-navy border-black dark:border-electric',
-          'shadow-brutal-sm dark:shadow-brutal-cyber-sm',
-          'hover:-translate-y-1 hover:shadow-brutal dark:hover:shadow-brutal-cyber',
-          'active:shadow-brutal-active dark:active:shadow-brutal-cyber-active active:translate-y-0',
-        ]"
-        :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
-        <Sun
-          v-if="isDark"
-          :size="24"
-          class="text-black dark:text-offwhite"
-          :stroke-width="2" />
-        <Moon
-          v-else
-          :size="24"
-          class="text-black dark:text-offwhite"
-          :stroke-width="2" />
-      </button>
     </div>
   </div>
 </template>

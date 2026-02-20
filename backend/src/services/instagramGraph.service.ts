@@ -178,6 +178,19 @@ export class InstagramGraphService implements PlatformService {
         const igAccount = await this.getInstagramAccount(accessToken);
         console.log('[InstagramGraph] Getting insights for account:', igAccount.id, igAccount.username);
 
+        // Helper to parse metric value - handles both regular and total_value formats
+        const parseMetricValue = (responseData: any): number => {
+            const data = responseData?.data?.[0];
+            if (!data) return 0;
+            // For metric_type=total_value: response has total_value.value
+            if (data.total_value?.value !== undefined) {
+                return data.total_value.value;
+            }
+            // For regular metrics: response has values array
+            const values = data.values || [];
+            return values.length > 0 ? values[values.length - 1]?.value || 0 : 0;
+        };
+
         try {
             // Use day period - get most recent value (last item in array)
             // API returns: data[0].values = [{value: X, end_time: ...}, {value: Y, end_time: ...}]
@@ -233,19 +246,6 @@ export class InstagramGraphService implements PlatformService {
                 console.error('[InstagramGraph] reach error:', e.response?.data || e.message);
                 // reach not available, continue
             }
-
-            // Helper to parse metric value - handles both regular and total_value formats
-            const parseMetricValue = (responseData: any): number => {
-                const data = responseData?.data?.[0];
-                if (!data) return 0;
-                // For metric_type=total_value: response has total_value.value
-                if (data.total_value?.value !== undefined) {
-                    return data.total_value.value;
-                }
-                // For regular metrics: response has values array
-                const values = data.values || [];
-                return values.length > 0 ? values[values.length - 1]?.value || 0 : 0;
-            };
 
             // Try engagement metrics - get individual metrics
             let totalInteractions = 0, likes = 0, comments = 0, shares = 0;

@@ -184,18 +184,36 @@ export class InstagramGraphService implements PlatformService {
             // We want the most recent (last one)
 
             // Try follower_count first (most reliable)
-            console.log('[InstagramGraph] Fetching follower_count...');
-            const followerResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                params: {
-                    metric: 'follower_count',
-                    period: 'day',
-                    access_token: accessToken
+            // Use period=28_days for follower count as it's more reliable for business accounts
+            let followers = 0;
+            try {
+                console.log('[InstagramGraph] Fetching follower_count with 28_days...');
+                const followerResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    params: {
+                        metric: 'follower_count',
+                        period: '28_days',
+                        access_token: accessToken
+                    }
+                });
+                console.log('[InstagramGraph] follower_count response:', JSON.stringify(followerResponse.data));
+                const followerValues = followerResponse.data.data?.[0]?.values || [];
+                followers = followerValues.length > 0 ? followerValues[followerValues.length - 1]?.value || 0 : 0;
+            } catch (e: any) {
+                console.log('[InstagramGraph] follower_count 28_days failed, trying lifetime...', e.response?.data?.error?.message);
+                // Fallback: try lifetime
+                try {
+                    const followerResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                        params: {
+                            metric: 'follower_count',
+                            period: 'lifetime',
+                            access_token: accessToken
+                        }
+                    });
+                    followers = parseMetricValue(followerResponse.data);
+                } catch (e2: any) {
+                    console.error('[InstagramGraph] follower_count lifetime error:', e2.response?.data || e2.message);
                 }
-            });
-            console.log('[InstagramGraph] follower_count response:', JSON.stringify(followerResponse.data));
-            // Get the LAST value (most recent)
-            const followerValues = followerResponse.data.data?.[0]?.values || [];
-            const followers = followerValues.length > 0 ? followerValues[followerValues.length - 1]?.value || 0 : 0;
+            }
 
             // Try reach
             let reach = 0;

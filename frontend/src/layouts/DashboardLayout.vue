@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import AppSidebar from "@/components/layout/AppSidebar.vue";
+import DesktopHeader from "@/components/layout/DesktopHeader.vue";
 import MobileHeader from "@/components/layout/MobileHeader.vue";
 import MobileBottomNav from "@/components/layout/MobileBottomNav.vue";
 import { useSidebar } from "@/composables/useSidebar";
@@ -21,6 +22,9 @@ const mainContentClass = computed(() => [
 
     <!-- Main Content Area -->
     <main :class="mainContentClass">
+      <!-- Desktop Header -->
+      <DesktopHeader />
+
       <!-- Mobile Header -->
       <MobileHeader />
 

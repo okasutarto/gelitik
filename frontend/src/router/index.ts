@@ -83,6 +83,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Connections - Gelitik', requiresAuth: true }
     },
     {
+        path: '/notifications',
+        name: 'notifications',
+        component: () => import('@/pages/NotificationsPage.vue'),
+        meta: { title: 'Notifications - Gelitik', requiresAuth: true }
+    },
+    {
         path: '/settings',
         name: 'settings',
         component: () => import('@/pages/SettingsPage.vue'),

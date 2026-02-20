@@ -13,9 +13,8 @@ import {
   Music2,
   Zap,
   Plus,
-  Sun,
-  Moon,
   ChevronDown,
+  Bell,
 } from "lucide-vue-next";
 import { useTheme } from "@/composables/useTheme";
 import { useSidebar } from "@/composables/useSidebar";
@@ -98,6 +97,7 @@ const platformItems = computed<SubNavItem[]>(() => [
 
 // Tools section items
 const toolsItems: NavItem[] = [
+  { name: "Notifications", path: "/notifications", icon: Bell },
   { name: "Analytics", path: "/analytics", icon: BarChart3 },
   { name: "Schedule", path: "/schedule", icon: CalendarDays },
   { name: "Audience", path: "/audience", icon: Users },

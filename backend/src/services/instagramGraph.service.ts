@@ -296,7 +296,7 @@ export class InstagramGraphService implements PlatformService {
             try {
                 console.log('[InstagramGraph] Fetching profile_views...');
                 const profileViewsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: { metric: 'profile_views', period: 'day', access_token: accessToken }
+                    params: { metric: 'profile_views', period: 'day', metric_type: 'total_value', access_token: accessToken }
                 });
                 console.log('[InstagramGraph] profile_views response:', JSON.stringify(profileViewsResponse.data));
                 profileViews = parseMetricValue(profileViewsResponse.data);
@@ -309,7 +309,7 @@ export class InstagramGraphService implements PlatformService {
             try {
                 console.log('[InstagramGraph] Fetching accounts_engaged...');
                 const accountsEngagedResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: { metric: 'accounts_engaged', period: 'day', access_token: accessToken }
+                    params: { metric: 'accounts_engaged', period: 'day', metric_type: 'total_value', access_token: accessToken }
                 });
                 console.log('[InstagramGraph] accounts_engaged response:', JSON.stringify(accountsEngagedResponse.data));
                 accountsEngaged = parseMetricValue(accountsEngagedResponse.data);
@@ -367,9 +367,10 @@ export class InstagramGraphService implements PlatformService {
 
         const mediaItems = response.data.data || [];
 
-        // For each video/reel, fetch video_views
+        // For each video/reel, try to get video_views (but use impressions/reach as fallback)
         const mediaWithViews = await Promise.all(mediaItems.map(async (media: any) => {
-            // Only fetch insights for videos/reels
+            // Try to get video_views for videos/reels, but it's often not supported
+            // Use impressions/reach as fallback for view count
             if (media.media_type === 'VIDEO' || media.media_product_type === 'REELS') {
                 try {
                     const insightsResponse = await axios.get(`${this.graphUrl}/${media.id}/insights`, {
@@ -384,10 +385,14 @@ export class InstagramGraphService implements PlatformService {
                         media.video_views = videoViewsData.total_value.value;
                     } else if (videoViewsData?.values?.[0]?.value) {
                         media.video_views = videoViewsData.values[0].value;
+                    } else {
+                        // Fallback to impressions/reach
+                        media.video_views = media.impressions || media.reach || 0;
                     }
                 } catch (e: any) {
-                    console.log('[InstagramGraph] video_views error for', media.id, e.response?.data?.error?.message || e.message);
-                    media.video_views = 0;
+                    console.log('[InstagramGraph] video_views error for', media.id, '- using impressions/reach fallback');
+                    // Fallback to impressions/reach
+                    media.video_views = media.impressions || media.reach || 0;
                 }
             } else {
                 media.video_views = 0;

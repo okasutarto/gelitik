@@ -214,21 +214,23 @@ export class InstagramGraphService implements PlatformService {
                 console.log('[InstagramGraph] follower_count days_28 failed:', e.response?.data?.error?.message);
             }
 
-            // If still 0, try to get from profile
-            if (followers === 0) {
-                try {
-                    console.log('[InstagramGraph] Trying to get followers from profile...');
-                    const profileResponse = await axios.get(`${this.graphUrl}/${igAccount.id}`, {
-                        params: {
-                            fields: 'followers_count,follows_count,media_count',
-                            access_token: accessToken
-                        }
-                    });
-                    console.log('[InstagramGraph] profile response:', JSON.stringify(profileResponse.data));
+            // Also get media count from profile
+            let mediaCount = 0;
+            try {
+                console.log('[InstagramGraph] Trying to get profile data...');
+                const profileResponse = await axios.get(`${this.graphUrl}/${igAccount.id}`, {
+                    params: {
+                        fields: 'followers_count,follows_count,media_count',
+                        access_token: accessToken
+                    }
+                });
+                console.log('[InstagramGraph] profile response:', JSON.stringify(profileResponse.data));
+                if (followers === 0) {
                     followers = profileResponse.data.followers_count || 0;
-                } catch (e2: any) {
-                    console.log('[InstagramGraph] profile followers_count error:', e2.response?.data?.error?.message || e2.message);
                 }
+                mediaCount = profileResponse.data.media_count || 0;
+            } catch (e2: any) {
+                console.log('[InstagramGraph] profile error:', e2.response?.data?.error?.message || e2.message);
             }
 
             // Try reach
@@ -296,7 +298,7 @@ export class InstagramGraphService implements PlatformService {
             return {
                 followers,
                 following: 0,
-                mediaCount: 0,
+                mediaCount,
                 reach,
                 impressions: reach,
                 totalInteractions,

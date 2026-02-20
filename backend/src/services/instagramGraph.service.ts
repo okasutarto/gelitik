@@ -291,6 +291,32 @@ export class InstagramGraphService implements PlatformService {
                 console.error('[InstagramGraph] shares error:', e.response?.data || e.message);
             }
 
+            // Try profile_views
+            let profileViews = 0;
+            try {
+                console.log('[InstagramGraph] Fetching profile_views...');
+                const profileViewsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    params: { metric: 'profile_views', period: 'day', access_token: accessToken }
+                });
+                console.log('[InstagramGraph] profile_views response:', JSON.stringify(profileViewsResponse.data));
+                profileViews = parseMetricValue(profileViewsResponse.data);
+            } catch (e: any) {
+                console.log('[InstagramGraph] profile_views error:', e.response?.data?.error?.message || e.message);
+            }
+
+            // Try accounts_engaged
+            let accountsEngaged = 0;
+            try {
+                console.log('[InstagramGraph] Fetching accounts_engaged...');
+                const accountsEngagedResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    params: { metric: 'accounts_engaged', period: 'day', access_token: accessToken }
+                });
+                console.log('[InstagramGraph] accounts_engaged response:', JSON.stringify(accountsEngagedResponse.data));
+                accountsEngaged = parseMetricValue(accountsEngagedResponse.data);
+            } catch (e: any) {
+                console.log('[InstagramGraph] accounts_engaged error:', e.response?.data?.error?.message || e.message);
+            }
+
             totalInteractions = likes + comments + shares;
 
             console.log('[InstagramGraph] Final values - followers:', followers, 'reach:', reach, 'interactions:', totalInteractions);
@@ -304,7 +330,9 @@ export class InstagramGraphService implements PlatformService {
                 totalInteractions,
                 likes,
                 comments,
-                shares
+                shares,
+                profileViews,
+                accountsEngaged
             };
         } catch (error: any) {
             console.error('[InstagramGraph] getInsights error:', error.response?.data || error.message);
@@ -326,18 +354,48 @@ export class InstagramGraphService implements PlatformService {
     /**
      * Get media with insights
      */
-    async getMedia(accessToken: string, limit: number = 25): Promise<any> {
+    async getMedia(accessToken: string, limit: number = 50): Promise<any> {
         const igAccount = await this.getInstagramAccount(accessToken);
 
         const response = await axios.get(`${this.graphUrl}/${igAccount.id}/media`, {
             params: {
-                fields: 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,like_count,comment_count,share_count,save_count,reach,impressions',
+                fields: 'id,caption,media_type,media_product_type,media_url,thumbnail_url,permalink,timestamp,like_count,comment_count,share_count,save_count,reach,impressions',
                 access_token: accessToken,
                 limit
             }
         });
 
-        return response.data;
+        const mediaItems = response.data.data || [];
+
+        // For each video/reel, fetch video_views
+        const mediaWithViews = await Promise.all(mediaItems.map(async (media: any) => {
+            // Only fetch insights for videos/reels
+            if (media.media_type === 'VIDEO' || media.media_product_type === 'REELS') {
+                try {
+                    const insightsResponse = await axios.get(`${this.graphUrl}/${media.id}/insights`, {
+                        params: {
+                            metric: 'video_views',
+                            period: 'lifetime',
+                            access_token: accessToken
+                        }
+                    });
+                    const videoViewsData = insightsResponse.data.data?.[0];
+                    if (videoViewsData?.total_value?.value) {
+                        media.video_views = videoViewsData.total_value.value;
+                    } else if (videoViewsData?.values?.[0]?.value) {
+                        media.video_views = videoViewsData.values[0].value;
+                    }
+                } catch (e: any) {
+                    console.log('[InstagramGraph] video_views error for', media.id, e.response?.data?.error?.message || e.message);
+                    media.video_views = 0;
+                }
+            } else {
+                media.video_views = 0;
+            }
+            return media;
+        }));
+
+        return { data: mediaWithViews };
     }
 
     /**

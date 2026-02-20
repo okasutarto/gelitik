@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
-import { Eye, Users, UserPlus, Layers, Heart, Share2 } from "lucide-vue-next";
+import { Eye, Users, UserPlus, Layers, Heart, Share2, UserCheck, Activity } from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
 import StatCard from "@/components/dashboard/StatCard.vue";
@@ -68,12 +68,16 @@ const media = computed(() => {
       title: m.caption || "Untitled",
       cover_image_url: m.thumbnail_url || m.media_url,
       create_time: m.timestamp ? new Date(m.timestamp).getTime() / 1000 : 0,
-      view_count: m.impressions || m.reach || 0,
+      // Use video_views for videos/reels, otherwise use reach/impressions
+      view_count: (m.media_type === 'VIDEO' || m.media_product_type === 'REELS')
+        ? (m.video_views || m.impressions || m.reach || 0)
+        : (m.impressions || m.reach || 0),
       like_count: m.like_count || 0,
       comment_count: m.comment_count || 0,
       share_count: m.share_count || 0,
       saves: m.save_count || 0,
       media_type: m.media_type || "IMAGE",
+      media_product_type: m.media_product_type || null,
       duration: m.media_type === "VIDEO" ? 0 : undefined, // Duration only for videos
     }));
   }
@@ -115,6 +119,22 @@ const instagramStats = computed(() => {
         changeType: "up" as const,
         icon: UserPlus,
         subtitle: "Unique accounts",
+      },
+      {
+        title: "Profile Views",
+        value: formatNumber(insights.profileViews || 0),
+        change: "10%",
+        changeType: "up" as const,
+        icon: UserCheck,
+        subtitle: "Profile visits",
+      },
+      {
+        title: "Accounts Engaged",
+        value: formatNumber(insights.accountsEngaged || 0),
+        change: "15%",
+        changeType: "up" as const,
+        icon: Activity,
+        subtitle: "Active accounts",
       },
       {
         title: "Total Likes",

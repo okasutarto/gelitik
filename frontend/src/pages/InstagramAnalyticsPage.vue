@@ -27,29 +27,30 @@ const toast = useToast();
 // Determine platform from route path - supports both instagram and instagram-graph
 const platform = computed(() => {
   const path = route.path;
-  if (path.includes('instagram-graph')) return 'instagram-graph';
-  return 'instagram';
+  if (path.includes("instagram-graph")) return "instagram-graph";
+  return "instagram";
 });
 
 const { loading, accountData, fetchAnalytics } = usePlatformAnalytics(platform.value);
 
 // Determine if we're using Instagram Graph API
-const isGraphApi = computed(() => platform.value === 'instagram-graph');
+const isGraphApi = computed(() => platform.value === "instagram-graph");
 
-// Get user profile data
+// Get user profile data - map to UserProfile expected format
 const userInfo = computed(() => {
   const data = accountData.value?.data;
   if (!data) return null;
 
   if (isGraphApi.value && data.profile) {
     return {
-      avatar: data.profile.profile_picture_url,
-      displayName: data.profile.name || data.profile.username,
-      username: data.profile.username,
-      bio: '',
-      followers: data.insights?.followers || 0,
-      following: data.insights?.following || 0,
-      totalLikes: data.insights?.totalInteractions || 0,
+      avatar_url: data.profile.profile_picture_url,
+      display_name: data.profile.name || data.profile.username,
+      bio_description: "",
+      is_verified: false,
+      follower_count: data.insights?.followers || 0,
+      following_count: data.insights?.following || 0,
+      likes_count: data.insights?.totalInteractions || 0,
+      video_count: data.insights?.mediaCount || 0,
     };
   }
 
@@ -64,7 +65,7 @@ const media = computed(() => {
   if (isGraphApi.value && data.media) {
     return data.media.map((m: any) => ({
       id: m.id,
-      title: m.caption || 'Untitled',
+      title: m.caption || "Untitled",
       cover_image_url: m.thumbnail_url || m.media_url,
       create_time: m.timestamp ? new Date(m.timestamp).getTime() / 1000 : 0,
       view_count: m.impressions || m.reach || 0,
@@ -167,9 +168,7 @@ onMounted(() => {
   fetchAnalytics().catch((err: unknown) => {
     const axiosErr = err as AxiosError;
     if (axiosErr.response?.status === 404) {
-      toast.error(
-        "Instagram account not connected. Please connect your account first.",
-      );
+      toast.error("Instagram account not connected. Please connect your account first.");
       router.push("/connections");
     }
   });
@@ -190,7 +189,7 @@ onMounted(() => {
     <UserProfileSkeleton v-else-if="loading" />
 
     <!-- Stat Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-8">
       <template v-if="loading">
         <StatCardSkeleton :count="4" />
       </template>
@@ -204,7 +203,8 @@ onMounted(() => {
           :change-type="stat.changeType"
           :icon="stat.icon"
           :subtitle="stat.subtitle"
-          platform="instagram" />
+          platform="instagram"
+        />
       </template>
     </div>
 
@@ -215,7 +215,8 @@ onMounted(() => {
         <AudienceChart
           platform="instagram"
           title="Follower Net Growth"
-          subtitle="Instagram specific growth metrics" />
+          subtitle="Instagram specific growth metrics"
+        />
       </template>
     </div>
 

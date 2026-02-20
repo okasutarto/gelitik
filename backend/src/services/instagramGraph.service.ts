@@ -176,10 +176,12 @@ export class InstagramGraphService implements PlatformService {
      */
     async getInsights(accessToken: string): Promise<any> {
         const igAccount = await this.getInstagramAccount(accessToken);
+        console.log('[InstagramGraph] Getting insights for account:', igAccount.id, igAccount.username);
 
         try {
             // Use day period with lifetime metric (most recent data point)
             // Try follower_count first (most reliable)
+            console.log('[InstagramGraph] Fetching follower_count...');
             const followerResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                 params: {
                     metric: 'follower_count',
@@ -187,10 +189,12 @@ export class InstagramGraphService implements PlatformService {
                     access_token: accessToken
                 }
             });
+            console.log('[InstagramGraph] follower_count response:', JSON.stringify(followerResponse.data));
 
             // Try reach
             let reach = 0;
             try {
+                console.log('[InstagramGraph] Fetching reach...');
                 const reachResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: {
                         metric: 'reach',
@@ -198,14 +202,17 @@ export class InstagramGraphService implements PlatformService {
                         access_token: accessToken
                     }
                 });
+                console.log('[InstagramGraph] reach response:', JSON.stringify(reachResponse.data));
                 reach = reachResponse.data.data?.[0]?.value || 0;
-            } catch {
+            } catch (e: any) {
+                console.error('[InstagramGraph] reach error:', e.response?.data || e.message);
                 // reach not available, continue
             }
 
             // Try engagement metrics
             let totalInteractions = 0, likes = 0, comments = 0, shares = 0;
             try {
+                console.log('[InstagramGraph] Fetching total_interactions...');
                 const engagementResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: {
                         metric: 'total_interactions',
@@ -213,13 +220,16 @@ export class InstagramGraphService implements PlatformService {
                         access_token: accessToken
                     }
                 });
+                console.log('[InstagramGraph] total_interactions response:', JSON.stringify(engagementResponse.data));
                 totalInteractions = engagementResponse.data.data?.[0]?.value || 0;
-            } catch {
+            } catch (e: any) {
+                console.error('[InstagramGraph] total_interactions error:', e.response?.data || e.message);
                 // engagement not available
             }
 
             const followerData = followerResponse.data.data?.[0];
             const followers = followerData?.value || 0;
+            console.log('[InstagramGraph] Final values - followers:', followers, 'reach:', reach, 'interactions:', totalInteractions);
 
             return {
                 followers,
@@ -232,8 +242,8 @@ export class InstagramGraphService implements PlatformService {
                 comments: 0,
                 shares: 0
             };
-        } catch (error) {
-            console.error('[InstagramGraph] getInsights error:', error);
+        } catch (error: any) {
+            console.error('[InstagramGraph] getInsights error:', error.response?.data || error.message);
             // Return empty insights on failure
             return {
                 followers: 0,

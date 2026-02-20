@@ -216,6 +216,19 @@ export class InstagramGraphService implements PlatformService {
                 // reach not available, continue
             }
 
+            // Helper to parse metric value - handles both regular and total_value formats
+            const parseMetricValue = (responseData: any): number => {
+                const data = responseData?.data?.[0];
+                if (!data) return 0;
+                // For metric_type=total_value: response has total_value.value
+                if (data.total_value?.value !== undefined) {
+                    return data.total_value.value;
+                }
+                // For regular metrics: response has values array
+                const values = data.values || [];
+                return values.length > 0 ? values[values.length - 1]?.value || 0 : 0;
+            };
+
             // Try engagement metrics - get individual metrics
             let totalInteractions = 0, likes = 0, comments = 0, shares = 0;
 
@@ -226,8 +239,7 @@ export class InstagramGraphService implements PlatformService {
                     params: { metric: 'likes', period: 'day', metric_type: 'total_value', access_token: accessToken }
                 });
                 console.log('[InstagramGraph] likes response:', JSON.stringify(likesResponse.data));
-                const likesValues = likesResponse.data.data?.[0]?.values || [];
-                likes = likesValues.length > 0 ? likesValues[likesValues.length - 1]?.value || 0 : 0;
+                likes = parseMetricValue(likesResponse.data);
             } catch (e: any) {
                 console.error('[InstagramGraph] likes error:', e.response?.data || e.message);
             }
@@ -239,8 +251,7 @@ export class InstagramGraphService implements PlatformService {
                     params: { metric: 'comments', period: 'day', metric_type: 'total_value', access_token: accessToken }
                 });
                 console.log('[InstagramGraph] comments response:', JSON.stringify(commentsResponse.data));
-                const commentsValues = commentsResponse.data.data?.[0]?.values || [];
-                comments = commentsValues.length > 0 ? commentsValues[commentsValues.length - 1]?.value || 0 : 0;
+                comments = parseMetricValue(commentsResponse.data);
             } catch (e: any) {
                 console.error('[InstagramGraph] comments error:', e.response?.data || e.message);
             }
@@ -252,8 +263,7 @@ export class InstagramGraphService implements PlatformService {
                     params: { metric: 'shares', period: 'day', metric_type: 'total_value', access_token: accessToken }
                 });
                 console.log('[InstagramGraph] shares response:', JSON.stringify(sharesResponse.data));
-                const sharesValues = sharesResponse.data.data?.[0]?.values || [];
-                shares = sharesValues.length > 0 ? sharesValues[sharesValues.length - 1]?.value || 0 : 0;
+                shares = parseMetricValue(sharesResponse.data);
             } catch (e: any) {
                 console.error('[InstagramGraph] shares error:', e.response?.data || e.message);
             }

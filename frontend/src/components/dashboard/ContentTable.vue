@@ -52,6 +52,7 @@ const filteredContent = computed(() => {
       likes: video.like_count || 0,
       comments: video.comment_count || 0,
       shares: video.share_count || 0,
+      saves: (video as any).saves || (video as any).save_count || 0,
       created: video.create_time || "",
       timeAgo: formatTimeAgo(video.create_time),
     }));
@@ -108,6 +109,7 @@ const hasVideoData = computed(() => {
               <th class="px-4 py-4 text-center">Views</th>
               <th class="px-4 py-4 text-center">Likes</th>
               <th class="px-4 py-4 text-center">Shares</th>
+              <th class="px-4 py-4 text-center">Saves</th>
               <th class="px-4 py-4 text-center">Comments</th>
               <th class="px-4 py-4 text-center">Engagement</th>
             </tr>
@@ -149,6 +151,10 @@ const hasVideoData = computed(() => {
               <td
                 class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.shares || 0) }}
+              </td>
+              <td
+                class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
+                {{ formatNumber(item.saves || 0) }}
               </td>
               <td
                 class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">

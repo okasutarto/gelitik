@@ -11,6 +11,8 @@ export interface Video {
   like_count?: number
   comment_count?: number
   share_count?: number
+  saves?: number
+  save_count?: number
   // Computed
   title?: string
   thumbnail?: string

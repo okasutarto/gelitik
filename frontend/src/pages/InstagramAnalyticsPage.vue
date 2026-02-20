@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
-import { Eye, Users, UserPlus, Layers } from "lucide-vue-next";
+import { Eye, Users, UserPlus, Layers, Heart, Share2 } from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
 import StatCard from "@/components/dashboard/StatCard.vue";
@@ -72,6 +72,9 @@ const media = computed(() => {
       like_count: m.like_count || 0,
       comment_count: m.comment_count || 0,
       share_count: m.share_count || 0,
+      saves: m.save_count || 0,
+      media_type: m.media_type || "IMAGE",
+      duration: m.media_type === "VIDEO" ? 0 : undefined, // Duration only for videos
     }));
   }
 
@@ -112,6 +115,22 @@ const instagramStats = computed(() => {
         changeType: "up" as const,
         icon: UserPlus,
         subtitle: "Unique accounts",
+      },
+      {
+        title: "Total Likes",
+        value: formatNumber(insights.likes || 0),
+        change: "18%",
+        changeType: "up" as const,
+        icon: Heart,
+        subtitle: "Total likes",
+      },
+      {
+        title: "Shares",
+        value: formatNumber(insights.shares || 0),
+        change: "15%",
+        changeType: "up" as const,
+        icon: Share2,
+        subtitle: "Total shares",
       },
       {
         title: "Engagement",
@@ -189,7 +208,7 @@ onMounted(() => {
     <UserProfileSkeleton v-else-if="loading" />
 
     <!-- Stat Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-8">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 my-8">
       <template v-if="loading">
         <StatCardSkeleton :count="4" />
       </template>

@@ -40,8 +40,7 @@ export class InstagramGraphService implements PlatformService {
             redirect_uri: this.redirectUri,
             // Scopes for Instagram Graph API via Facebook OAuth
             // These require the Facebook Page + linked Instagram Business/Creator account
-            scope: 'instagram_basic,pages_show_list',
-            // scope: 'instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list,pages_read_engagement,business_management',
+            scope: 'instagram_basic,instagram_manage_insights,pages_show_list,pages_read_engagement',
             response_type: 'code',
             state: state || ''
         });

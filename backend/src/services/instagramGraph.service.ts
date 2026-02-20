@@ -179,12 +179,12 @@ export class InstagramGraphService implements PlatformService {
         const igAccount = await this.getInstagramAccount(accessToken);
 
         try {
-            // Use lifetime period with single metric call for reliability
+            // Use day period with lifetime metric (most recent data point)
             // Try follower_count first (most reliable)
             const followerResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                 params: {
                     metric: 'follower_count',
-                    period: 'lifetime',
+                    period: 'day',
                     access_token: accessToken
                 }
             });
@@ -195,7 +195,7 @@ export class InstagramGraphService implements PlatformService {
                 const reachResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: {
                         metric: 'reach',
-                        period: 'lifetime',
+                        period: 'day',
                         access_token: accessToken
                     }
                 });
@@ -210,8 +210,7 @@ export class InstagramGraphService implements PlatformService {
                 const engagementResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: {
                         metric: 'total_interactions',
-                        period: 'lifetime',
-                        metric_type: 'total_value',
+                        period: 'day',
                         access_token: accessToken
                     }
                 });

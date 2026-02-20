@@ -37,6 +37,10 @@ const instagramStats = computed(() => {
   // Handle Instagram Graph API format
   if (isGraphApi.value && data?.insights) {
     const insights = data.insights;
+    const reach = insights.reach || 0;
+    const totalInteractions = insights.totalInteractions || 0;
+    const engagementRate = reach > 0 ? (totalInteractions / reach) * 100 : 0;
+
     return [
       {
         title: "Impressions",
@@ -47,28 +51,28 @@ const instagramStats = computed(() => {
         subtitle: "+12% vs last week",
       },
       {
-        title: "Accounts Reached",
-        value: formatNumber(insights.followersCount || 0),
+        title: "Followers",
+        value: formatNumber(insights.followers || 0),
         change: "5%",
         changeType: "up" as const,
         icon: Users,
-        subtitle: "+5% new accounts",
+        subtitle: "Total followers",
       },
       {
-        title: "Profile Visits",
-        value: formatNumber(insights.reach || 0),
+        title: "Accounts Reached",
+        value: formatNumber(reach),
         change: "8.4%",
         changeType: "up" as const,
         icon: UserPlus,
-        subtitle: "Total reach",
+        subtitle: "Unique accounts",
       },
       {
         title: "Engagement",
-        value: `${(insights.engagement || 0).toFixed(1)}%`,
+        value: `${engagementRate.toFixed(1)}%`,
         change: "18%",
         changeType: "up" as const,
         icon: Layers,
-        subtitle: "Engagement rate",
+        subtitle: `${formatNumber(totalInteractions)} total interactions`,
       },
     ];
   }

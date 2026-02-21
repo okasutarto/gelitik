@@ -1,43 +1,45 @@
+```vue
 <script setup lang="ts">
-import { computed, type Component } from "vue";
-import type { Platform } from "@/types/platform";
+import { formatNumber } from "@/utils/format";
+
+import type { Component } from "vue";
 
 interface Props {
   title: string;
-  value: string;
-  change: string;
-  changeType: "up" | "down";
-  icon: Component;
-  platform?: Platform;
+  value: string | number;
+  trend?: number;
+  icon?: Component;
+  trendText?: string;
   subtitle?: string;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  platform: "all",
-  subtitle: "",
+withDefaults(defineProps<Props>(), {
+  trend: 0,
 });
 </script>
 
 <template>
-  <div
-    class="brutal-card flex flex-col justify-between h-36 relative overflow-hidden group brutal-hover-lift rounded-none p-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between relative z-10">
-      <p
-        class="text-slate-500 dark:text-electric/70 text-xs font-black uppercase tracking-tighter">
-        {{ title }}
-      </p>
+  <div class="brutal-card brutal-hover-lift p-6 flex flex-col justify-between">
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">
+          {{ title }}
+        </p>
+        <h3 class="text-3xl font-black text-slate-900 dark:text-white">
+          {{ typeof value === "number" ? formatNumber(value) : value }}
+        </h3>
+      </div>
+      <div
+        class="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center bg-white dark:bg-slate-800"
+      >
+        <component :is="icon" class="text-neo-accent dark:text-electric" />
+      </div>
     </div>
 
-    <!-- Value -->
-    <div class="relative z-10">
-      <h3
-        class="text-3xl font-mono font-bold text-slate-900 dark:text-offwhite tracking-tight">
-        {{ value }}
-      </h3>
-      <p v-if="subtitle" class="text-xs text-slate-400 dark:text-cyber/80 mt-1">
-        {{ subtitle }}
-      </p>
+    <!-- Trend Indicator -->
+    <div class="flex items-center gap-2 mt-auto" v-if="subtitle">
+      <span class="text-sm font-bold text-slate-500 dark:text-slate-400">{{ subtitle }}</span>
     </div>
   </div>
 </template>
+```

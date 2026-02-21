@@ -1,4 +1,4 @@
-import { ref, watch, onMounted, onScopeDispose } from 'vue'
+import { ref } from 'vue'
 
 export type Theme = 'light' | 'dark' | 'system'
 

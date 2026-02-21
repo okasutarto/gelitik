@@ -1,19 +1,10 @@
 <script setup lang="ts">
-import { Sun, Moon } from "lucide-vue-next";
-import { useTheme } from "@/composables/useTheme";
-
 interface Props {
   title: string;
   subtitle?: string;
-  showThemeToggle?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  subtitle: "",
-  showThemeToggle: true,
-});
-
-const { isDark, toggleTheme } = useTheme();
+defineProps<Props>();
 </script>
 
 <template>

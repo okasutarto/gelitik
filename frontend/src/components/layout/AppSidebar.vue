@@ -16,14 +16,12 @@ import {
   ChevronDown,
   Bell,
 } from "lucide-vue-next";
-import { useTheme } from "@/composables/useTheme";
 import { useSidebar } from "@/composables/useSidebar";
 import api from "@/services/api";
 
 const route = useRoute();
 const router = useRouter();
 const { isCollapsed, toggleSidebar, initSidebar } = useSidebar();
-const { isDark, toggleTheme } = useTheme();
 
 const isPlatformsOpen = ref(true);
 const isToolsOpen = ref(true);
@@ -48,7 +46,7 @@ onMounted(async () => {
     if (data.success && data.data.connected) {
       connectedPlatforms.value = data.data.connected;
     }
-  } catch (error) {
+  } catch {
     // Silently fail - will show disconnected status
   }
 });

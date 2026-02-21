@@ -75,7 +75,7 @@ export const useAuthStore = defineStore('auth', () => {
             user.value = data
             localStorage.setItem('user', JSON.stringify(data))
             return true
-        } catch (error) {
+        } catch {
             logout()
             return false
         }

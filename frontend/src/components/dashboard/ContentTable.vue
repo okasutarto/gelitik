@@ -17,7 +17,7 @@ import {
 interface Props {
   platform?: Platform;
   videos?: Video[];
-};
+}
 
 const props = withDefaults(defineProps<Props>(), {
   platform: "all",
@@ -52,7 +52,10 @@ const filteredContent = computed(() => {
       likes: video.like_count || 0,
       comments: video.comment_count || 0,
       shares: video.share_count || 0,
-      saves: (video as any).saves || (video as any).save_count || 0,
+      saves:
+        ((video as unknown as Record<string, unknown>).saves as number) ||
+        ((video as unknown as Record<string, unknown>).save_count as number) ||
+        0,
       created: video.create_time || "",
       timeAgo: formatTimeAgo(video.create_time),
     }));
@@ -73,12 +76,10 @@ const hasVideoData = computed(() => {
   <div class="brutal-card rounded-none overflow-hidden">
     <!-- Header -->
     <div
-      class="p-6 flex items-center justify-between border-b-4 border-black bg-neo-accent dark:bg-[#FF0099] dark:border-[#00F0FF]">
-      <h3 class="text-lg font-bold text-slate-900 dark:text-black">
-        Top Performing Content
-      </h3>
-      <button
-        class="text-primary-600 dark:text-white text-sm font-semibold hover:underline">
+      class="p-6 flex items-center justify-between border-b-4 border-black bg-neo-accent dark:bg-[#FF0099] dark:border-[#00F0FF]"
+    >
+      <h3 class="text-lg font-bold text-slate-900 dark:text-black">Top Performing Content</h3>
+      <button class="text-primary-600 dark:text-white text-sm font-semibold hover:underline">
         View All
       </button>
     </div>
@@ -88,9 +89,9 @@ const hasVideoData = computed(() => {
         <p class="text-slate-500 dark:text-slate-400 text-lg">No content yet</p>
         <p
           v-if="props.videos && props.videos.length > 0 && !hasVideoData"
-          class="text-xs text-slate-400 dark:text-slate-500 mt-2">
-          TikTok API returned video data with 0 views. This is normal in sandbox
-          mode.
+          class="text-xs text-slate-400 dark:text-slate-500 mt-2"
+        >
+          TikTok API returned video data with 0 views. This is normal in sandbox mode.
         </p>
       </div>
     </template>
@@ -98,10 +99,10 @@ const hasVideoData = computed(() => {
     <template v-else>
       <!-- Desktop Table -->
       <div class="hidden md:block overflow-x-auto">
-        <table
-          class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+        <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
           <thead
-            class="bg-black text-white dark:text-electric/70 font-bold border-b-4 border-black">
+            class="bg-black text-white dark:text-electric/70 font-bold border-b-4 border-black"
+          >
             <tr>
               <th class="px-4 py-4">Content</th>
               <th class="px-4 py-4 text-center">Date Created</th>
@@ -119,49 +120,45 @@ const hasVideoData = computed(() => {
               v-for="item in filteredContent"
               :key="item.id"
               @click="openVideoDetail(item.id)"
-              class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group cursor-pointer">
+              class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group cursor-pointer"
+            >
               <td class="px-4 py-4 min-w-[200px]">
                 <div class="flex items-center gap-3">
                   <img
                     :src="item.thumbnail"
                     :alt="item.title"
-                    class="w-12 h-12 rounded-lg object-cover ring-1 ring-slate-100 dark:ring-slate-700 shrink-0" />
+                    class="w-12 h-12 rounded-lg object-cover ring-1 ring-slate-100 dark:ring-slate-700 shrink-0"
+                  />
                   <span
                     class="font-bold text-slate-900 dark:text-white group-hover:text-primary-600 transition-colors truncate"
-                    :title="item.title">
+                    :title="item.title"
+                  >
                     {{ truncateText(item.title, 40) }}
                   </span>
                 </div>
               </td>
-              <td
-                class="px-4 py-4 whitespace-nowrap font-semibold text-xs text-center">
+              <td class="px-4 py-4 whitespace-nowrap font-semibold text-xs text-center">
                 {{ formatDate(item.created) }}
               </td>
               <td class="px-4 py-4 whitespace-nowrap font-semibold text-center">
                 {{ formatDuration(item.duration || 0) }}
               </td>
-              <td
-                class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
+              <td class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.views || 0) }}
               </td>
-              <td
-                class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
+              <td class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.likes || 0) }}
               </td>
-              <td
-                class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
+              <td class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.shares || 0) }}
               </td>
-              <td
-                class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
+              <td class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.saves || 0) }}
               </td>
-              <td
-                class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
+              <td class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.comments || 0) }}
               </td>
-              <td
-                class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
+              <td class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
                 {{ calculateEngagementRate(item).toFixed(1) + "%" }}
               </td>
             </tr>
@@ -170,20 +167,20 @@ const hasVideoData = computed(() => {
       </div>
 
       <!-- Mobile Cards -->
-      <div
-        class="md:hidden flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
+      <div class="md:hidden flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
         <div
           v-for="item in filteredContent"
           :key="item.id"
           @click="openVideoDetail(item.id)"
-          class="p-4 flex gap-4 active:bg-slate-50 dark:active:bg-slate-700/50 cursor-pointer">
+          class="p-4 flex gap-4 active:bg-slate-50 dark:active:bg-slate-700/50 cursor-pointer"
+        >
           <img
             :src="item.thumbnail"
             :alt="item.title"
-            class="w-16 h-16 rounded-lg object-cover shrink-0" />
+            class="w-16 h-16 rounded-lg object-cover shrink-0"
+          />
           <div class="flex-1 min-w-0 flex flex-col justify-center">
-            <h4
-              class="text-sm font-bold text-slate-900 dark:text-white truncate">
+            <h4 class="text-sm font-bold text-slate-900 dark:text-white truncate">
               {{ item.title }}
             </h4>
             <div class="flex items-center gap-2 mt-1">
@@ -192,25 +189,16 @@ const hasVideoData = computed(() => {
                   'text-[10px] font-bold uppercase px-1.5 py-0.5',
                   getPlatformBadge(item.platform).bg,
                   getPlatformBadge(item.platform).text,
-                ]">
-                {{
-                  item.platform === "instagram"
-                    ? "Insta"
-                    : capitalize(item.platform)
-                }}
-              </span>
-              <span class="text-xs text-slate-400 dark:text-slate-500"
-                >• {{ item.timeAgo }}</span
+                ]"
               >
+                {{ item.platform === "instagram" ? "Insta" : capitalize(item.platform) }}
+              </span>
+              <span class="text-xs text-slate-400 dark:text-slate-500">• {{ item.timeAgo }}</span>
             </div>
           </div>
           <div class="flex flex-col justify-center items-end text-right">
-            <span class="text-lg font-bold text-slate-900 dark:text-white">{{
-              item.views
-            }}</span>
-            <span class="text-xs text-slate-500 dark:text-slate-400 font-medium"
-              >Views</span
-            >
+            <span class="text-lg font-bold text-slate-900 dark:text-white">{{ item.views }}</span>
+            <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Views</span>
           </div>
         </div>
       </div>
@@ -220,8 +208,8 @@ const hasVideoData = computed(() => {
   <!-- Video Detail Modal -->
   <VideoDetailModal
     v-if="selectedVideoId"
-    :platform="platform"
-    :video-id="selectedVideoId"
-    :is-open="isModalOpen"
-    @close="closeModal" />
+    :show="isModalOpen"
+    :video-data="filteredContent.find((v) => v.id === selectedVideoId)"
+    @close="closeModal"
+  />
 </template>

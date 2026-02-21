@@ -4,14 +4,13 @@ import {
   Settings,
   LogOut,
   User,
-  Bell,
-  Shield,
   Key,
   Link2,
   BellRing,
   Lock,
   ShieldCheck,
   Smartphone,
+  Shield,
 } from "lucide-vue-next";
 import { useAuthStore } from "@/stores/auth";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
@@ -75,7 +74,8 @@ const settings = ref([
       <PageHeader
         title="Settings"
         subtitle="Manage your account and preferences"
-        :show-theme-toggle="true" />
+        :show-theme-toggle="true"
+      />
 
       <!-- Appearance Card -->
 
@@ -88,7 +88,8 @@ const settings = ref([
                 <component
                   :is="setting.icon"
                   :size="20"
-                  class="text-slate-600 dark:text-slate-300" />
+                  class="text-slate-600 dark:text-slate-300"
+                />
               </div>
               <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
                 {{ setting.category }}
@@ -97,7 +98,8 @@ const settings = ref([
             <div class="divide-y divide-slate-200 dark:divide-slate-700">
               <template v-for="item in setting.items" :key="item.label">
                 <button
-                  class="w-full px-6 py-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left">
+                  class="w-full px-6 py-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left"
+                >
                   <div class="flex-1">
                     <p class="font-medium text-slate-900 dark:text-white">
                       {{ item.label }}
@@ -115,24 +117,22 @@ const settings = ref([
       </div>
 
       <!-- Logout Card -->
-      <div
-        class="bg-white dark:bg-navy border-neo-3 border-black shadow-neo-hard">
+      <div class="bg-white dark:bg-navy border-neo-3 border-black shadow-neo-hard">
         <div class="p-6">
           <div class="flex items-center gap-3">
             <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
               <LogOut :size="20" class="text-red-600 dark:text-red-500" />
             </div>
             <div class="flex-1">
-              <p class="font-semibold text-slate-900 dark:text-white">
-                Sign Out
-              </p>
+              <p class="font-semibold text-slate-900 dark:text-white">Sign Out</p>
               <p class="text-sm text-slate-600 dark:text-slate-400">
                 You will be logged out from your account
               </p>
             </div>
             <button
               @click="authStore.logout"
-              class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
+              class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+            >
               Logout
             </button>
           </div>

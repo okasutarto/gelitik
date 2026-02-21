@@ -56,13 +56,12 @@ const generateMockPosts = (): Post[] => {
     return posts
 }
 
-const scheduledPosts = ref<Post[]>(generateMockPosts())
-const selectedDate = ref(new Date())
-
 /**
  * Composable for managing schedule and posts
  */
 export function useSchedule() {
+    const scheduledPosts = ref<Post[]>(generateMockPosts())
+    const selectedDate = ref(new Date())
 
     const getPostsByDate = (date: Date) => {
         return scheduledPosts.value.filter(post =>

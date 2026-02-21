@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { Bar } from "vue-chartjs";
-import { formatNumber } from "@/utils/format";
 import { truncateText } from "@/utils/video";
 import type { Video } from "@/types/video";
 import "@/composables/useChart"; // Registers Chart.js components
 
 interface Props {
   videos?: Video[];
-};
+}
 
 const props = withDefaults(defineProps<Props>(), {
   videos: () => [],
@@ -26,7 +25,11 @@ const paginatedVideos = computed(() => {
 });
 
 const hasVideoData = computed(() => {
-  return props.videos && props.videos.length > 0 && props.videos.some((v: Video) => (v.view_count || 0) > 0);
+  return (
+    props.videos &&
+    props.videos.length > 0 &&
+    props.videos.some((v: Video) => (v.view_count || 0) > 0)
+  );
 });
 
 const chartData = computed(() => {
@@ -41,12 +44,11 @@ const chartData = computed(() => {
     const views = v.view_count || 0;
     const totalEngagement = likes + comments + shares;
     const rate = views > 0 ? (totalEngagement / views) * 100 : 0;
-    
+
     return rate;
   });
 
   const hasValidData = paginatedVideos.value.some((v) => (v.view_count || 0) > 0);
-  const hasAnyEngagement = paginatedVideos.value.some((v) => (v.like_count || 0) + (v.comment_count || 0) + (v.share_count || 0) > 0);
 
   return {
     labels: paginatedVideos.value.map((v) => truncateText(v.video_description || "", 20)),
@@ -75,7 +77,7 @@ const chartData = computed(() => {
   };
 });
 
-  const chartOptions = {
+const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -152,9 +154,7 @@ watch(
 <template>
   <div class="brutal-card brutal-hover-lift rounded-none p-6">
     <div v-if="!videos || videos.length === 0" class="p-8 text-center">
-      <p class="text-slate-500 dark:text-slate-400">
-        No video data available
-      </p>
+      <p class="text-slate-500 dark:text-slate-400">No video data available</p>
     </div>
     <div v-else-if="!hasVideoData" class="p-8 text-center">
       <p class="text-slate-500 dark:text-slate-400">
@@ -162,11 +162,9 @@ watch(
       </p>
     </div>
     <div v-else>
-      <div
-        class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
         <div>
-          <h3
-            class="text-lg font-black uppercase hidden lg:block dark:text-white">
+          <h3 class="text-lg font-black uppercase hidden lg:block dark:text-white">
             Video Performance
           </h3>
           <p class="text-sm font-bold opacity-60 uppercase dark:text-slate-400">
@@ -177,7 +175,8 @@ watch(
           <button
             @click="prevPage"
             :disabled="currentPage === 1"
-            class="bg-slate-50 dark:bg-slate-700 border-neo-3 border-black neo-shadow-hard-sm text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-300 py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-primary-500 cursor-pointer outline-none hover:ne-hover-lift">
+            class="bg-slate-50 dark:bg-slate-700 border-neo-3 border-black neo-shadow-hard-sm text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-300 py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-primary-500 cursor-pointer outline-none hover:ne-hover-lift"
+          >
             Previous
           </button>
           <span class="text-sm font-mono font-bold text-slate-900 dark:text-white px-3">
@@ -186,17 +185,15 @@ watch(
           <button
             @click="nextPage"
             :disabled="currentPage === totalPages"
-            class="bg-slate-50 dark:bg-slate-700 border-neo-3 border-black neo-shadow-hard-sm text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-300 py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-primary-500 cursor-pointer outline-none hover:ne-hover-lift">
+            class="bg-slate-50 dark:bg-slate-700 border-neo-3 border-black neo-shadow-hard-sm text-sm font-semibold rounded-lg text-slate-600 dark:text-slate-300 py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-primary-500 cursor-pointer outline-none hover:ne-hover-lift"
+          >
             Next
           </button>
         </div>
       </div>
 
       <div class="h-64 w-full">
-        <Bar
-          :data="chartData"
-          :options="chartOptions"
-        />
+        <Bar :data="chartData" :options="chartOptions" />
       </div>
     </div>
   </div>

@@ -102,11 +102,13 @@ The function has been extracted to `src/utils/format.ts` and is imported by all 
 
 ---
 
-### **11. Inconsistent Line Endings (CRLF vs LF)**
+### ~~11. Inconsistent Line Endings (CRLF vs LF)~~ ✅ RESOLVED
 
-Many files mix `CRLF` and `LF` line endings, even within the same file (e.g., router/index.ts, app.ts).
+`.editorconfig` has been added to the root directory to enforce consistent line endings and spacing.
 
-**Recommendation:** Add an `.editorconfig` and configure Git: `git config core.autocrlf true`.
+~~Many files mix `CRLF` and `LF` line endings, even within the same file (e.g., router/index.ts, app.ts).~~
+
+~~**Recommendation:** Add an `.editorconfig` and configure Git: `git config core.autocrlf true`.~~
 
 ---
 
@@ -141,11 +143,13 @@ The `connected` field is hardcoded to `true`. It should be derived from actual a
 
 ---
 
-### **15. useTheme Uses `onMounted` Inside Composable**
+### ~~15. useTheme Uses `onMounted` Inside Composable~~ ✅ RESOLVED
 
-useTheme.ts:59 calls `onMounted()` inside the composable. This is fine semantically, but means theme initialization only happens when the component mounts — a FOUC (flash of unstyled content) will occur since the dark class is applied late.
+`initTheme()` is now called synchronously in `main.ts` before the Vue app mounts, effectively avoiding FOUC.
 
-**Recommendation:** Call initTheme() synchronously instead, or move it to **main.ts**.
+~~useTheme.ts:59 calls `onMounted()` inside the composable. This is fine semantically, but means theme initialization only happens when the component mounts — a FOUC (flash of unstyled content) will occur since the dark class is applied late.~~
+
+~~**Recommendation:** Call initTheme() synchronously instead, or move it to **main.ts**.~~
 
 ---
 
@@ -155,16 +159,18 @@ Unused imports (`onMounted`, `useAuthStore`) have been removed.
 
 ---
 
-### **17. useSchedule State Leak — Module-Level Refs**
+### ~~17. useSchedule State Leak — Module-Level Refs~~ ✅ RESOLVED
 
-useSchedule.ts:67-68:
+State refs (`scheduledPosts` and `selectedDate`) have been refactored to live inside the composable function `useSchedule()` so they don't persist locally as a singleton across logins.
 
-```typescript
-const scheduledPosts = ref<Post[]>(generateMockPosts());
-const selectedDate = ref(new Date());
-```
+~~useSchedule.ts:67-68:~~
 
-These refs are **module-level singletons**, meaning all components share the same state. This is likely intentional for global state, but if a user logs out and another logs in, stale data persists.
+~~```typescript~~
+~~const scheduledPosts = ref<Post[]>(generateMockPosts());~~
+~~const selectedDate = ref(new Date());~~
+~~```~~
+
+~~These refs are **module-level singletons**, meaning all components share the same state. This is likely intentional for global state, but if a user logs out and another logs in, stale data persists.~~
 
 ---
 
@@ -182,16 +188,16 @@ TopVideosChart.vue:253-261: The component redefines `.truncate` with `-webkit-li
 
 ## **Minor / Style Issues**
 
-| **#** | **Issue**                                                                                                                                                      | **Location**                    |
-| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| 20    | `font-black` and `font-bold` used together on same element (`p` tag) — they conflict                                                                           | **AppSidebar.vue:294**          |
-| 21    | Copyright says "© 2024" — should be 2025/2026 or use dynamic year                                                                                              | **LoginPage.vue:130**           |
-| ~~22~~ | ~~**handleForgotPassword** and **handleSignup** are empty `console.log` stubs~~                                                                                    | ~~**LoginPage.vue:34-40**~~ ✅ RESOLVED         |
-| 23    | `Bell` icon used as generic indicator for all setting items — should vary per item type                                                                        | **SettingsPage.vue:144**        |
-| 24    | Dynamic Tailwind classes in **ConnectionsPage.vue** (`bg-${color}-100`) won't be compiled by Tailwind's JIT — they need to be safelisted or use static classes | **ConnectionsPage.vue:105-110** |
-| 25    | `placeholder.com` reference in **TopVideosChart.vue** — this service is unreliable                                                                             | **TopVideosChart.vue:226**      |
-| 26    | No global error boundary — unhandled promise rejections in route guards or API calls will silently fail                                                        | General                         |
-| 27    | Ascending button always shows "↓" regardless of direction                                                                                                      | **TopVideosChart.vue:195**      |
+| **#**  | **Issue**                                                                                                                                                      | **Location**                            |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| 20     | `font-black` and `font-bold` used together on same element (`p` tag) — they conflict                                                                           | **AppSidebar.vue:294**                  |
+| 21     | Copyright says "© 2024" — should be 2025/2026 or use dynamic year                                                                                              | **LoginPage.vue:130**                   |
+| ~~22~~ | ~~**handleForgotPassword** and **handleSignup** are empty `console.log` stubs~~                                                                                | ~~**LoginPage.vue:34-40**~~ ✅ RESOLVED |
+| 23     | `Bell` icon used as generic indicator for all setting items — should vary per item type                                                                        | **SettingsPage.vue:144**                |
+| 24     | Dynamic Tailwind classes in **ConnectionsPage.vue** (`bg-${color}-100`) won't be compiled by Tailwind's JIT — they need to be safelisted or use static classes | **ConnectionsPage.vue:105-110**         |
+| 25     | `placeholder.com` reference in **TopVideosChart.vue** — this service is unreliable                                                                             | **TopVideosChart.vue:226**              |
+| 26     | No global error boundary — unhandled promise rejections in route guards or API calls will silently fail                                                        | General                                 |
+| 27     | Ascending button always shows "↓" regardless of direction                                                                                                      | **TopVideosChart.vue:195**              |
 
 ---
 
@@ -347,7 +353,7 @@ Many catch blocks are empty or just re-throw without logging:
 | #2    | Hardcoded JWT secret fallback          | ✅ RESOLVED |
 | #3    | Verbose debug logging                  | ✅ RESOLVED |
 | #4    | Mock auth bypass in production         | ✅ RESOLVED |
-| #5    | useRouter() in Pinia store            | ✅ RESOLVED |
+| #5    | useRouter() in Pinia store             | ✅ RESOLVED |
 | #6    | errorHandler middleware not registered | ✅ RESOLVED |
 | #7    | Multiple PrismaClient instances        | ✅ RESOLVED |
 | #9    | formatNumber() duplicated              | ✅ RESOLVED |
@@ -360,7 +366,7 @@ Many catch blocks are empty or just re-throw without logging:
 | #31   | Missing input validation               | ✅ RESOLVED |
 | #32   | No authorization checks                | ✅ RESOLVED |
 | #33   | Hardcoded secrets in .env              | ✅ RESOLVED |
-| #34   | Hardcoded ngrok URLs                  | ✅ RESOLVED |
+| #34   | Hardcoded ngrok URLs                   | ✅ RESOLVED |
 
 ### Original Issues (from 2026-02-13)
 
@@ -397,47 +403,47 @@ Many catch blocks are empty or just re-throw without logging:
 
 ### Phase 1: Quick Wins ✅ COMPLETED
 
-| Priority | # | Issue | Status |
-|----------|---|-------|--------|
-| 1 | #21 | Copyright year 2024 → 2026 | ✅ RESOLVED (already uses dynamic year) |
-| 2 | #8 | Delete AuthLayout.vue (dead code) | ✅ RESOLVED (file doesn't exist) |
-| 3 | #20 | font-black + font-bold conflict | ✅ RESOLVED (no conflict found) |
-| 4 | #12 | Sidebar tooltips | ✅ RESOLVED (has `group` class) |
+| Priority | #   | Issue                             | Status                                  |
+| -------- | --- | --------------------------------- | --------------------------------------- |
+| 1        | #21 | Copyright year 2024 → 2026        | ✅ RESOLVED (already uses dynamic year) |
+| 2        | #8  | Delete AuthLayout.vue (dead code) | ✅ RESOLVED (file doesn't exist)        |
+| 3        | #20 | font-black + font-bold conflict   | ✅ RESOLVED (no conflict found)         |
+| 4        | #12 | Sidebar tooltips                  | ✅ RESOLVED (has `group` class)         |
 
 ### Phase 2: Foundation (Enables other work)
 
-| Priority | # | Issue | Status |
-|----------|---|-------|--------|
-| 5 | #35 | Standardize error response format | ✅ RESOLVED (helper created: utils/apiResponse.ts) |
-| 6 | #36 | Centralized API error handling | ✅ RESOLVED (frontend) |
-| 7 | #39 | Add ESLint/Prettier | ✅ RESOLVED (frontend config added) |
-| 8 | #40 | Align TypeScript versions | ✅ RESOLVED (already aligned ~5.6.3) |
+| Priority | #   | Issue                             | Status                                             |
+| -------- | --- | --------------------------------- | -------------------------------------------------- |
+| 5        | #35 | Standardize error response format | ✅ RESOLVED (helper created: utils/apiResponse.ts) |
+| 6        | #36 | Centralized API error handling    | ✅ RESOLVED (frontend)                             |
+| 7        | #39 | Add ESLint/Prettier               | ✅ RESOLVED (frontend config added)                |
+| 8        | #40 | Align TypeScript versions         | ✅ RESOLVED (already aligned ~5.6.3)               |
 
 ### Phase 3: Code Quality (~5 hrs)
 
-| Priority | # | Issue | Status |
-|----------|---|-------|--------|
-| 9 | #37 | Excessive `any` types | ✅ RESOLVED (frontend) |
-| 10 | #38 | Remove console.log | ✅ RESOLVED (frontend - already gated behind DEV) |
-| 11 | #41 | Fix empty catch blocks | N/A (no empty catch blocks found) |
+| Priority | #   | Issue                  | Status                                            |
+| -------- | --- | ---------------------- | ------------------------------------------------- |
+| 9        | #37 | Excessive `any` types  | ✅ RESOLVED (frontend)                            |
+| 10       | #38 | Remove console.log     | ✅ RESOLVED (frontend - already gated behind DEV) |
+| 11       | #41 | Fix empty catch blocks | N/A (no empty catch blocks found)                 |
 
 ### Phase 4: Bug Fixes (~2 hrs)
 
-| Priority | # | Issue | Status |
-|----------|---|-------|--------|
-| 12 | #18 | TopVideosChart wrong metric | ✅ RESOLVED |
-| 13 | #19 | truncate CSS override | ✅ RESOLVED |
+| Priority | #   | Issue                       | Status      |
+| -------- | --- | --------------------------- | ----------- |
+| 12       | #18 | TopVideosChart wrong metric | ✅ RESOLVED |
+| 13       | #19 | truncate CSS override       | ✅ RESOLVED |
 
 ### Phase 5: Backlog (When time permits)
 
-| # | Issue | Status |
-|---|-------|--------|
-| #11 | Line endings (cosmetic) | N/A |
-| #13 | Hardcoded connection status | ✅ RESOLVED |
-| #14 | Unused functions in ContentTable | N/A (not found) |
-| #15 | useTheme FOUC | Low priority |
-| #17 | useSchedule state leak | Low priority |
-| #23 | Bell icon for all settings | ✅ RESOLVED |
-| #24 | Dynamic Tailwind classes | N/A (uses function) |
-| #25 | placeholder.com reference | N/A (not found) |
-| #26 | No global error boundary | N/A (already exists) |
+| #   | Issue                            | Status               |
+| --- | -------------------------------- | -------------------- |
+| #11 | Line endings (cosmetic)          | ✅ RESOLVED          |
+| #13 | Hardcoded connection status      | ✅ RESOLVED          |
+| #14 | Unused functions in ContentTable | N/A (not found)      |
+| #15 | useTheme FOUC                    | ✅ RESOLVED          |
+| #17 | useSchedule state leak           | ✅ RESOLVED          |
+| #23 | Bell icon for all settings       | ✅ RESOLVED          |
+| #24 | Dynamic Tailwind classes         | N/A (uses function)  |
+| #25 | placeholder.com reference        | N/A (not found)      |
+| #26 | No global error boundary         | N/A (already exists) |

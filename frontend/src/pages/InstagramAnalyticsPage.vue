@@ -18,6 +18,7 @@ import UserProfile from "@/components/dashboard/UserProfile.vue";
 import AudienceChart from "@/components/dashboard/AudienceChart.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
 import ContentFormatBreakdown from "@/components/dashboard/ContentFormatBreakdown.vue";
+import GenderSplitPanel from "@/components/dashboard/GenderSplitPanel.vue";
 import TopCitiesPanel from "@/components/dashboard/TopCitiesPanel.vue";
 import AgeRangePanel from "@/components/dashboard/AgeRangePanel.vue";
 import StatCardSkeleton from "@/components/loading/StatCardSkeleton.vue";
@@ -300,6 +301,11 @@ onMounted(() => {
       <TopCitiesPanel />
       <AgeRangePanel />
       <ContentFormatBreakdown :formats="contentFormats" :loading="loading" />
+    </div>
+
+    <!-- Audience Demographics Row -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <GenderSplitPanel :data="[]" :loading="loading" />
     </div>
 
     <!-- Top Performing Content -->

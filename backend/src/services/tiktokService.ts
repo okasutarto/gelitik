@@ -146,7 +146,7 @@ export class TikTokService implements PlatformService {
     try {
       const params: any = {
         max_count: maxCount,
-        fields: 'id,video_description,create_time,like_count,comment_count,share_count,view_count,cover_image_url,embed_link,duration,height,width'
+        fields: 'id,title,video_description,create_time,like_count,comment_count,share_count,view_count,cover_image_url,embed_link,duration,height,width'
       };
 
       if (cursor) {

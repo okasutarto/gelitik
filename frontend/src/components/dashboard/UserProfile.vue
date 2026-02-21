@@ -39,7 +39,11 @@ withDefaults(defineProps<Props>(), {
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <a
-              href="https://www.tiktok.com/@okasp.dev"
+              :href="
+                platform === 'instagram'
+                  ? `https://instagram.com/${userInfo.name}`
+                  : `https://www.tiktok.com/@${userInfo.name}`
+              "
               target="_blank"
               class="text-xl md:text-2xl font-black text-slate-900 dark:text-white hover:underline"
             >

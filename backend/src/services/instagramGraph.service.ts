@@ -163,7 +163,7 @@ export class InstagramGraphService implements PlatformService {
 
         const response = await axios.get(`${this.graphUrl}/${igAccount.id}`, {
             params: {
-                fields: 'id,username,name,profile_picture_url,media_count',
+                fields: 'id,username,name,profile_picture_url,media_count,biography,follows_count,followers_count',
                 access_token: accessToken
             }
         });
@@ -196,14 +196,14 @@ export class InstagramGraphService implements PlatformService {
             // API returns: data[0].values = [{value: X, end_time: ...}, {value: Y, end_time: ...}]
             // We want the most recent (last one)
 
-            // Try follower_count - use days_28 period (API uses days_28, not 28_days)
+            // Try follower_count - use day period (API uses day, not days_28 or 28_days for this metric)
             let followers = 0;
             try {
-                console.log('[InstagramGraph] Fetching follower_count with days_28...');
+                console.log('[InstagramGraph] Fetching follower_count with day...');
                 const followerResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: {
                         metric: 'follower_count',
-                        period: 'days_28',
+                        period: 'day',
                         access_token: accessToken
                     }
                 });
@@ -211,11 +211,12 @@ export class InstagramGraphService implements PlatformService {
                 const followerValues = followerResponse.data.data?.[0]?.values || [];
                 followers = followerValues.length > 0 ? followerValues[followerValues.length - 1]?.value || 0 : 0;
             } catch (e: any) {
-                console.log('[InstagramGraph] follower_count days_28 failed:', e.response?.data?.error?.message);
+                console.log('[InstagramGraph] follower_count day failed:', e.response?.data?.error?.message);
             }
 
-            // Also get media count from profile
+            // Also get media count and following from profile
             let mediaCount = 0;
+            let followsCount = 0;
             try {
                 console.log('[InstagramGraph] Trying to get profile data...');
                 const profileResponse = await axios.get(`${this.graphUrl}/${igAccount.id}`, {
@@ -229,6 +230,7 @@ export class InstagramGraphService implements PlatformService {
                     followers = profileResponse.data.followers_count || 0;
                 }
                 mediaCount = profileResponse.data.media_count || 0;
+                followsCount = profileResponse.data.follows_count || 0;
             } catch (e2: any) {
                 console.log('[InstagramGraph] profile error:', e2.response?.data?.error?.message || e2.message);
             }
@@ -321,9 +323,72 @@ export class InstagramGraphService implements PlatformService {
 
             console.log('[InstagramGraph] Final values - followers:', followers, 'reach:', reach, 'interactions:', totalInteractions);
 
+            // Fetch demographics if the account has enough followers
+            let demographics = {
+                gender: [] as any[],
+                age: [] as any[],
+                cities: [] as any[]
+            };
+
+            if (followers >= 100) {
+                try {
+                    const [ageGenderRes, cityRes] = await Promise.all([
+                        axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                            params: { metric: 'follower_demographics', metric_type: 'total_value', period: 'lifetime', timeframe: 'last_30_days', breakdown: 'age,gender', access_token: accessToken }
+                        }),
+                        axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                            params: { metric: 'follower_demographics', metric_type: 'total_value', period: 'lifetime', timeframe: 'last_30_days', breakdown: 'city', access_token: accessToken }
+                        })
+                    ]);
+
+                    const ageGenderBreakdown = ageGenderRes.data?.data?.[0]?.total_value?.breakdowns?.[0] || {};
+                    const ageGenderData = ageGenderBreakdown.results || [];
+                    const dimensionKeys = ageGenderBreakdown.dimension_keys || ['age', 'gender'];
+                    const ageIdx = dimensionKeys.indexOf('age');
+                    const genderIdx = dimensionKeys.indexOf('gender');
+
+                    const cityData = cityRes.data?.data?.[0]?.total_value?.breakdowns?.[0]?.results || [];
+
+                    const ageGenderMap = new Map<string, number>();
+                    ageGenderData.forEach((result: any) => {
+                        const ageInfo = ageIdx >= 0 ? result.dimension_values?.[ageIdx] : null;
+                        const genderInfo = genderIdx >= 0 ? result.dimension_values?.[genderIdx] : null;
+                        const value = result.value || 0;
+                        if (ageInfo) ageGenderMap.set(ageInfo, (ageGenderMap.get(ageInfo) || 0) + value);
+                        if (genderInfo) {
+                            let genderKey = 'Other';
+                            if (genderInfo === 'M') genderKey = 'Male';
+                            else if (genderInfo === 'F') genderKey = 'Female';
+                            else if (genderInfo === 'U' || genderInfo === 'O') genderKey = 'Other';
+                            ageGenderMap.set(genderKey, (ageGenderMap.get(genderKey) || 0) + value);
+                        }
+                    });
+
+                    const cities = cityData.map((result: any) => ({
+                        name: (result.dimension_values?.[0] || "").split(',')[0], // Map to 'name' for TopCitiesPanel
+                        count: result.value || 0
+                    })).sort((a: any, b: any) => b.count - a.count).slice(0, 5);
+
+                    const ages = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'].map(group => ({ group, count: ageGenderMap.get(group) || 0 }));
+                    const genders = ['Male', 'Female', 'Other'].map(gender => ({ gender, count: ageGenderMap.get(gender) || 0 }));
+
+                    const totalGenderCount = genders.reduce((sum: number, g: {count: number}) => sum + g.count, 0) || 1;
+                    const totalAgeCount = ages.reduce((sum: number, a: {count: number}) => sum + a.count, 0) || 1;
+                    const totalCityCount = cities.reduce((sum: number, c: {count: number}) => sum + c.count, 0) || 1;
+
+                    demographics = {
+                        gender: genders.map(g => ({ gender: g.gender, percentage: Math.round((g.count / totalGenderCount) * 100) })),
+                        age: ages.map(a => ({ label: a.group, percentage: Math.round((a.count / totalAgeCount) * 100) })), // Map to 'label' for AgeRangePanel
+                        cities: cities.map((c: any) => ({ name: c.name, percentage: Math.round((c.count / totalCityCount) * 100) })) // Map to 'name' for TopCitiesPanel
+                    };
+                } catch (e: any) {
+                    console.log('[InstagramGraph] Demographics error:', e.response?.data?.error?.message || e.message);
+                }
+            }
+
             return {
                 followers,
-                following: 0,
+                following: followsCount,
                 mediaCount,
                 reach,
                 impressions: reach,
@@ -332,7 +397,8 @@ export class InstagramGraphService implements PlatformService {
                 comments,
                 shares,
                 profileViews,
-                accountsEngaged
+                accountsEngaged,
+                demographics
             };
         } catch (error: any) {
             console.error('[InstagramGraph] getInsights error:', error.response?.data || error.message);
@@ -359,7 +425,7 @@ export class InstagramGraphService implements PlatformService {
 
         const response = await axios.get(`${this.graphUrl}/${igAccount.id}/media`, {
             params: {
-                fields: 'id,caption,media_type,media_product_type,media_url,thumbnail_url,permalink,timestamp,like_count,comment_count,share_count,save_count,reach,impressions',
+                fields: 'id,caption,media_type,media_product_type,media_url,thumbnail_url,permalink,timestamp,like_count,comments_count',
                 access_token: accessToken,
                 limit
             }
@@ -367,40 +433,59 @@ export class InstagramGraphService implements PlatformService {
 
         const mediaItems = response.data.data || [];
 
-        // For each video/reel, try to get video_views (but use impressions/reach as fallback)
-        const mediaWithViews = await Promise.all(mediaItems.map(async (media: any) => {
-            // Try to get video_views for videos/reels, but it's often not supported
-            // Use impressions/reach as fallback for view count
-            if (media.media_type === 'VIDEO' || media.media_product_type === 'REELS') {
-                try {
-                    const insightsResponse = await axios.get(`${this.graphUrl}/${media.id}/insights`, {
-                        params: {
-                            metric: 'video_views',
-                            period: 'lifetime',
-                            access_token: accessToken
-                        }
-                    });
-                    const videoViewsData = insightsResponse.data.data?.[0];
-                    if (videoViewsData?.total_value?.value) {
-                        media.video_views = videoViewsData.total_value.value;
-                    } else if (videoViewsData?.values?.[0]?.value) {
-                        media.video_views = videoViewsData.values[0].value;
-                    } else {
-                        // Fallback to impressions/reach
-                        media.video_views = media.impressions || media.reach || 0;
+        // For each media item, fetch per-media insights
+        // impressions and plays are deprecated in v22+, transitioning to 'views' for all media
+        const mediaWithInsights = await Promise.all(mediaItems.map(async (media: any) => {
+            try {
+                // Use the new standard 'views' metric, universally available in v25.0
+                const isReel = media.media_product_type === 'REELS';
+                const metrics = 'reach,saved,shares,views';
+
+                const insightsResponse = await axios.get(`${this.graphUrl}/${media.id}/insights`, {
+                    params: {
+                        metric: metrics,
+                        access_token: accessToken
                     }
-                } catch (e: any) {
-                    console.log('[InstagramGraph] video_views error for', media.id, '- using impressions/reach fallback');
-                    // Fallback to impressions/reach
+                });
+
+                const insightsData = insightsResponse.data.data || [];
+                for (const metric of insightsData) {
+                    const value = metric.values?.[0]?.value ?? metric.total_value?.value ?? 0;
+                    switch (metric.name) {
+                        case 'impressions': media.impressions = value; break;
+                        case 'reach': media.reach = value; break;
+                        case 'saved': media.save_count = value; break;
+                        case 'shares': media.share_count = value; break;
+                        case 'plays': media.video_views = value; break;
+                        case 'video_views': media.video_views = value; break;
+                        case 'views': media.video_views = value; break;
+                    }
+                }
+
+                // For non-video media, use impressions as view proxy
+                if (!isReel) {
+                    media.video_views = media.impressions || media.reach || 0;
+                } else if (!media.video_views) {
                     media.video_views = media.impressions || media.reach || 0;
                 }
-            } else {
+            } catch (e: any) {
+                console.log('[InstagramGraph] insights error for media', media.id, ':', e.response?.data?.error?.message || e.message);
                 media.video_views = 0;
+                media.impressions = 0;
+                media.reach = 0;
+                media.save_count = 0;
+                media.share_count = 0;
             }
+
+            // Normalize comment_count from comments_count
+            if (media.comments_count !== undefined && media.comment_count === undefined) {
+                media.comment_count = media.comments_count;
+            }
+
             return media;
         }));
 
-        return { data: mediaWithViews };
+        return { data: mediaWithInsights };
     }
 
     /**
@@ -415,7 +500,7 @@ export class InstagramGraphService implements PlatformService {
         });
 
         const data = response.data;
-        
+
         // Match the shape returned by the TikTok endpoint for frontend compatibility
         const engagement = (data.like_count || 0) + (data.comment_count || 0) + (data.share_count || 0);
         const views = data.impressions || data.reach || 0; // impressions or reach as proxy for views in frontend
@@ -447,10 +532,26 @@ export class InstagramGraphService implements PlatformService {
             this.getMedia(accessToken)
         ]);
 
+        const mediaArray = media.data || [];
+
+        // Aggregate total saves and interactions from media
+        let totalSaves = 0;
+        let totalInteractions = 0;
+
+        for (const item of mediaArray) {
+            totalSaves += (item.save_count || 0);
+            totalInteractions += (item.like_count || 0) + (item.comments_count || item.comment_count || 0) + (item.share_count || 0) + (item.save_count || 0);
+        }
+
+        // Attach aggregated metrics to insights
+        insights.saves = totalSaves;
+        insights.totalInteractions = totalInteractions;
+        insights.following = profile.follows_count || 0;
+
         return {
             profile,
             insights,
-            media: media.data || []
+            media: mediaArray
         };
     }
 

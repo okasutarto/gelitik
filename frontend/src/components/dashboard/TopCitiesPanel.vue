@@ -1,11 +1,32 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { MapPin } from "lucide-vue-next";
 
-const cities = [
+interface CityData {
+  name: string;
+  percentage: number;
+}
+
+interface Props {
+  data?: CityData[];
+  loading?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  data: () => [],
+  loading: false,
+});
+
+const defaultCities = [
   { name: "Jakarta", percentage: 78 },
   { name: "Surabaya", percentage: 45 },
   { name: "Bandung", percentage: 32 },
 ];
+
+const displayCities = computed(() => {
+  if (props.data && props.data.length > 0) return props.data;
+  return defaultCities;
+});
 
 const getBarColor = (index: number) => {
   const colors = ["bg-pink-500", "bg-pink-400", "bg-pink-300"];
@@ -21,7 +42,7 @@ const getBarColor = (index: number) => {
     </h4>
     <div class="space-y-4">
       <div
-        v-for="(city, index) in cities"
+        v-for="(city, index) in displayCities"
         :key="city.name"
         class="flex items-center justify-between"
       >

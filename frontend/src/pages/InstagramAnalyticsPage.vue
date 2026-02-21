@@ -1,23 +1,13 @@
 <script setup lang="ts">
 import { onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
-import {
-  Eye,
-  Users,
-  UserPlus,
-  Layers,
-  Heart,
-  UserCheck,
-  Activity,
-  Bookmark,
-} from "lucide-vue-next";
+import { Users, UserPlus, Layers, Heart, UserCheck, Activity, Bookmark } from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
 import StatCard from "@/components/dashboard/StatCard.vue";
 import UserProfile from "@/components/dashboard/UserProfile.vue";
 import AudienceChart from "@/components/dashboard/AudienceChart.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
-import ContentFormatBreakdown from "@/components/dashboard/ContentFormatBreakdown.vue";
 import GenderSplitPanel from "@/components/dashboard/GenderSplitPanel.vue";
 import TopCitiesPanel from "@/components/dashboard/TopCitiesPanel.vue";
 import AgeRangePanel from "@/components/dashboard/AgeRangePanel.vue";
@@ -48,6 +38,7 @@ const { loading, accountData, fetchAnalytics } = usePlatformAnalytics(platform.v
 const isGraphApi = computed(() => platform.value === "instagram-graph");
 
 // Get user profile data - map to UserProfile expected format
+
 const userInfo = computed(() => {
   const data = accountData.value?.data as any; // Assert as any to bypass static type issues for now
   if (!data) return null;
@@ -57,10 +48,10 @@ const userInfo = computed(() => {
       id: data.profile.id || "",
       name: data.profile.name || data.profile.username,
       avatar_url: data.profile.profile_picture_url,
-      bio: "",
+      bio: data.profile.biography || "",
       is_verified: false,
       followers_count: data.insights?.followers || 0,
-      following_count: data.insights?.following || 0,
+      following_count: data.profile.follows_count || data.insights?.following || 0,
       likes_count: data.insights?.totalInteractions || 0,
       video_count: data.insights?.mediaCount || 0,
     };
@@ -75,7 +66,7 @@ const media = computed(() => {
   if (!data) return [];
 
   if (isGraphApi.value && data.media) {
-    return data.media.data || [];
+    return Array.isArray(data.media) ? data.media : [];
   }
 
   // Handle standard internal format if needed
@@ -85,7 +76,7 @@ const media = computed(() => {
         title: m.caption || "Untitled",
         cover_image_url: m.thumbnail_url || m.media_url,
         create_time: m.timestamp ? new Date(m.timestamp).getTime() / 1000 : 0,
-        // Use video_views for videos/reels, otherwise use reach/impressions
+        // The frontend ContentTable expects view_count, likes, comments, shares, saves
         view_count:
           m.media_type === "VIDEO" || m.media_product_type === "REELS"
             ? m.video_views || m.impressions || m.reach || 0
@@ -101,33 +92,6 @@ const media = computed(() => {
     : [];
 });
 
-// Derive content format breakdown from media
-const contentFormats = computed(() => {
-  const items = media.value;
-  if (!items.length) return [];
-
-  const groups: Record<string, { count: number; totalReach: number; totalEngagement: number }> = {};
-  for (const item of items) {
-    const type =
-      (item as Record<string, unknown>).media_product_type === "REELS"
-        ? "REELS"
-        : ((item as Record<string, unknown>).media_type as string) || "IMAGE";
-    if (!groups[type]) groups[type] = { count: 0, totalReach: 0, totalEngagement: 0 };
-    groups[type].count++;
-    groups[type].totalReach += Number((item as Record<string, unknown>).view_count || 0);
-    groups[type].totalEngagement +=
-      Number((item as Record<string, unknown>).like_count || 0) +
-      Number((item as Record<string, unknown>).comment_count || 0);
-  }
-
-  return Object.entries(groups).map(([type, g]) => ({
-    type,
-    count: g.count,
-    avgReach: g.count > 0 ? Math.round(g.totalReach / g.count) : 0,
-    avgEngagement: g.count > 0 ? Math.round(g.totalEngagement / g.count) : 0,
-  }));
-});
-
 // Format stats for metric cards
 const instagramStats = computed(() => {
   const data = accountData.value?.data as any;
@@ -141,22 +105,6 @@ const instagramStats = computed(() => {
     const engagementRate = reach > 0 ? (totalInteractions / reach) * 100 : 0;
 
     return [
-      {
-        title: "Followers",
-        value: formatNumber(insights.followers || 0),
-        change: "",
-        changeType: "up" as const,
-        icon: Users,
-        subtitle: "Total followers",
-      },
-      {
-        title: "Impressions",
-        value: formatNumber(insights.impressions || 0),
-        change: "12%",
-        changeType: "up" as const,
-        icon: Eye,
-        subtitle: "+12% vs last week",
-      },
       {
         title: "Accounts Reached",
         value: formatNumber(reach),
@@ -205,14 +153,6 @@ const instagramStats = computed(() => {
 
   const analytics = data.analytics;
   return [
-    {
-      title: "Impressions",
-      value: formatNumber(analytics.totalViews || 0),
-      change: "12%",
-      changeType: "up" as const,
-      icon: Eye,
-      subtitle: "+12% vs last week",
-    },
     {
       title: "Accounts Reached",
       value: formatNumber(analytics.followers || 0),
@@ -265,9 +205,9 @@ onMounted(() => {
     <UserProfileSkeleton v-else-if="loading" />
 
     <!-- Stat Cards Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 my-8">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 my-8">
       <template v-if="loading">
-        <StatCardSkeleton :count="7" />
+        <StatCardSkeleton :count="6" />
       </template>
       <template v-else>
         <StatCard
@@ -297,19 +237,26 @@ onMounted(() => {
     </div>
 
     <!-- Instagram-Specific Panels -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-      <TopCitiesPanel />
-      <AgeRangePanel />
-      <ContentFormatBreakdown :formats="contentFormats" :loading="loading" />
-    </div>
-
-    <!-- Audience Demographics Row -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-      <GenderSplitPanel :data="[]" :loading="loading" />
+    <!-- Demographics row -->
+    <div
+      class="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-8 border border-slate-200 dark:border-slate-800"
+    >
+      <GenderSplitPanel
+        :data="(accountData?.data as any)?.insights?.demographics?.gender || []"
+        :loading="loading"
+      />
+      <TopCitiesPanel
+        :data="(accountData?.data as any)?.insights?.demographics?.cities || []"
+        :loading="loading"
+      />
+      <AgeRangePanel
+        :data="(accountData?.data as any)?.insights?.demographics?.age || []"
+        :loading="loading"
+      />
     </div>
 
     <!-- Top Performing Content -->
     <ContentTableSkeleton v-if="loading" />
-    <ContentTable v-else platform="instagram" :videos="media" />
+    <ContentTable v-else-if="accountData?.data" :platform="'instagram' as any" :videos="media" />
   </DashboardLayout>
 </template>

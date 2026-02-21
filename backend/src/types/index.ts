@@ -1,11 +1,17 @@
-export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    name?: string;
-    avatar?: string;
-  };
+import { Request } from 'express';
+
+declare global {
+  namespace Express {
+    interface User {
+      id: string;
+      email: string;
+      name?: string | null;
+      avatar?: string | null;
+    }
+  }
 }
+
+export interface AuthenticatedRequest extends Request {}
 
 export interface TikTokUserInfo {
   open_id: string;

@@ -1,6 +1,7 @@
 import express from 'express';
-import { prisma } from '../app';
-import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
+import prisma from '../config/prisma';
+import { authenticateToken } from '../middleware/auth';
+import { AuthenticatedRequest } from '../types';
 
 const router = express.Router();
 
@@ -48,7 +49,7 @@ router.get('/overview', authenticateToken, async (req: AuthenticatedRequest, res
       if (latestAnalytics) {
         totalFollowers += latestAnalytics.followers;
         totalEngagementRate += latestAnalytics.engagementRate;
-        
+
         if (oldestAnalytics) {
           followerGrowth += latestAnalytics.followers - oldestAnalytics.followers;
         }
@@ -106,7 +107,7 @@ router.get('/follower-growth', authenticateToken, async (req: AuthenticatedReque
     accounts.forEach(account => {
       account.analytics.forEach(analytic => {
         const dateKey = analytic.date.toISOString().split('T')[0];
-        
+
         if (!dailyData[dateKey]) {
           dailyData[dateKey] = {
             totalFollowers: 0,
@@ -169,7 +170,7 @@ router.get('/engagement-trends', authenticateToken, async (req: AuthenticatedReq
     accounts.forEach(account => {
       account.analytics.forEach(analytic => {
         const dateKey = analytic.date.toISOString().split('T')[0];
-        
+
         if (!dailyData[dateKey]) {
           dailyData[dateKey] = { totalRate: 0, count: 0 };
         }

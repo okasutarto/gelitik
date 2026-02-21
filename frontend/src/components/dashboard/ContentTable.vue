@@ -40,25 +40,30 @@ const closeModal = () => {
 
 const filteredContent = computed(() => {
   if (props.videos && props.videos.length > 0) {
-    return props.videos.map((video: Video) => ({
-      id: video.id,
-      title: video.video_description || "Untitled",
-      thumbnail:
-        video.cover_image_url ||
-        "https://images.unsplash.com/photo-1611162616305-c69b3e718c5?w=100&h=100&fit=crop",
-      platform: props.platform as Platform,
-      duration: video.duration || 0,
-      views: video.view_count || 0,
-      likes: video.like_count || 0,
-      comments: video.comment_count || 0,
-      shares: video.share_count || 0,
-      saves:
-        ((video as unknown as Record<string, unknown>).saves as number) ||
-        ((video as unknown as Record<string, unknown>).save_count as number) ||
-        0,
-      created: video.create_time || "",
-      timeAgo: formatTimeAgo(video.create_time),
-    }));
+    return props.videos.map((video: Video) => {
+      const v = video as unknown as Record<string, unknown>;
+      return {
+        id: video.id,
+        title: video.title || video.video_description || (v.caption as string) || "Untitled",
+        thumbnail:
+          video.cover_image_url ||
+          (v.thumbnail_url as string) ||
+          (v.media_url as string) ||
+          "https://images.unsplash.com/photo-1611162616305-c69b3e718c5?w=100&h=100&fit=crop",
+        platform: props.platform as Platform,
+        duration: video.duration || 0,
+        views: video.view_count || (v.impressions as number) || (v.reach as number) || 0,
+        likes: video.like_count || 0,
+        comments: video.comment_count || 0,
+        shares: video.share_count || 0,
+        saves: (v.saves as number) || (v.save_count as number) || 0,
+        created:
+          video.create_time ||
+          (v.timestamp ? new Date(v.timestamp as string).getTime() / 1000 : 0) ||
+          "",
+        timeAgo: formatTimeAgo(video.create_time),
+      };
+    });
   }
   return [];
 });
@@ -209,7 +214,7 @@ const hasVideoData = computed(() => {
   <VideoDetailModal
     v-if="selectedVideoId"
     :show="isModalOpen"
-    :video-data="filteredContent.find((v) => v.id === selectedVideoId)"
+    :video-data="filteredContent.find((v) => v.id === selectedVideoId) || null"
     @close="closeModal"
   />
 </template>

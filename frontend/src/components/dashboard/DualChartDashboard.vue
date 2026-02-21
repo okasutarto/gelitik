@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { Download } from "lucide-vue-next";
-import { TopVideosChart } from "@/components/dashboard";
+import { TopVideosChart, EngagementDoughnutChart } from "@/components/dashboard";
 import type { Video } from "@/types/video";
 
 interface Props {
@@ -17,11 +17,8 @@ const isExporting = ref(false);
 const downloadChartAsPNG = () => {
   isExporting.value = true;
   setTimeout(() => {
-    // These variables (chart1Canvas, chart2Canvas) are assumed to be available
-    // in the scope where this function is called or through refs.
-    // For the purpose of fixing the syntax, they are placed here.
-    const chart1Canvas = document.getElementById("top-videos-chart-canvas"); // Placeholder, replace with actual ref/ID
-    const chart2Canvas = document.getElementById("engagement-doughnut-chart-canvas"); // Placeholder, replace with actual ref/ID
+    const chart1Canvas = document.getElementById("top-videos-chart-canvas");
+    const chart2Canvas = document.getElementById("engagement-doughnut-chart-canvas");
 
     if (chart1Canvas) {
       const link = document.createElement("a");
@@ -44,7 +41,7 @@ const downloadChartAsPNG = () => {
 
 <template>
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 relative z-10">
-    <!-- View Distribution Chart -->
+    <!-- View Distribution Chart (Left) -->
     <div class="brutal-card p-6 h-[400px] flex flex-col relative group brutal-hover-lift">
       <div class="flex items-center justify-between mb-2">
         <div>
@@ -70,6 +67,23 @@ const downloadChartAsPNG = () => {
       </div>
       <div class="flex-1 min-h-0 relative w-full h-full overflow-hidden">
         <TopVideosChart :videos="videos" />
+      </div>
+    </div>
+
+    <!-- Engagement Breakdown (Right) -->
+    <div class="brutal-card p-6 h-[400px] flex flex-col brutal-hover-lift">
+      <div class="mb-2">
+        <h2
+          class="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-electric/70 border-b-4 border-transparent"
+        >
+          Engagement Breakdown
+        </h2>
+        <p class="text-sm font-bold opacity-60 uppercase text-slate-900 dark:text-slate-400 mt-1">
+          Likes · Comments · Shares
+        </p>
+      </div>
+      <div class="flex-1 min-h-0 relative w-full h-full overflow-hidden">
+        <EngagementDoughnutChart :videos="videos" />
       </div>
     </div>
   </div>

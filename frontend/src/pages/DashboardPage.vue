@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Users, Heart, FileText, Eye, RefreshCw } from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
+import StatCard from "@/components/dashboard/StatCard.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
 import PlatformHealthComparison from "@/components/dashboard/PlatformHealthComparison.vue";
 import BestTimeHeatmap from "@/components/dashboard/BestTimeHeatmap.vue";

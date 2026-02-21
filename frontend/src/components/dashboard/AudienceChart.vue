@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import { Bar, Line } from "vue-chartjs";
 import { useTheme } from "@/composables/useTheme";
 import type { Platform } from "@/types/platform";
+import ChartTimeframeControl from "@/components/dashboard/ChartTimeframeControl.vue";
 import "@/composables/useChart"; // Registers Chart.js components
 
 interface Props {
@@ -13,11 +14,23 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   title: "Audience Growth",
-  subtitle: "Performance over last 7 days",
+  subtitle: "Performance over selected period",
 });
 
-const selectedPeriod = ref("7days");
+const selectedPeriod = ref("7d");
+const selectedMetric = ref("followers");
 const { isDark } = useTheme();
+
+const timeframeOptions = [
+  { label: "7D", value: "7d" },
+  { label: "30D", value: "30d" },
+  { label: "QTR", value: "90d" },
+];
+
+const metricOptions = [
+  { label: "FOLLOWERS", value: "followers" },
+  { label: "REACH", value: "reach" },
+];
 
 const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -45,16 +58,17 @@ const chartData = computed(() => {
       ],
     };
   } else if (props.platform === "instagram") {
+    const isFollowers = selectedMetric.value === "followers";
     return {
       labels,
       datasets: [
         {
-          label: "Followers",
-          data: [4000, 5000, 7000, 5500, 8000, 6500, 9000],
+          label: isFollowers ? "Followers" : "Reach",
+          data: isFollowers
+            ? [4000, 5000, 7000, 5500, 8000, 6500, 9000]
+            : [1500, 2200, 1800, 3100, 2800, 4200, 3900],
           borderColor: isDark.value ? "#FF0099" : "#9333ea",
-          backgroundColor: isDark.value
-            ? "rgba(255, 0, 153, 0.1)"
-            : "rgba(147, 51, 234, 0.1)",
+          backgroundColor: isDark.value ? "rgba(255, 0, 153, 0.1)" : "rgba(147, 51, 234, 0.1)",
           fill: true,
           tension: 0.4,
           pointBackgroundColor: isDark.value ? "#FF0099" : "#fff",
@@ -73,9 +87,7 @@ const chartData = computed(() => {
           label: "Views",
           data: [2000, 3500, 2500, 6000, 4500, 7500, 9500],
           borderColor: isDark.value ? "#00F0FF" : "#0f172a",
-          backgroundColor: isDark.value
-            ? "rgba(0, 240, 255, 0.1)"
-            : "rgba(15, 23, 42, 0.1)",
+          backgroundColor: isDark.value ? "rgba(0, 240, 255, 0.1)" : "rgba(15, 23, 42, 0.1)",
           fill: true,
           tension: 0.4,
           pointBackgroundColor: isDark.value ? "#00F0FF" : "#fff",
@@ -163,30 +175,27 @@ const isBarChart = computed(() => props.platform === "all");
 <template>
   <div class="brutal-card brutal-hover-lift rounded-none p-6">
     <div v-if="platform === 'tiktok'" class="p-8 text-center">
-      <p class="text-slate-500 dark:text-slate-400">
-        Audience data coming soon for TikTok
-      </p>
+      <p class="text-slate-500 dark:text-slate-400">Audience data coming soon for TikTok</p>
     </div>
     <div v-else>
       <!-- Header -->
-      <div
-        class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
         <div>
-          <h3
-            class="text-lg font-black uppercase hidden lg:block dark:text-white">
+          <h3 class="text-lg font-black uppercase hidden lg:block dark:text-white">
             {{ title }}
           </h3>
           <p class="text-sm font-bold opacity-60 uppercase dark:text-slate-400">
             {{ subtitle }}
           </p>
         </div>
-        <select
-          v-model="selectedPeriod"
-          class="bg-slate-50 dark:bg-navy border-neo-3 border-black dark:border-electric neo-shadow-hard-sm text-sm font-semibold text-slate-600 dark:text-white py-2 px-3 cursor-pointer outline-none brutal-hover-lift">
-          <option value="7days">Last 7 Days</option>
-          <option value="30days">Last 30 Days</option>
-          <option value="quarter">Last Quarter</option>
-        </select>
+        <div class="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-0">
+          <ChartTimeframeControl
+            v-if="platform === 'instagram'"
+            v-model="selectedMetric"
+            :options="metricOptions"
+          />
+          <ChartTimeframeControl v-model="selectedPeriod" :options="timeframeOptions" />
+        </div>
       </div>
 
       <!-- Chart -->

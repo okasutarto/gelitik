@@ -1,6 +1,7 @@
 // Dashboard Components - Barrel Export
 export { default as AgeRangePanel } from './AgeRangePanel.vue'
 export { default as AudienceChart } from './AudienceChart.vue'
+export { default as BestTimeHeatmap } from './BestTimeHeatmap.vue'
 export { default as BrutalBadge } from './BrutalBadge.vue'
 export { default as ContentTable } from './ContentTable.vue'
 export { default as ChartTimeframeControl } from './ChartTimeframeControl.vue'

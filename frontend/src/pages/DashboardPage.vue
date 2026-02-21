@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Users, Heart, FileText, Eye, RefreshCw } from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
-import PageHeader from "@/components/layout/PageHeader.vue";
-import StatCard from "@/components/dashboard/StatCard.vue";
-import AudienceChart from "@/components/dashboard/AudienceChart.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
 import PlatformHealthComparison from "@/components/dashboard/PlatformHealthComparison.vue";
+import BestTimeHeatmap from "@/components/dashboard/BestTimeHeatmap.vue";
+import AudienceChart from "@/components/dashboard/AudienceChart.vue";
 import { useDashboardData } from "@/composables/useDashboardData";
 
-const { kpiCards, platformHealth, isLoading, error, lastUpdated, refresh } = useDashboardData();
+const { kpiCards, platformHealth, heatmapData, isLoading, error, lastUpdated, refresh } =
+  useDashboardData();
 
 // Map KPI card data to icons
 const kpiIcons = [Users, Heart, FileText, Eye];
@@ -16,25 +16,35 @@ const kpiIcons = [Users, Heart, FileText, Eye];
 
 <template>
   <DashboardLayout>
-    <!-- Page Header with Theme Toggle + Refresh -->
-    <div class="flex items-center justify-between mb-2">
-      <PageHeader
-        title="Overview"
-        subtitle="Welcome back to your master dashboard."
-        :show-theme-toggle="true"
-      />
-      <div class="flex items-center gap-3">
-        <span v-if="lastUpdated" class="text-xs text-slate-400 dark:text-slate-500 font-mono">
-          Updated {{ lastUpdated.toLocaleTimeString() }}
-        </span>
-        <button
-          @click="refresh"
-          class="brutal-card p-2 brutal-hover-lift"
-          :class="{ 'animate-spin': isLoading }"
-          title="Refresh data"
-        >
-          <RefreshCw :size="16" class="text-slate-600 dark:text-slate-400" />
-        </button>
+    <!-- Page Header with Refresh inline -->
+    <div
+      class="relative bg-neo-accent dark:bg-hotpink border-b-4 border-black dark:border-electric p-6 md:p-8 mb-8 -mx-4 md:-mx-8"
+    >
+      <div class="flex items-center justify-between">
+        <div class="flex-1 min-w-0">
+          <h2 class="text-4xl lg:text-5xl font-black uppercase text-slate-900 leading-tight">
+            Overview
+          </h2>
+          <p class="text-sm font-bold opacity-60 uppercase text-slate-900 mt-2">
+            Welcome back to your master dashboard.
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <span
+            v-if="lastUpdated"
+            class="text-xs text-slate-700 dark:text-slate-900 font-bold hidden sm:inline-block"
+          >
+            Updated {{ lastUpdated.toLocaleTimeString() }}
+          </span>
+          <button
+            @click="refresh"
+            class="brutal-card bg-white p-2 brutal-hover-lift"
+            :class="{ 'animate-spin': isLoading }"
+            title="Refresh data"
+          >
+            <RefreshCw :size="16" class="text-slate-900" />
+          </button>
+        </div>
       </div>
     </div>
 
@@ -64,7 +74,7 @@ const kpiIcons = [Users, Heart, FileText, Eye];
           v-for="(card, index) in kpiCards"
           :key="card.title"
           :title="card.title"
-          :value="card.rawValue"
+          :value="card.value"
           :icon="kpiIcons[index]"
           :subtitle="card.subtitle"
         />
@@ -87,6 +97,11 @@ const kpiIcons = [Users, Heart, FileText, Eye];
         :tiktok="platformHealth.tiktok"
         :loading="isLoading"
       />
+    </div>
+
+    <!-- Best Time Heatmap -->
+    <div class="mb-12">
+      <BestTimeHeatmap :data="heatmapData" :loading="isLoading" />
     </div>
 
     <!-- Top Performing Content -->

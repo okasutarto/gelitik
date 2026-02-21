@@ -17,6 +17,7 @@ import StatCard from "@/components/dashboard/StatCard.vue";
 import UserProfile from "@/components/dashboard/UserProfile.vue";
 import AudienceChart from "@/components/dashboard/AudienceChart.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
+import ContentFormatBreakdown from "@/components/dashboard/ContentFormatBreakdown.vue";
 import TopCitiesPanel from "@/components/dashboard/TopCitiesPanel.vue";
 import AgeRangePanel from "@/components/dashboard/AgeRangePanel.vue";
 import StatCardSkeleton from "@/components/loading/StatCardSkeleton.vue";
@@ -97,6 +98,33 @@ const media = computed(() => {
         duration: m.media_type === "VIDEO" ? 0 : undefined, // Duration only for videos
       }))
     : [];
+});
+
+// Derive content format breakdown from media
+const contentFormats = computed(() => {
+  const items = media.value;
+  if (!items.length) return [];
+
+  const groups: Record<string, { count: number; totalReach: number; totalEngagement: number }> = {};
+  for (const item of items) {
+    const type =
+      (item as Record<string, unknown>).media_product_type === "REELS"
+        ? "REELS"
+        : ((item as Record<string, unknown>).media_type as string) || "IMAGE";
+    if (!groups[type]) groups[type] = { count: 0, totalReach: 0, totalEngagement: 0 };
+    groups[type].count++;
+    groups[type].totalReach += Number((item as Record<string, unknown>).view_count || 0);
+    groups[type].totalEngagement +=
+      Number((item as Record<string, unknown>).like_count || 0) +
+      Number((item as Record<string, unknown>).comment_count || 0);
+  }
+
+  return Object.entries(groups).map(([type, g]) => ({
+    type,
+    count: g.count,
+    avgReach: g.count > 0 ? Math.round(g.totalReach / g.count) : 0,
+    avgEngagement: g.count > 0 ? Math.round(g.totalEngagement / g.count) : 0,
+  }));
 });
 
 // Format stats for metric cards
@@ -268,9 +296,10 @@ onMounted(() => {
     </div>
 
     <!-- Instagram-Specific Panels -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
       <TopCitiesPanel />
       <AgeRangePanel />
+      <ContentFormatBreakdown :formats="contentFormats" :loading="loading" />
     </div>
 
     <!-- Top Performing Content -->

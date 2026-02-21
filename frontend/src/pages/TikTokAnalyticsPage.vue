@@ -29,16 +29,11 @@ const tiktokStats = computed(() => {
   const vids = videos.value;
   const totalViews = vids.reduce((sum, v) => sum + (v.view_count || 0), 0);
   const totalLikes =
-    vids.reduce((sum, v) => sum + (v.like_count || 0), 0) +
-    (userData.value?.likes_count || 0);
+    vids.reduce((sum, v) => sum + (v.like_count || 0), 0) + (userData.value?.likes_count || 0);
   const totalShares = vids.reduce((sum, v) => sum + (v.share_count || 0), 0);
-  const totalComments = vids.reduce(
-    (sum, v) => sum + (v.comment_count || 0),
-    0,
-  );
+  const totalComments = vids.reduce((sum, v) => sum + (v.comment_count || 0), 0);
   const totalEngagement = totalLikes + totalComments + totalShares;
-  const engagementRate =
-    totalViews > 0 ? (totalEngagement / totalViews) * 100 : 0;
+  const engagementRate = totalViews > 0 ? (totalEngagement / totalViews) * 100 : 0;
 
   return [
     {
@@ -78,10 +73,10 @@ const tiktokStats = computed(() => {
 
 onMounted(() => {
   // Check for connection success message from OAuth callback
-  const connectionSuccess = sessionStorage.getItem('connection-success')
-  if (connectionSuccess === 'tiktok') {
-    sessionStorage.removeItem('connection-success')
-    toast.success('TikTok account connected successfully! You can now view your analytics.')
+  const connectionSuccess = sessionStorage.getItem("connection-success");
+  if (connectionSuccess === "tiktok") {
+    sessionStorage.removeItem("connection-success");
+    toast.success("TikTok account connected successfully! You can now view your analytics.");
   }
 
   fetchAnalytics().catch((err: unknown) => {
@@ -122,7 +117,8 @@ onMounted(() => {
           :change-type="stat.changeType"
           :icon="stat.icon"
           :subtitle="stat.subtitle"
-          platform="tiktok" />
+          platform="tiktok"
+        />
       </template>
     </div>
 
@@ -131,6 +127,46 @@ onMounted(() => {
       <ChartSkeleton v-if="loading" />
       <DualChartDashboard v-else :videos="videos" />
     </div>
+
+    <!-- Follower Growth Chart -->
+    <div class="mb-8">
+      <div class="brutal-card p-6 brutal-hover-lift">
+        <h2 class="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-1">
+          Follower Growth
+        </h2>
+        <p class="text-sm font-bold opacity-60 uppercase text-slate-900 dark:text-slate-400 mb-4">
+          TikTok follower trend
+        </p>
+        <div class="flex items-center justify-center py-12 text-center">
+          <div>
+            <div
+              class="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center"
+            >
+              <svg
+                class="w-8 h-8 text-slate-300 dark:text-slate-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                />
+              </svg>
+            </div>
+            <p class="text-sm font-bold text-slate-500 dark:text-slate-400">
+              Follower growth tracking will begin after 7 days of data collection.
+            </p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+              Daily snapshots are required to chart historical growth trends.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <ContentTableSkeleton v-if="loading" />
     <ContentTable v-else platform="tiktok" :videos="videos" />
   </DashboardLayout>

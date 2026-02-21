@@ -92,19 +92,21 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
   // Combined top content from both platforms
   const topContent = computed(() => {
-    const igMedia = (instagramStore.data?.media ?? []).map((m: Record<string, unknown>) => ({
+    type PlatformContent = Record<string, unknown> & { _platform: 'instagram' | 'tiktok' }
+
+    const igMedia: PlatformContent[] = (instagramStore.data?.media ?? []).map((m) => ({
       ...m,
       _platform: 'instagram' as const,
     }))
-    const ttVideos = (tiktokStore.data?.videos ?? []).map((v: Record<string, unknown>) => ({
+    const ttVideos: PlatformContent[] = (tiktokStore.data?.videos ?? []).map((v) => ({
       ...v,
       _platform: 'tiktok' as const,
     }))
 
     return [...igMedia, ...ttVideos]
       .sort((a, b) => {
-        const aViews = (a.view_count as number) ?? (a.impressions as number) ?? 0
-        const bViews = (b.view_count as number) ?? (b.impressions as number) ?? 0
+        const aViews = Number(a['view_count'] ?? a['impressions'] ?? 0)
+        const bViews = Number(b['view_count'] ?? b['impressions'] ?? 0)
         return bViews - aViews
       })
       .slice(0, 10)

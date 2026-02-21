@@ -1,7 +1,16 @@
 <script setup lang="ts">
 import { onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
-import { Eye, Users, UserPlus, Layers, Heart, UserCheck, Activity } from "lucide-vue-next";
+import {
+  Eye,
+  Users,
+  UserPlus,
+  Layers,
+  Heart,
+  UserCheck,
+  Activity,
+  Bookmark,
+} from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
 import StatCard from "@/components/dashboard/StatCard.vue";
@@ -104,20 +113,20 @@ const instagramStats = computed(() => {
 
     return [
       {
+        title: "Followers",
+        value: formatNumber(insights.followers || 0),
+        change: "",
+        changeType: "up" as const,
+        icon: Users,
+        subtitle: "Total followers",
+      },
+      {
         title: "Impressions",
         value: formatNumber(insights.impressions || 0),
         change: "12%",
         changeType: "up" as const,
         icon: Eye,
         subtitle: "+12% vs last week",
-      },
-      {
-        title: "Followers",
-        value: formatNumber(insights.followers || 0),
-        change: "5%",
-        changeType: "up" as const,
-        icon: Users,
-        subtitle: "Total followers",
       },
       {
         title: "Accounts Reached",
@@ -142,6 +151,14 @@ const instagramStats = computed(() => {
         changeType: "up" as const,
         icon: Activity,
         subtitle: "Engaged with content",
+      },
+      {
+        title: "Saves",
+        value: formatNumber(insights.saves || 0),
+        change: "",
+        changeType: "up" as const,
+        icon: Bookmark,
+        subtitle: "Content saves",
       },
       {
         title: "Engagement Rate",
@@ -219,9 +236,9 @@ onMounted(() => {
     <UserProfileSkeleton v-else-if="loading" />
 
     <!-- Stat Cards Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 my-8">
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 my-8">
       <template v-if="loading">
-        <StatCardSkeleton :count="4" />
+        <StatCardSkeleton :count="7" />
       </template>
       <template v-else>
         <StatCard

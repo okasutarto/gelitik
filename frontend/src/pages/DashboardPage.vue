@@ -5,9 +5,10 @@ import PageHeader from "@/components/layout/PageHeader.vue";
 import StatCard from "@/components/dashboard/StatCard.vue";
 import AudienceChart from "@/components/dashboard/AudienceChart.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
+import PlatformHealthComparison from "@/components/dashboard/PlatformHealthComparison.vue";
 import { useDashboardData } from "@/composables/useDashboardData";
 
-const { kpiCards, isLoading, error, lastUpdated, refresh } = useDashboardData();
+const { kpiCards, platformHealth, isLoading, error, lastUpdated, refresh } = useDashboardData();
 
 // Map KPI card data to icons
 const kpiIcons = [Users, Heart, FileText, Eye];
@@ -77,6 +78,15 @@ const kpiIcons = [Users, Heart, FileText, Eye];
           subtitle="Combined performance over last 7 days"
         />
       </div>
+    </div>
+
+    <!-- Platform Health Comparison -->
+    <div class="mb-12">
+      <PlatformHealthComparison
+        :instagram="platformHealth.instagram"
+        :tiktok="platformHealth.tiktok"
+        :loading="isLoading"
+      />
     </div>
 
     <!-- Top Performing Content -->

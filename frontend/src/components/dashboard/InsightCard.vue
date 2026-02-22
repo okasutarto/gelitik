@@ -75,7 +75,7 @@ const showTooltip = ref(false);
             >
               <div
                 v-if="showTooltip"
-                class="absolute left-0 top-full mt-2 w-72 p-4 bg-white dark:bg-slate-800 border-2 border-black dark:border-slate-600 shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.1)] z-50 text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed"
+                class="absolute left-50 mt-2 w-72 p-4 bg-white dark:bg-slate-800 border-2 border-black dark:border-electric z-50 text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed"
               >
                 {{ description }}
               </div>

@@ -67,21 +67,29 @@ router.get('/:platform', async (req, res) => {
             return res.status(401).json({ error: 'Access token not available. Please reconnect your account.' });
         }
 
+        // Determine startDate based on timeframe
+        const timeframe = (req.query.timeframe as string) || 'this_week';
+        const endDate = new Date();
+        const startDate = new Date();
+        if (timeframe === 'this_week') startDate.setDate(endDate.getDate() - 7);
+        else if (timeframe === 'last_14_days') startDate.setDate(endDate.getDate() - 14);
+        else if (timeframe === 'last_30_days') startDate.setDate(endDate.getDate() - 30);
+        else if (timeframe === 'last_90_days') startDate.setDate(endDate.getDate() - 90);
+
         let data;
         if (platform === 'instagram') {
             // Use Basic Display API
-            data = await instagramService.getAnalytics(accessToken, account.accountId, new Date(), new Date());
+            data = await instagramService.getAnalytics(accessToken, account.accountId, startDate, endDate);
         } else if (platform === 'instagram-graph') {
-            const timeframe = (req.query.timeframe as string) || 'this_week';
             // Use Graph API for full insights
-            const analyticsData = await instagramGraphService.getAnalytics(accessToken, account.accountId, new Date(), new Date(), timeframe);
+            const analyticsData = await instagramGraphService.getAnalytics(accessToken, account.accountId, startDate, endDate, timeframe);
             data = {
                 profile: analyticsData.profile,
                 insights: analyticsData.insights,
                 media: analyticsData.media
             };
         } else if (platform === 'tiktok') {
-            const videosData = await tiktokService.getAnalytics(accessToken, account.accountId, new Date(), new Date());
+            const videosData = await tiktokService.getAnalytics(accessToken, account.accountId, startDate, endDate);
             data = {
                 userInfo: videosData.userInfo,
                 videos: videosData.videos,

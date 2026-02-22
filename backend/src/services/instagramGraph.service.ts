@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { PlatformService, PlatformAuthResult } from './platform.interface';
+import NodeCache from 'node-cache';
 
 /**
  * Instagram Graph API Service
@@ -21,6 +22,7 @@ export class InstagramGraphService implements PlatformService {
     private readonly graphUrl = 'https://graph.facebook.com/v25.0';
     // Graph API requires Facebook OAuth dialog (NOT Instagram's own OAuth)
     private readonly authUrl = 'https://www.facebook.com/dialog/oauth';
+    private cache: NodeCache;
 
     constructor() {
         // Use the same app credentials as Basic API (client_id 1216837513935124)
@@ -28,6 +30,8 @@ export class InstagramGraphService implements PlatformService {
         this.appSecret = process.env.INSTAGRAM_APP_SECRET || '';
         // But use the Graph API callback URL
         this.redirectUri = process.env.INSTAGRAM_GRAPH_REDIRECT_URI || 'http://localhost:3000/auth/instagram-graph/callback';
+        // Initialize cache with 60-second Time To Live (TTL)
+        this.cache = new NodeCache({ stdTTL: 60 });
     }
 
     /**
@@ -155,8 +159,10 @@ export class InstagramGraphService implements PlatformService {
     /**
      * Get user profile
      */
-    async getProfile(accessToken: string): Promise<any> {
-        const igAccount = await this.getInstagramAccount(accessToken);
+    async getProfile(accessToken: string, igAccount?: any): Promise<any> {
+        if (!igAccount) {
+            igAccount = await this.getInstagramAccount(accessToken);
+        }
 
         const response = await axios.get(`${this.graphUrl}/${igAccount.id}`, {
             params: {
@@ -171,8 +177,10 @@ export class InstagramGraphService implements PlatformService {
     /**
      * Get account insights (followers, reach, views)
      */
-    async getInsights(accessToken: string, timeframe: string = 'this_week'): Promise<any> {
-        const igAccount = await this.getInstagramAccount(accessToken);
+    async getInsights(accessToken: string, timeframe: string = 'this_week', igAccount?: any): Promise<any> {
+        if (!igAccount) {
+            igAccount = await this.getInstagramAccount(accessToken);
+        }
 
         // Helper to parse metric value - handles both regular and total_value formats
         const parseMetricValue = (responseData: any): number => {
@@ -188,23 +196,6 @@ export class InstagramGraphService implements PlatformService {
         };
 
         try {
-            // Get follower and media counts directly from profile request (more reliable than period='day' insight)
-            let followers = 0;
-            let mediaCount = 0;
-            let followsCount = 0;
-            try {
-                const profileResponse = await axios.get(`${this.graphUrl}/${igAccount.id}`, {
-                    params: {
-                        fields: 'followers_count,follows_count,media_count',
-                        access_token: accessToken
-                    }
-                });
-                followers = profileResponse.data.followers_count || 0;
-                mediaCount = profileResponse.data.media_count || 0;
-                followsCount = profileResponse.data.follows_count || 0;
-            } catch (e2: any) {
-            }
-
             // Determine since/until based on timeframe
             const until = Math.floor(Date.now() / 1000);
             let days = 30; // default to last 30 days
@@ -230,134 +221,21 @@ export class InstagramGraphService implements PlatformService {
                 return values.reduce((sum: number, item: any) => sum + (item.value || 0), 0);
             };
 
-            // Try reach and views (separate metrics matching official dashboard)
+            let followers = 0;
+            let mediaCount = 0;
+            let followsCount = 0;
+
+            // Try reach, views, and followers history concurrently
             let reach = 0;
-            let views = 0; // This will hold "views" (total content views including repeats)
-            try {
-                const reachResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: {
-                        metric: 'reach',
-                        period: 'day',
-                        metric_type: 'total_value',
-                        since,
-                        until,
-                        access_token: accessToken
-                    }
-                });
-                reach = parseMetricValue(reachResponse.data);
-            } catch (e: any) {
-                console.error('[InstagramGraph] reach error:', e.response?.data || e.message);
-            }
+            let views = 0;
+            let historicalReach: { date: string, value: number }[] = [];
+            let historicalFollowers: { date: string, value: number }[] = [];
 
-            // Try views (total content views - matches "Views" on official dashboard)
-            try {
-                const viewsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: {
-                        metric: 'views',
-                        period: 'day',
-                        metric_type: 'total_value',
-                        since,
-                        until,
-                        access_token: accessToken
-                    }
-                });
-                views = parseMetricValue(viewsResponse.data);
-            } catch (e: any) {
-                console.error('[InstagramGraph] views error:', e.response?.data?.error?.message || e.message);
-                views = reach; // fallback to reach if views not available
-            }
-
-            // Engagement metrics - fetch natively using metric_type=total_value + period=day + timeframe
-            let totalInteractions = 0, likes = 0, comments = 0, shares = 0;
-
-            // Try likes
-            try {
-                const likesResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: { metric: 'likes', metric_type: 'total_value', period: 'day', since, until, access_token: accessToken }
-                });
-                likes = parseMetricValue(likesResponse.data);
-            } catch (e: any) {
-                console.error('[InstagramGraph] likes error:', e.response?.data?.error?.message || e.message);
-            }
-
-            // Try comments
-            try {
-                const commentsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: { metric: 'comments', metric_type: 'total_value', period: 'day', since, until, access_token: accessToken }
-                });
-                comments = parseMetricValue(commentsResponse.data);
-            } catch (e: any) {
-                console.error('[InstagramGraph] comments error:', e.response?.data?.error?.message || e.message);
-            }
-
-            // Try shares
-            try {
-                const sharesResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: { metric: 'shares', metric_type: 'total_value', period: 'day', since, until, access_token: accessToken }
-                });
-                shares = parseMetricValue(sharesResponse.data);
-            } catch (e: any) {
-                console.error('[InstagramGraph] shares error:', e.response?.data?.error?.message || e.message);
-            }
-
-            totalInteractions = likes + comments + shares;
-
-            // Try saves
-            let saves = 0;
-            try {
-                const savesResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: { metric: 'saves', metric_type: 'total_value', period: 'day', since, until, access_token: accessToken }
-                });
-                saves = parseMetricValue(savesResponse.data);
-            } catch (e: any) {
-                console.error('[InstagramGraph] saves error:', e.response?.data?.error?.message || e.message);
-            }
-
-            totalInteractions = likes + comments + shares + saves;
-
-            // Try profile_views
-            let profileViews = 0;
-            try {
-                const profileViewsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: {
-                      metric: 'profile_views',
-                      metric_type: 'total_value',
-                      period: 'day',
-                      since,
-                      until,
-                      access_token: accessToken }
-                });
-                profileViews = parseMetricValue(profileViewsResponse.data);
-            } catch (e: any) {
-            }
-
-            // Try accounts_engaged
-            let accountsEngaged = 0;
-            try {
-                const accountsEngagedResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: {
-                      metric: 'accounts_engaged',
-                      metric_type: 'total_value',
-                      period: 'day',
-                      since,
-                      until,
-                      access_token: accessToken
-                    }
-                });
-                accountsEngaged = parseMetricValue(accountsEngagedResponse.data);
-            } catch (e: any) {
-            }
-
-            // Try profile_links_taps
-            let profileLinkTaps = 0;
-            try {
-                const linkTapsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                    params: { metric: 'profile_links_taps', metric_type: 'total_value', period: 'day', since, until, access_token: accessToken }
-                });
-                profileLinkTaps = parseMetricValue(linkTapsResponse.data);
-            } catch (e: any) {
-            }
-
+            // Engagement metrics - fetch natively using grouped metric_type=total_value
+            let totalInteractions = 0, likes = 0, comments = 0, shares = 0, saves = 0;
+            let profileViews = 0, accountsEngaged = 0, profileLinkTaps = 0;
+            let historicalLikes: { date: string; value: number }[] = [];
+            let historicalComments: { date: string; value: number }[] = [];
 
             // Fetch demographics if the account has enough followers
             let demographics = {
@@ -366,24 +244,108 @@ export class InstagramGraphService implements PlatformService {
                 cities: [] as any[]
             };
 
-            if (followers >= 100) {
-                try {
-                    const [ageGenderRes, cityRes] = await Promise.all([
-                        axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                            params: { metric: 'follower_demographics', metric_type: 'total_value', period: 'lifetime', timeframe, breakdown: 'age,gender', access_token: accessToken }
-                        }),
-                        axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
-                            params: { metric: 'follower_demographics', metric_type: 'total_value', period: 'lifetime', timeframe, breakdown: 'city', access_token: accessToken }
-                        })
-                    ]);
+            try {
+                // Kick off all 7 requests concurrently
+                const [
+                    profileRes,
+                    reachRes,
+                    viewsRes,
+                    followersRes,
+                    engagementRes,
+                    ageGenderRes,
+                    cityRes
+                ] = await Promise.allSettled([
+                    // 0. Profile stats (followers_count)
+                    axios.get(`${this.graphUrl}/${igAccount.id}`, {
+                        params: { fields: 'followers_count,follows_count,media_count', access_token: accessToken }
+                    }),
+                    // 1. Reach history
+                    axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                        params: { metric: 'reach', period: 'day', since, until, access_token: accessToken }
+                    }),
+                    // 2. Views (total)
+                    axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                        params: { metric: 'views', period: 'day', metric_type: 'total_value', since, until, access_token: accessToken }
+                    }),
+                    // 3. Followers history
+                    axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                        params: { metric: 'follower_count', period: 'day', since, until, access_token: accessToken }
+                    }),
+                    // 4. Grouped engagement metrics
+                    axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                        params: {
+                            metric: 'likes,comments,shares,saves,profile_views,profile_links_taps,accounts_engaged',
+                            metric_type: 'total_value', period: 'day', since, until, access_token: accessToken
+                        }
+                    }),
+                    // 5. Demographics (Age/Gender)
+                    axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                        params: { metric: 'follower_demographics', metric_type: 'total_value', period: 'lifetime', timeframe, breakdown: 'age,gender', access_token: accessToken }
+                    }),
+                    // 6. Demographics (City)
+                    axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                        params: { metric: 'follower_demographics', metric_type: 'total_value', period: 'lifetime', timeframe, breakdown: 'city', access_token: accessToken }
+                    })
+                ]);
 
-                    const ageGenderBreakdown = ageGenderRes.data?.data?.[0]?.total_value?.breakdowns?.[0] || {};
+                // Process Profile
+                if (profileRes.status === 'fulfilled') {
+                    followers = profileRes.value.data.followers_count || 0;
+                    mediaCount = profileRes.value.data.media_count || 0;
+                    followsCount = profileRes.value.data.follows_count || 0;
+                }
+
+                // Process Reach
+                if (reachRes.status === 'fulfilled') {
+                    const reachData = reachRes.value.data?.data?.[0]?.values || [];
+                    historicalReach = reachData.map((v: any) => ({
+                        date: v.end_time?.split('T')[0] || '',
+                        value: v.value || 0
+                    }));
+                    reach = sumMetricValues(reachRes.value.data);
+                }
+
+                // Process Views
+                if (viewsRes.status === 'fulfilled') {
+                    views = parseMetricValue(viewsRes.value.data);
+                } else {
+                    views = reach; // fallback
+                }
+
+                // Process Followers
+                if (followersRes.status === 'fulfilled') {
+                    const followersData = followersRes.value.data?.data?.[0]?.values || [];
+                    historicalFollowers = followersData.map((v: any) => ({
+                        date: v.end_time?.split('T')[0] || '',
+                        value: v.value || 0
+                    }));
+                }
+
+                // Process Engagement
+                if (engagementRes.status === 'fulfilled') {
+                    const dataArray = engagementRes.value.data?.data || [];
+                    const findMetric = (name: string) => {
+                        const metricData = dataArray.find((m: any) => m.name === name);
+                        return metricData ? metricData.total_value?.value || 0 : 0;
+                    };
+                    likes = findMetric('likes');
+                    comments = findMetric('comments');
+                    shares = findMetric('shares');
+                    saves = findMetric('saves');
+                    profileViews = findMetric('profile_views');
+                    profileLinkTaps = findMetric('profile_links_taps');
+                    accountsEngaged = findMetric('accounts_engaged');
+                }
+
+                // Process Demographics (only valid if followers >= 100 on Instagram's backend)
+                if (ageGenderRes.status === 'fulfilled' && cityRes.status === 'fulfilled') {
+                    const ageGenderBreakdown = ageGenderRes.value.data?.data?.[0]?.total_value?.breakdowns?.[0] || {};
                     const ageGenderData = ageGenderBreakdown.results || [];
                     const dimensionKeys = ageGenderBreakdown.dimension_keys || ['age', 'gender'];
                     const ageIdx = dimensionKeys.indexOf('age');
                     const genderIdx = dimensionKeys.indexOf('gender');
 
-                    const cityData = cityRes.data?.data?.[0]?.total_value?.breakdowns?.[0]?.results || [];
+                    const cityData = cityRes.value.data?.data?.[0]?.total_value?.breakdowns?.[0]?.results || [];
 
                     const ageGenderMap = new Map<string, number>();
                     ageGenderData.forEach((result: any) => {
@@ -401,7 +363,7 @@ export class InstagramGraphService implements PlatformService {
                     });
 
                     const cities = cityData.map((result: any) => ({
-                        name: (result.dimension_values?.[0] || "").split(',')[0], // Map to 'name' for TopCitiesPanel
+                        name: (result.dimension_values?.[0] || "").split(',')[0],
                         count: result.value || 0
                     })).sort((a: any, b: any) => b.count - a.count).slice(0, 5);
 
@@ -414,12 +376,15 @@ export class InstagramGraphService implements PlatformService {
 
                     demographics = {
                         gender: genders.map(g => ({ gender: g.gender, percentage: Math.round((g.count / totalGenderCount) * 100) })),
-                        age: ages.map(a => ({ label: a.group, percentage: Math.round((a.count / totalAgeCount) * 100) })), // Map to 'label' for AgeRangePanel
-                        cities: cities.map((c: any) => ({ name: c.name, percentage: Math.round((c.count / totalCityCount) * 100) })) // Map to 'name' for TopCitiesPanel
+                        age: ages.map(a => ({ label: a.group, percentage: Math.round((a.count / totalAgeCount) * 100) })),
+                        cities: cities.map((c: any) => ({ name: c.name, percentage: Math.round((c.count / totalCityCount) * 100) }))
                     };
-                } catch (e: any) {
                 }
+            } catch (e) {
+                console.error('[InstagramGraph] parallel insights error:', e);
             }
+
+            totalInteractions = likes + comments + shares + saves;
 
             const userInsightsData = {
                 followers,
@@ -435,7 +400,13 @@ export class InstagramGraphService implements PlatformService {
                 profileViews,
                 profileLinkTaps,
                 accountsEngaged,
-                demographics
+                demographics,
+                historical: {
+                    reach: historicalReach,
+                    followers: historicalFollowers,
+                    likes: historicalLikes,
+                    comments: historicalComments
+                }
             };
 
 
@@ -461,6 +432,12 @@ export class InstagramGraphService implements PlatformService {
                     gender: [],
                     age: [],
                     cities: []
+                },
+                historical: {
+                    reach: [],
+                    followers: [],
+                    likes: [],
+                    comments: []
                 }
             };
         }
@@ -469,8 +446,10 @@ export class InstagramGraphService implements PlatformService {
     /**
      * Get media with insights
      */
-    async getMedia(accessToken: string, limit: number = 50): Promise<any> {
-        const igAccount = await this.getInstagramAccount(accessToken);
+    async getMedia(accessToken: string, limit: number = 50, igAccount?: any): Promise<any> {
+        if (!igAccount) {
+            igAccount = await this.getInstagramAccount(accessToken);
+        }
 
         const response = await axios.get(`${this.graphUrl}/${igAccount.id}/media`, {
             params: {
@@ -481,59 +460,68 @@ export class InstagramGraphService implements PlatformService {
         });
 
         const mediaItems = response.data.data || [];
+        if (mediaItems.length === 0) return { data: [] };
 
-        // For each media item, fetch per-media insights
-        // views and plays are deprecated in v22+, transitioning to 'views' for all media
-        const mediaWithInsights = await Promise.all(mediaItems.map(async (media: any) => {
-            try {
-                // Use the new standard 'views' metric, universally available in v25.0
-                const isReel = media.media_product_type === 'REELS';
-                const metrics = 'reach,saved,shares,views';
+        // Construct a batch request to get all media insights in one network call
+        // Facebook Graph API allows up to 50 requests per batch.
+        const batchRequests = mediaItems.map((media: any) => ({
+            method: 'GET',
+            relative_url: `v25.0/${media.id}/insights?metric=reach,saved,shares,views`
+        }));
 
-                const insightsResponse = await axios.get(`${this.graphUrl}/${media.id}/insights`, {
-                    params: {
-                        metric: metrics,
-                        access_token: accessToken
-                    }
-                });
+        try {
+            const batchResponse = await axios.post(`https://graph.facebook.com`, {
+                access_token: accessToken,
+                batch: JSON.stringify(batchRequests)
+            });
 
-                const insightsData = insightsResponse.data.data || [];
-                for (const metric of insightsData) {
-                    const value = metric.values?.[0]?.value ?? metric.total_value?.value ?? 0;
-                    switch (metric.name) {
-                        case 'views': media.views = value; break;
-                        case 'reach': media.reach = value; break;
-                        case 'saved': media.save_count = value; break;
-                        case 'shares': media.share_count = value; break;
-                        case 'plays': media.video_views = value; break;
-                        case 'video_views': media.video_views = value; break;
-                        case 'views': media.video_views = value; break;
+            // The batch response is an array of responses corresponding to each request
+            const batchResults = batchResponse.data || [];
+
+            mediaItems.forEach((media: any, index: number) => {
+                const result = batchResults[index];
+
+                // Set default zero values
+                media.views = 0; media.reach = 0; media.save_count = 0; media.share_count = 0; media.video_views = 0;
+
+                if (result && result.code === 200) {
+                    try {
+                        const body = JSON.parse(result.body);
+                        const insightsData = body.data || [];
+
+                        for (const metric of insightsData) {
+                            const value = metric.values?.[0]?.value ?? metric.total_value?.value ?? 0;
+                            switch (metric.name) {
+                                case 'views': media.views = value; break;
+                                case 'reach': media.reach = value; break;
+                                case 'saved': media.save_count = value; break;
+                                case 'shares': media.share_count = value; break;
+                            }
+                        }
+                    } catch (e) {
+                        // Error parsing insight body for this item
                     }
                 }
 
-                // For non-video media, use views as view proxy
+                const isReel = media.media_product_type === 'REELS';
+
                 if (!isReel) {
                     media.video_views = media.views || media.reach || 0;
                 } else if (!media.video_views) {
                     media.video_views = media.views || media.reach || 0;
                 }
-            } catch (e: any) {
-                media.video_views = 0;
-                media.views = 0;
-                media.reach = 0;
-                media.save_count = 0;
-                media.share_count = 0;
-            }
 
-            // Normalize comment_count from comments_count
-            if (media.comments_count !== undefined && media.comment_count === undefined) {
-                media.comment_count = media.comments_count;
-            }
+                // Normalize comment_count from comments_count
+                if (media.comments_count !== undefined && media.comment_count === undefined) {
+                    media.comment_count = media.comments_count;
+                }
+            });
+        } catch (e: any) {
+            console.error('[InstagramGraph] media batch insights error:', e.response?.data?.error?.message || e.message);
+            // On failure, items will just have their base stats (likes, comments) from the first query and 0 for complex insights
+        }
 
-            return media;
-        }));
-
-        return { data: mediaWithInsights };
+        return { data: mediaItems };
     }
 
     /**
@@ -574,22 +562,70 @@ export class InstagramGraphService implements PlatformService {
      * Get analytics data (combines profile + insights)
      */
     async getAnalytics(accessToken: string, accountId: string, startDate: Date, endDate: Date, timeframe: string = 'this_week'): Promise<any> {
+        const cacheKey = `ig_analytics_${accountId}_${timeframe}`;
+        const cachedData = this.cache.get(cacheKey);
+
+        if (cachedData) {
+            console.log('[InstagramGraph] Serving getAnalytics from cache');
+            return cachedData;
+        }
+
+        // Fetch the base account once
+        const igAccount = await this.getInstagramAccount(accessToken);
+
         const [profile, insights, media] = await Promise.all([
-            this.getProfile(accessToken),
-            this.getInsights(accessToken, timeframe),
-            this.getMedia(accessToken)
+            this.getProfile(accessToken, igAccount),
+            this.getInsights(accessToken, timeframe, igAccount),
+            this.getMedia(accessToken, 50, igAccount)
         ]);
 
         const mediaArray = media.data || [];
 
         insights.following = profile.follows_count || 0;
 
+        // Compute historical engagement (likes and comments) directly from media items, grouped by day
+        // Initialize dailyEngagement with 0s for every day in the timeframe
+        const dailyEngagement = new Map<string, { likes: number, comments: number }>();
+        const start = new Date(startDate);
+        const end = new Date(endDate);
 
-        return {
+        // Zero-fill all days in the timeframe to ensure continuous lines and correct axis bounds
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            const dateKey = d.toISOString().split('T')[0];
+            dailyEngagement.set(dateKey, { likes: 0, comments: 0 });
+        }
+
+        mediaArray.forEach((item: any) => {
+            if (item.timestamp) {
+                const dateKey = item.timestamp.split('T')[0];
+                if (dailyEngagement.has(dateKey)) {
+                    const existing = dailyEngagement.get(dateKey)!;
+                    existing.likes += (item.like_count || 0);
+                    // Use comments_count (Graph API standard) or comment_count (Basic Display)
+                    existing.comments += (item.comments_count !== undefined ? item.comments_count : (item.comment_count || 0));
+                }
+            }
+        });
+
+        // Convert grouped data to sorted arrays
+        const dates = Array.from(dailyEngagement.keys()).sort();
+        const historicalLikes = dates.map(date => ({ date, value: dailyEngagement.get(date)!.likes }));
+        const historicalComments = dates.map(date => ({ date, value: dailyEngagement.get(date)!.comments }));
+
+        // Only overwrite the empty arrays if we actually have media data to show
+        if (historicalLikes.length > 0) {
+            insights.historical.likes = historicalLikes;
+            insights.historical.comments = historicalComments;
+        }
+
+        const userInsightsData = {
             profile,
             insights,
             media: mediaArray
         };
+
+        this.cache.set(cacheKey, userInsightsData);
+        return userInsightsData;
     }
 
     /**

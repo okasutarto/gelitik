@@ -257,6 +257,38 @@ export class TikTokService implements PlatformService {
     const userInfo = await this.getUserInfo(accessToken);
     const analytics = await this.calculateAnalytics(userInfo, videosData.videos);
 
+    // Compute historical engagement (likes and comments) directly from videos, bounded by date
+    const dailyEngagement = new Map<string, { likes: number, comments: number }>();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Zero-fill all days in the timeframe to ensure continuous lines and correct axis bounds
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const dateKey = d.toISOString().split('T')[0];
+        dailyEngagement.set(dateKey, { likes: 0, comments: 0 });
+    }
+
+    videosData.videos.forEach((video: any) => {
+        if (video.create_time) {
+            // TikTok create_time is a Unix timestamp in seconds
+            const dateKey = new Date(video.create_time * 1000).toISOString().split('T')[0];
+            if (dailyEngagement.has(dateKey)) {
+                const existing = dailyEngagement.get(dateKey)!;
+                existing.likes += (video.like_count || 0);
+                existing.comments += (video.comment_count || 0);
+            }
+        }
+    });
+
+    const dates = Array.from(dailyEngagement.keys()).sort();
+    const historicalLikes = dates.map(date => ({ date, value: dailyEngagement.get(date)!.likes }));
+    const historicalComments = dates.map(date => ({ date, value: dailyEngagement.get(date)!.comments }));
+
+    (analytics as any).historical = {
+        likes: historicalLikes,
+        comments: historicalComments
+    };
+
     return {
       videos: videosData.videos,
       analytics,

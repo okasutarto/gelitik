@@ -10,6 +10,18 @@ const instagramService = new InstagramService();
 const instagramGraphService = new InstagramGraphService();
 const tiktokService = new TikTokService();
 
+// Valid platform values
+const VALID_PLATFORMS = ['instagram', 'instagram-graph', 'tiktok'];
+
+// Middleware to validate platform parameter
+const validatePlatform = (req: any, res: any, next: any) => {
+    const { platform } = req.params;
+    if (!VALID_PLATFORMS.includes(platform)) {
+        return res.status(400).json({ error: `Invalid platform. Must be one of: ${VALID_PLATFORMS.join(', ')}` });
+    }
+    next();
+};
+
 /**
  * GET /api/analytics/overview
  * Aggregated stats across all connected platforms
@@ -49,7 +61,7 @@ router.get('/overview', async (req, res) => {
  * GET /api/analytics/:platform
  * Platform-specific deep dive
  */
-router.get('/:platform', async (req, res) => {
+router.get('/:platform', validatePlatform, async (req, res) => {
     const { platform } = req.params;
     const userId = (req.user as any)?.id;
 
@@ -67,21 +79,29 @@ router.get('/:platform', async (req, res) => {
             return res.status(401).json({ error: 'Access token not available. Please reconnect your account.' });
         }
 
+        // Determine startDate based on timeframe
+        const timeframe = (req.query.timeframe as string) || 'this_week';
+        const endDate = new Date();
+        const startDate = new Date();
+        if (timeframe === 'this_week') startDate.setDate(endDate.getDate() - 7);
+        else if (timeframe === 'last_14_days') startDate.setDate(endDate.getDate() - 14);
+        else if (timeframe === 'last_30_days') startDate.setDate(endDate.getDate() - 30);
+        else if (timeframe === 'last_90_days') startDate.setDate(endDate.getDate() - 90);
+
         let data;
         if (platform === 'instagram') {
             // Use Basic Display API
-            data = await instagramService.getAnalytics(accessToken, account.accountId, new Date(), new Date());
+            data = await instagramService.getAnalytics(accessToken, account.accountId, startDate, endDate);
         } else if (platform === 'instagram-graph') {
-            const timeframe = (req.query.timeframe as string) || 'this_week';
             // Use Graph API for full insights
-            const analyticsData = await instagramGraphService.getAnalytics(accessToken, account.accountId, new Date(), new Date(), timeframe);
+            const analyticsData = await instagramGraphService.getAnalytics(accessToken, account.accountId, startDate, endDate, timeframe);
             data = {
                 profile: analyticsData.profile,
                 insights: analyticsData.insights,
                 media: analyticsData.media
             };
         } else if (platform === 'tiktok') {
-            const videosData = await tiktokService.getAnalytics(accessToken, account.accountId, new Date(), new Date());
+            const videosData = await tiktokService.getAnalytics(accessToken, account.accountId, startDate, endDate);
             data = {
                 userInfo: videosData.userInfo,
                 videos: videosData.videos,
@@ -113,7 +133,7 @@ router.get('/:platform', async (req, res) => {
  * GET /api/analytics/:platform/video/:videoId
  * Detailed analytics for a specific video (fetched from platform API)
  */
-router.get('/:platform/video/:videoId', async (req, res) => {
+router.get('/:platform/video/:videoId', validatePlatform, async (req, res) => {
     const { platform, videoId } = req.params;
     const userId = (req.user as any)?.id;
 

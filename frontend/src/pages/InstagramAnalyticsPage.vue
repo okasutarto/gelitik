@@ -7,6 +7,7 @@ import PageHeader from "@/components/layout/PageHeader.vue";
 import InsightCard from "@/components/dashboard/InsightCard.vue";
 import UserProfile from "@/components/dashboard/UserProfile.vue";
 import AudienceChart from "@/components/dashboard/AudienceChart.vue";
+import EngagementChart from "@/components/dashboard/EngagementChart.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
 import GenderSplitPanel from "@/components/dashboard/GenderSplitPanel.vue";
 import TopCitiesPanel from "@/components/dashboard/TopCitiesPanel.vue";
@@ -200,11 +201,11 @@ onMounted(() => {
     <UserProfileSkeleton v-else-if="loading" />
 
     <!-- Filter Actions Row -->
-    <div class="flex justify-end mt-6 relative">
+    <div v-if="!loading" class="flex justify-end mt-6 relative">
       <div class="relative">
         <button
           @click="isDropdownOpen = !isDropdownOpen"
-          class="flex items-center gap-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-4 py-2 border-2 border-black dark:border-electric font-bold brutal-hover-lift group"
+          class="flex items-center gap-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-4 py-2 border-3 border-black dark:border-electric font-bold brutal-hover-lift group shadow-brutal-sm"
         >
           <Calendar :size="18" class="text-neo-accent dark:text-electric" />
           {{ selectedTimeframeLabel }}
@@ -264,16 +265,32 @@ onMounted(() => {
       </template>
     </div>
 
-    <!-- Audience Growth Chart -->
-    <div class="mb-8">
-      <ChartSkeleton v-if="loading" />
-      <template v-else>
-        <AudienceChart
-          platform="instagram"
-          title="Follower Net Growth"
-          subtitle="Instagram specific growth metrics"
-        />
-      </template>
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+      <!-- Audience Growth Chart -->
+      <div>
+        <ChartSkeleton v-if="loading" />
+        <template v-else>
+          <AudienceChart
+            platform="instagram"
+            title="Follower Net Growth"
+            subtitle="Instagram specific growth metrics"
+            :historical-data="(accountData?.data as any)?.insights?.historical"
+          />
+        </template>
+      </div>
+
+      <!-- Engagement Over Time Chart -->
+      <div>
+        <ChartSkeleton v-if="loading" />
+        <template v-else>
+          <EngagementChart
+            title="Engagement Over Time"
+            subtitle="Likes vs Comments"
+            :historical-data="(accountData?.data as any)?.insights?.historical"
+          />
+        </template>
+      </div>
     </div>
 
     <!-- Instagram-Specific Panels -->

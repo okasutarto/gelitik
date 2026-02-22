@@ -6,10 +6,16 @@ import type { Platform } from "@/types/platform";
 import ChartTimeframeControl from "@/components/dashboard/ChartTimeframeControl.vue";
 import "@/composables/useChart"; // Registers Chart.js components
 
+interface HistoricalData {
+  reach?: { date: string; value: number }[];
+  followers?: { date: string; value: number }[];
+}
+
 interface Props {
   platform: Platform;
   title?: string;
   subtitle?: string;
+  historicalData?: HistoricalData;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -17,15 +23,8 @@ const props = withDefaults(defineProps<Props>(), {
   subtitle: "Performance over selected period",
 });
 
-const selectedPeriod = ref("7d");
 const selectedMetric = ref("followers");
 const { isDark } = useTheme();
-
-const timeframeOptions = [
-  { label: "7D", value: "7d" },
-  { label: "30D", value: "30d" },
-  { label: "QTR", value: "90d" },
-];
 
 const metricOptions = [
   { label: "FOLLOWERS", value: "followers" },
@@ -59,14 +58,34 @@ const chartData = computed(() => {
     };
   } else if (props.platform === "instagram") {
     const isFollowers = selectedMetric.value === "followers";
+    const historySource = isFollowers
+      ? props.historicalData?.followers
+      : props.historicalData?.reach;
+
+    let displayLabels = labels;
+    let displayData = isFollowers
+      ? [4000, 5000, 7000, 5500, 8000, 6500, 9000]
+      : [1500, 2200, 1800, 3100, 2800, 4200, 3900];
+
+    if (historySource && historySource.length > 0) {
+      // Sort chronologically just in case API returns out of order
+      const sorted = [...historySource].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+
+      displayLabels = sorted.map((item) => {
+        const d = new Date(item.date);
+        return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      });
+      displayData = sorted.map((item) => item.value);
+    }
+
     return {
-      labels,
+      labels: displayLabels,
       datasets: [
         {
           label: isFollowers ? "Followers" : "Reach",
-          data: isFollowers
-            ? [4000, 5000, 7000, 5500, 8000, 6500, 9000]
-            : [1500, 2200, 1800, 3100, 2800, 4200, 3900],
+          data: displayData,
           borderColor: isDark.value ? "#FF0099" : "#9333ea",
           backgroundColor: isDark.value ? "rgba(255, 0, 153, 0.1)" : "rgba(147, 51, 234, 0.1)",
           fill: true,
@@ -194,7 +213,6 @@ const isBarChart = computed(() => props.platform === "all");
             v-model="selectedMetric"
             :options="metricOptions"
           />
-          <ChartTimeframeControl v-model="selectedPeriod" :options="timeframeOptions" />
         </div>
       </div>
 

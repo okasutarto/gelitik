@@ -27,7 +27,10 @@ const showTooltip = ref(false);
 </script>
 
 <template>
-  <div class="brutal-card brutal-hover-lift p-6 flex flex-col">
+  <div
+    class="brutal-card brutal-hover-lift p-6 flex flex-col"
+    :class="{ 'relative z-50': showTooltip }"
+  >
     <!-- Skeleton loader -->
     <template v-if="loading">
       <div class="space-y-3">

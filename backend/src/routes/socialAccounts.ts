@@ -213,12 +213,23 @@ router.get('/', authenticateJwt, async (req, res) => {
   try {
     const user = (req as any).user;
 
+    // SECURITY: Explicitly exclude sensitive token fields from being sent to frontend
     const accounts = await prisma.socialAccount.findMany({
       where: {
         userId: user.id,
         isActive: true
       },
-      include: {
+      select: {
+        id: true,
+        platform: true,
+        accountId: true,
+        displayName: true,
+        username: true,
+        avatar: true,
+        isActive: true,
+        expiresAt: true,
+        createdAt: true,
+        updatedAt: true,
         analytics: {
           orderBy: { date: 'desc' },
           take: 1

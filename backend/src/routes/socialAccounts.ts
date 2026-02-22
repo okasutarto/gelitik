@@ -158,9 +158,23 @@ router.post('/tiktok/connect', authenticateJwt, async (req, res) => {
       });
     }
 
+    // Sanitize account data before sending to frontend
+    const sanitizedAccount = {
+      id: socialAccount.id,
+      platform: socialAccount.platform,
+      accountId: socialAccount.accountId,
+      displayName: socialAccount.displayName,
+      username: socialAccount.username,
+      avatar: socialAccount.avatar,
+      isActive: socialAccount.isActive,
+      expiresAt: socialAccount.expiresAt,
+      createdAt: socialAccount.createdAt,
+      updatedAt: socialAccount.updatedAt
+    };
+
     res.json({
       success: true,
-      data: socialAccount
+      data: sanitizedAccount
     });
   } catch (error) {
     console.error('TikTok connection error:', error);

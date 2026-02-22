@@ -89,7 +89,20 @@ router.get('/:platform', async (req, res) => {
             };
         }
 
-        res.json({ account, data });
+        const sanitizedAccount = {
+            id: account.id,
+            platform: account.platform,
+            accountId: account.accountId,
+            displayName: account.displayName,
+            username: account.username,
+            avatar: account.avatar,
+            isActive: account.isActive,
+            expiresAt: account.expiresAt,
+            createdAt: account.createdAt,
+            updatedAt: account.updatedAt
+        };
+
+        res.json({ account: sanitizedAccount, data });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: `Failed to fetch ${platform} analytics` });

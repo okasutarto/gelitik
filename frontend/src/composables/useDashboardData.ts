@@ -1,127 +1,122 @@
-import { computed, onMounted } from 'vue'
-import { useDashboardStore } from '@/stores/dashboardStore'
-import { useTiktokStore } from '@/stores/tiktokStore'
-import { useInstagramStore } from '@/stores/instagramStore'
-import { formatNumber } from '@/utils/format'
+import { computed, onMounted } from "vue";
+import { useDashboardStore } from "@/stores/dashboardStore";
+import { useTiktokStore } from "@/stores/tiktokStore";
+import { useInstagramStore } from "@/stores/instagramStore";
+import { formatNumber } from "@/utils/format";
 
 export interface DashboardKpiCard {
-  title: string
-  value: string
-  rawValue: number
-  delta: number
-  deltaPercent: number
-  deltaLabel: string
-  icon: string
-  positive: boolean
+  title: string;
+  value: string;
+  rawValue: number;
+  delta: number;
+  deltaPercent: number;
+  deltaLabel: string;
+  icon: string;
+  positive: boolean;
 }
 
 export function useDashboardData() {
-  const dashboardStore = useDashboardStore()
-  const tiktokStore = useTiktokStore()
-  const instagramStore = useInstagramStore()
+  const dashboardStore = useDashboardStore();
+  const tiktokStore = useTiktokStore();
+  const instagramStore = useInstagramStore();
 
   // KPI cards for the overview page
   const kpiCards = computed(() => [
     {
-      title: 'Total Audience',
+      title: "Total Audience",
       value: formatNumber(dashboardStore.totalFollowers),
       rawValue: dashboardStore.totalFollowers,
-      subtitle: 'Combined followers',
+      subtitle: "Combined followers",
     },
     {
-      title: 'Engagement Rate',
-      value: dashboardStore.totalEngagementRate.toFixed(2) + '%',
+      title: "Engagement Rate",
+      value: dashboardStore.totalEngagementRate.toFixed(2) + "%",
       rawValue: dashboardStore.totalEngagementRate,
-      subtitle: 'Avg. across platforms',
+      subtitle: "Avg. across platforms",
     },
     {
-      title: 'Total Posts',
+      title: "Total Posts",
       value: formatNumber(dashboardStore.totalPosts),
       rawValue: dashboardStore.totalPosts,
-      subtitle: 'Published content',
+      subtitle: "Published content",
     },
     {
-      title: 'Total Views',
+      title: "Total Views",
       value: formatNumber(dashboardStore.totalViews),
       rawValue: dashboardStore.totalViews,
-      subtitle: 'Impressions + views',
+      subtitle: "Impressions + views",
     },
-  ])
+  ]);
 
   // Platform health snapshots
   const platformHealth = computed(() => ({
     instagram: dashboardStore.instagramHealth,
     tiktok: dashboardStore.tiktokHealth,
-  }))
+  }));
 
   // Combined top content
-  const topContent = computed(() => dashboardStore.topContent)
+  const topContent = computed(() => dashboardStore.topContent);
 
   // Audience growth placeholder (to be connected when time-series data is available)
   const audienceGrowth = computed(() => ({
     instagram: [] as { date: string; value: number }[],
     tiktok: [] as { date: string; value: number }[],
-  }))
+  }));
 
   // Heatmap data derived from media post times
   const heatmapData = computed(() => {
-    const allMedia = [
-      ...(instagramStore.data?.media ?? []),
-      ...(tiktokStore.data?.videos ?? []),
-    ]
+    const allMedia = [...(instagramStore.data?.media ?? []), ...(tiktokStore.data?.videos ?? [])];
 
-    const scores: Record<string, number> = {}
+    const scores: Record<string, number> = {};
 
     for (const item of allMedia) {
-      const timestamp = (item as Record<string, unknown>).create_time ??
-        (item as Record<string, unknown>).timestamp
-      if (!timestamp) continue
+      const timestamp =
+        (item as Record<string, unknown>).create_time ??
+        (item as Record<string, unknown>).timestamp;
+      if (!timestamp) continue;
 
-      const date = typeof timestamp === 'number'
-        ? new Date(timestamp * 1000)
-        : new Date(timestamp as string)
+      const date =
+        typeof timestamp === "number" ? new Date(timestamp * 1000) : new Date(timestamp as string);
 
-      if (isNaN(date.getTime())) continue
+      if (isNaN(date.getTime())) continue;
 
-      const day = date.getDay() // 0=Sun ... 6=Sat
-      const hour = date.getHours()
-      const key = `${day}-${hour}`
-      scores[key] = (scores[key] || 0) + 1
+      const day = date.getDay(); // 0=Sun ... 6=Sat
+      const hour = date.getHours();
+      const key = `${day}-${hour}`;
+      scores[key] = (scores[key] || 0) + 1;
     }
 
     // Normalize to 0–100
-    const max = Math.max(...Object.values(scores), 1)
+    const max = Math.max(...Object.values(scores), 1);
     return Object.entries(scores).map(([key, count]) => {
-      const [day, hour] = key.split('-').map(Number)
-      return { day, hour, score: Math.round((count / max) * 100) }
-    })
-  })
+      const [day, hour] = key.split("-").map(Number);
+      return { day, hour, score: Math.round((count / max) * 100) };
+    });
+  });
 
-  const isLoading = computed(() => dashboardStore.isLoading)
-  const error = computed(() => dashboardStore.error)
-  const hasData = computed(() =>
-    tiktokStore.data !== null || instagramStore.data !== null,
-  )
+  const isLoading = computed(() => dashboardStore.isLoading);
+  const error = computed(() => dashboardStore.error);
+  const hasData = computed(() => tiktokStore.data !== null || instagramStore.data !== null);
   const lastUpdated = computed(() => {
-    const ttFetch = tiktokStore.lastFetched ?? 0
-    const igFetch = instagramStore.lastFetched ?? 0
-    const latest = Math.max(ttFetch, igFetch)
-    return latest > 0 ? new Date(latest) : null
-  })
+    const ttFetch = tiktokStore.lastFetched ?? 0;
+    const igFetch = instagramStore.lastFetched ?? 0;
+    const latest = Math.max(ttFetch, igFetch);
+    return latest > 0 ? new Date(latest) : null;
+  });
 
   // Actions
   async function fetchAll() {
-    await dashboardStore.fetchAll()
+    await dashboardStore.fetchAll();
   }
 
   async function refresh() {
-    await dashboardStore.refreshAll()
+    await dashboardStore.refreshAll();
   }
 
   // Auto-fetch on mount
   onMounted(() => {
-    fetchAll()
-  })
+    fetchAll();
+  });
 
   return {
     kpiCards,
@@ -135,5 +130,5 @@ export function useDashboardData() {
     lastUpdated,
     fetchAll,
     refresh,
-  }
+  };
 }

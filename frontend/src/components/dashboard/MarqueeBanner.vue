@@ -9,7 +9,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  content: "🎉 Welcome to Gelitik Analytics • Track your social media performance • Real-time insights available • New features coming soon! 🚀",
+  content:
+    "🎉 Welcome to Gelitik Analytics • Track your social media performance • Real-time insights available • New features coming soon! 🚀",
   speed: "normal",
   backgroundColor: "#FFCC00",
   textColor: "#000000",
@@ -28,7 +29,8 @@ const speedClass = computed(() => {
 <template>
   <div
     class="brutal-marquee w-full overflow-hidden border-b-2 border-black dark:border-white"
-    :style="{ backgroundColor: props.backgroundColor, color: props.textColor }">
+    :style="{ backgroundColor: props.backgroundColor, color: props.textColor }"
+  >
     <div :class="['whitespace-nowrap py-1 px-4 inline-block min-w-full', speedClass]">
       <span class="text-[9px] font-black uppercase tracking-tight inline-block">
         {{ content }}
@@ -60,8 +62,12 @@ const speedClass = computed(() => {
 }
 
 @keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-33.33%); }
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.33%);
+  }
 }
 
 .brutal-marquee:hover .marquee-content,

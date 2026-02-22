@@ -21,10 +21,8 @@ const platformColors = computed(() => {
 const statusColor = computed(() => {
   const colors = {
     draft: "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300",
-    scheduled:
-      "bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400",
-    published:
-      "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400",
+    scheduled: "bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400",
+    published: "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400",
   };
   return colors[props.post.status];
 });
@@ -51,7 +49,8 @@ const timeFormatted = computed(() => {
 <template>
   <div
     class="relative group bg-white dark:bg-slate-800 p-2 border-neo-3 border-black shadow-neo-hard hover:-translate-y-1 transition-transform cursor-move mb-1.5"
-    draggable="true">
+    draggable="true"
+  >
     <!-- Platform Indicator Strip -->
     <div :class="['absolute left-0 top-0 bottom-0 w-1', platformColors]" />
 
@@ -60,30 +59,25 @@ const timeFormatted = computed(() => {
       <div
         v-if="post.thumbnail"
         class="size-10 rounded-md bg-cover bg-center shrink-0"
-        :style="{ backgroundImage: `url('${post.thumbnail}')` }" />
+        :style="{ backgroundImage: `url('${post.thumbnail}')` }"
+      />
       <!-- Placeholder Icon (if no thumbnail) -->
       <div
         v-else
-        class="size-10 rounded-md bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
+        class="size-10 rounded-md bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0"
+      >
         <component :is="typeIcon" :size="16" class="text-slate-400" />
       </div>
 
       <div class="flex-1 min-w-0">
-        <h4
-          class="text-xs font-semibold text-slate-900 dark:text-white truncate">
+        <h4 class="text-xs font-semibold text-slate-900 dark:text-white truncate">
           {{ post.title }}
         </h4>
         <div class="flex items-center gap-2 mt-1">
-          <span
-            :class="[
-              'text-[10px] px-1.5 py-0.5 rounded font-medium',
-              statusColor,
-            ]">
+          <span :class="['text-[10px] px-1.5 py-0.5 rounded font-medium', statusColor]">
             {{ timeFormatted }}
           </span>
-          <span class="text-[10px] text-slate-400 capitalize">{{
-            post.platform
-          }}</span>
+          <span class="text-[10px] text-slate-400 capitalize">{{ post.platform }}</span>
         </div>
       </div>
     </div>

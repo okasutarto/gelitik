@@ -61,12 +61,14 @@ const togglePassword = () => {
         icon ? 'pl-12' : 'pl-5',
         isPasswordType ? 'pr-12' : 'pr-5',
         disabled && 'opacity-50 cursor-not-allowed',
-      ]" />
+      ]"
+    />
 
     <!-- Left Icon -->
     <div
       v-if="icon"
-      class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-electric/60 pointer-events-none">
+      class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-electric/60 pointer-events-none"
+    >
       <component :is="icon" :size="20" />
     </div>
 
@@ -76,7 +78,8 @@ const togglePassword = () => {
       type="button"
       @click="togglePassword"
       class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-electric/60 dark:hover:text-electric cursor-pointer transition-colors"
-      :aria-label="showPassword ? 'Hide password' : 'Show password'">
+      :aria-label="showPassword ? 'Hide password' : 'Show password'"
+    >
       <Eye v-if="showPassword" :size="20" />
       <EyeOff v-else :size="20" />
     </button>

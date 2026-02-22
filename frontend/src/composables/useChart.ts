@@ -12,7 +12,7 @@ import {
   Filler,
   ArcElement,
   RadialLinearScale,
-} from 'chart.js'
+} from "chart.js";
 
 // Register all Chart.js components once
 ChartJS.register(
@@ -27,6 +27,6 @@ ChartJS.register(
   Filler,
   ArcElement,
   RadialLinearScale
-)
+);
 
-export { ChartJS }
+export { ChartJS };

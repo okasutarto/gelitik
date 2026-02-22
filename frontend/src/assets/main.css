@@ -16,7 +16,7 @@
 }
 
 .dark::-webkit-scrollbar-thumb {
-  background: #6B2CF5;
+  background: #6b2cf5;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -24,7 +24,7 @@
 }
 
 .dark::-webkit-scrollbar-thumb:hover {
-  background: #00F0FF;
+  background: #00f0ff;
 }
 
 /* Base styles */
@@ -35,24 +35,26 @@ body {
 
 /* Smooth transitions for theme switching */
 html {
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Neo-Brutalist Design System */
 :root {
-  --neo-accent: #FFCC00;
+  --neo-accent: #ffcc00;
   --neo-black: #000000;
-  --neo-white: #FFFFFF;
+  --neo-white: #ffffff;
 }
 
 .dark {
-  --neo-accent: #FFCC00;
-  --neo-black: #E0E0E0;
-  --neo-white: #0A0A1A;
-  --cyber-navy: #0A0A1A;
-  --cyber-electric: #00F0FF;
-  --cyber-purple: #6B2CF5;
-  --cyber-hotpink: #FF0099;
+  --neo-accent: #ffcc00;
+  --neo-black: #e0e0e0;
+  --neo-white: #0a0a1a;
+  --cyber-navy: #0a0a1a;
+  --cyber-electric: #00f0ff;
+  --cyber-purple: #6b2cf5;
+  --cyber-hotpink: #ff0099;
 }
 
 /* Thick borders */
@@ -78,15 +80,15 @@ html {
 }
 
 .dark .shadow-neo-hard {
-  box-shadow: 8px 8px 0px 0px #6B2CF5;
+  box-shadow: 8px 8px 0px 0px #6b2cf5;
 }
 
 .dark .shadow-neo-hard-lg {
-  box-shadow: 12px 12px 0px 0px #6B2CF5;
+  box-shadow: 12px 12px 0px 0px #6b2cf5;
 }
 
 .dark .shadow-neo-hard-sm {
-  box-shadow: 6px 6px 0px 0px #6B2CF5;
+  box-shadow: 6px 6px 0px 0px #6b2cf5;
 }
 
 .hover\:shadow-neo-hard-sm:hover {
@@ -94,7 +96,7 @@ html {
 }
 
 .dark .hover\:shadow-neo-hard-sm:hover {
-  box-shadow: 6px 6px 0px 0px #6B2CF5;
+  box-shadow: 6px 6px 0px 0px #6b2cf5;
 }
 
 .hover\:shadow-neo-hard:hover {
@@ -102,7 +104,7 @@ html {
 }
 
 .dark .hover\:shadow-neo-hard:hover {
-  box-shadow: 8px 8px 0px 0px #6B2CF5;
+  box-shadow: 8px 8px 0px 0px #6b2cf5;
 }
 
 .hover\:shadow-neo-hard-lg:hover {
@@ -110,32 +112,32 @@ html {
 }
 
 .dark .hover\:shadow-neo-hard-lg:hover {
-  box-shadow: 12px 12px 0px 0px #6B2CF5;
+  box-shadow: 12px 12px 0px 0px #6b2cf5;
 }
 
 /* Brutal shadows dark mode support - Cyber/Neon purple */
 .dark .shadow-brutal {
-  box-shadow: 8px 8px 0px 0px #6B2CF5;
+  box-shadow: 8px 8px 0px 0px #6b2cf5;
 }
 
 .dark .shadow-brutal-md {
-  box-shadow: 6px 6px 0px 0px #6B2CF5;
+  box-shadow: 6px 6px 0px 0px #6b2cf5;
 }
 
 .dark .shadow-brutal-sm {
-  box-shadow: 4px 4px 0px 0px #6B2CF5;
+  box-shadow: 4px 4px 0px 0px #6b2cf5;
 }
 
 .dark .shadow-brutal-active {
-  box-shadow: 2px 2px 0px 0px #6B2CF5;
+  box-shadow: 2px 2px 0px 0px #6b2cf5;
 }
 
 .dark .hover\:shadow-brutal-sm:hover {
-  box-shadow: 4px 4px 0px 0px #00F0FF;
+  box-shadow: 4px 4px 0px 0px #00f0ff;
 }
 
 .dark .hover\:shadow-brutal-md:hover {
-  box-shadow: 6px 6px 0px 0px #00F0FF;
+  box-shadow: 6px 6px 0px 0px #00f0ff;
 }
 
 /* Accent utilities */
@@ -159,9 +161,9 @@ html {
 }
 
 .dark .neo-card {
-  background-color: #0A0A1A;
-  box-shadow: 8px 8px 0px 0px #6B2CF5;
-  border: 3px solid #00F0FF;
+  background-color: #0a0a1a;
+  box-shadow: 8px 8px 0px 0px #6b2cf5;
+  border: 3px solid #00f0ff;
 }
 
 /* Brutal card (sharp corners for Neo-Brutalist aesthetic) */
@@ -170,9 +172,9 @@ html {
 }
 
 .dark .brutal-card {
-  background-color: #0A0A1A;
-  border-color: #00F0FF;
-  box-shadow: 8px 8px 0px 0px #6B2CF5;
+  background-color: #0a0a1a;
+  border-color: #00f0ff;
+  box-shadow: 8px 8px 0px 0px #6b2cf5;
 }
 
 /* Brutal button with interactive states */
@@ -181,16 +183,16 @@ html {
 }
 
 .dark .brutal-btn {
-  border-color: #00F0FF;
-  box-shadow: 4px 4px 0px 0px #6B2CF5;
+  border-color: #00f0ff;
+  box-shadow: 4px 4px 0px 0px #6b2cf5;
 }
 
 .dark .brutal-btn:hover {
-  box-shadow: 4px 4px 0px 0px #00F0FF;
+  box-shadow: 4px 4px 0px 0px #00f0ff;
 }
 
 .dark .brutal-btn:active {
-  box-shadow: 2px 2px 0px 0px #6B2CF5;
+  box-shadow: 2px 2px 0px 0px #6b2cf5;
 }
 
 /* Brutal hover lift effect */
@@ -203,12 +205,14 @@ html {
 }
 
 .dark .brutal-hover-lift:hover {
-  box-shadow: 6px 6px 0px 0px #6B2CF5;
+  box-shadow: 6px 6px 0px 0px #6b2cf5;
 }
 
 /* Hover lift (instant, no fade) */
 .neo-hover-lift {
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+  transition:
+    transform 0.15s ease-out,
+    box-shadow 0.15s ease-out;
 }
 
 .neo-hover-lift:hover {
@@ -270,7 +274,7 @@ html {
 }
 
 .dark .halftone-pattern {
-  background-image: radial-gradient(circle, #00F0FF 2px, transparent 2.5px);
+  background-image: radial-gradient(circle, #00f0ff 2px, transparent 2.5px);
   opacity: 0.3;
 }
 
@@ -280,9 +284,9 @@ html {
 }
 
 .dark .sticker-badge {
-  background-color: #FF0099;
-  border-color: #00F0FF;
-  box-shadow: 4px 4px 0px 0px #6B2CF5;
+  background-color: #ff0099;
+  border-color: #00f0ff;
+  box-shadow: 4px 4px 0px 0px #6b2cf5;
 }
 
 /* Brutal badge component styles */
@@ -294,10 +298,10 @@ html {
 }
 
 .dark .brutal-badge {
-  background-color: #6B2CF5;
-  color: #E0E0E0;
-  border-color: #00F0FF;
-  box-shadow: 4px 4px 0px 0px #FF0099;
+  background-color: #6b2cf5;
+  color: #e0e0e0;
+  border-color: #00f0ff;
+  box-shadow: 4px 4px 0px 0px #ff0099;
 }
 
 .brutal-badge.live {
@@ -306,57 +310,57 @@ html {
 }
 
 .dark .brutal-badge.live {
-  background-color: #FF0099;
-  border-color: #FF0099;
-  box-shadow: 4px 4px 0px 0px #00F0FF;
+  background-color: #ff0099;
+  border-color: #ff0099;
+  box-shadow: 4px 4px 0px 0px #00f0ff;
   animation: pulse-badge 1.5s ease-in-out infinite;
 }
 
 .brutal-badge.new {
-  background-color: #FFCC00;
+  background-color: #ffcc00;
   color: #000;
   border-color: #000;
 }
 
 .dark .brutal-badge.new {
-  background-color: #FFCC00;
-  border-color: #00F0FF;
-  box-shadow: 4px 4px 0px 0px #6B2CF5;
+  background-color: #ffcc00;
+  border-color: #00f0ff;
+  box-shadow: 4px 4px 0px 0px #6b2cf5;
 }
 
 .brutal-badge.viral {
-  background: linear-gradient(135deg, #FF0099 0%, #6B2CF5 100%);
-  border-color: #FF0099;
+  background: linear-gradient(135deg, #ff0099 0%, #6b2cf5 100%);
+  border-color: #ff0099;
 }
 
 .dark .brutal-badge.viral {
-  background: linear-gradient(135deg, #FF0099 0%, #00F0FF 100%);
-  border-color: #FF0099;
-  box-shadow: 4px 4px 0px 0px #6B2CF5;
+  background: linear-gradient(135deg, #ff0099 0%, #00f0ff 100%);
+  border-color: #ff0099;
+  box-shadow: 4px 4px 0px 0px #6b2cf5;
 }
 
 .brutal-badge.trending {
-  background-color: #6B2CF5;
-  border-color: #6B2CF5;
+  background-color: #6b2cf5;
+  border-color: #6b2cf5;
 }
 
 .dark .brutal-badge.trending {
-  background-color: #00F0FF;
-  border-color: #00F0FF;
-  color: #0A0A1A;
-  box-shadow: 4px 4px 0px 0px #FF0099;
+  background-color: #00f0ff;
+  border-color: #00f0ff;
+  color: #0a0a1a;
+  box-shadow: 4px 4px 0px 0px #ff0099;
 }
 
 .brutal-badge.top-performer {
-  background-color: #FFCC00;
+  background-color: #ffcc00;
   color: #000;
-  border-color: #FFCC00;
+  border-color: #ffcc00;
 }
 
 .dark .brutal-badge.top-performer {
-  background-color: #FFCC00;
-  border-color: #FF0099;
-  box-shadow: 4px 4px 0px 0px #FF0099;
+  background-color: #ffcc00;
+  border-color: #ff0099;
+  box-shadow: 4px 4px 0px 0px #ff0099;
 }
 
 .brutal-badge.rotated {
@@ -368,7 +372,8 @@ html {
 }
 
 @keyframes pulse-badge {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -382,7 +387,12 @@ html {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
   color: rgb(0 0 0 / 0.6);
   border: 3px solid transparent;
   border-radius: 0;
@@ -414,29 +424,29 @@ html {
 }
 
 .dark .nav-item {
-  color: #00F0FF;
+  color: #00f0ff;
   border-color: transparent;
 }
 
 .dark .nav-item:hover {
-  color: #0A0A1A;
-  background-color: #00F0FF;
+  color: #0a0a1a;
+  background-color: #00f0ff;
   transform: translateY(-2px);
-  box-shadow: 4px 4px 0px 0px #6B2CF5;
-  border-color: #00F0FF;
+  box-shadow: 4px 4px 0px 0px #6b2cf5;
+  border-color: #00f0ff;
   border-radius: 0;
 }
 
 .dark .nav-item.active {
-  background-color: #FF0099;
-  border-color: #FF0099;
-  box-shadow: 6px 6px 0px 0px #6B2CF5;
-  color: #E0E0E0;
+  background-color: #ff0099;
+  border-color: #ff0099;
+  box-shadow: 6px 6px 0px 0px #6b2cf5;
+  color: #e0e0e0;
 }
 
 .dark .nav-item.active:hover {
-  box-shadow: 6px 6px 0px 0px #00F0FF;
-  background-color: #FF0099;
+  box-shadow: 6px 6px 0px 0px #00f0ff;
+  background-color: #ff0099;
 }
 
 .sub-nav-item {
@@ -445,7 +455,12 @@ html {
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
   color: rgb(0 0 0 / 0.6);
   margin-bottom: 0.75rem;
   border: 3px solid transparent;
@@ -477,29 +492,29 @@ html {
 }
 
 .dark .sub-nav-item {
-  color: #00F0FF;
+  color: #00f0ff;
   border-color: transparent;
 }
 
 .dark .sub-nav-item:hover {
-  color: #0A0A1A;
-  background-color: #00F0FF;
+  color: #0a0a1a;
+  background-color: #00f0ff;
   transform: translateY(-2px);
-  box-shadow: 4px 4px 0px 0px #6B2CF5;
-  border-color: #00F0FF;
+  box-shadow: 4px 4px 0px 0px #6b2cf5;
+  border-color: #00f0ff;
   border-radius: 0;
 }
 
 .dark .sub-nav-item.active {
-  background-color: #FF0099;
-  border-color: #FF0099;
-  box-shadow: 6px 6px 0px 0px #6B2CF5;
-  color: #E0E0E0;
+  background-color: #ff0099;
+  border-color: #ff0099;
+  box-shadow: 6px 6px 0px 0px #6b2cf5;
+  color: #e0e0e0;
   border-radius: 0;
 }
 
 .dark .sub-nav-item.active:hover {
-  box-shadow: 6px 6px 0px 0px #00F0FF;
+  box-shadow: 6px 6px 0px 0px #00f0ff;
   border-radius: 0;
 }
 
@@ -530,36 +545,36 @@ html {
 
 .dark .sub-nav-item.border-dashed {
   border-left: none;
-  border: 2px dashed #00F0FF;
+  border: 2px dashed #00f0ff;
 }
 
 .dark .sub-nav-item.border-dashed:hover {
-  border: 3px dashed #FF0099;
-  box-shadow: 4px 4px 0px 0px #6B2CF5;
+  border: 3px dashed #ff0099;
+  box-shadow: 4px 4px 0px 0px #6b2cf5;
 }
 
 .dark .sub-nav-item.border-dashed.active {
-  background-color: #FF0099;
-  border: 3px solid #FF0099;
-  box-shadow: 6px 6px 0px 0px #6B2CF5;
-  color: #E0E0E0;
+  background-color: #ff0099;
+  border: 3px solid #ff0099;
+  box-shadow: 6px 6px 0px 0px #6b2cf5;
+  color: #e0e0e0;
   border-radius: 0;
 }
 
 .dark .sub-nav-item.border-dashed.active:hover {
-  box-shadow: 6px 6px 0px 0px #00F0FF;
+  box-shadow: 6px 6px 0px 0px #00f0ff;
 }
 
 /* Background texture pattern for main content area */
 .bg-texture-pattern {
-    background-image: 
+  background-image:
     linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
 .dark .bg-texture-pattern {
-  background-image: 
+  background-image:
     linear-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 240, 255, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;

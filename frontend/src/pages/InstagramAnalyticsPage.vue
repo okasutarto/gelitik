@@ -1,7 +1,17 @@
 <script setup lang="ts">
-import { onMounted, computed } from "vue";
+import { onMounted, computed, ref } from "vue";
 import { useRoute } from "vue-router";
-import { Users, UserPlus, Layers, Heart, UserCheck, Activity, Bookmark } from "lucide-vue-next";
+import {
+  Users,
+  UserPlus,
+  Layers,
+  Heart,
+  UserCheck,
+  Activity,
+  Bookmark,
+  Calendar,
+  ChevronDown,
+} from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
 import StatCard from "@/components/dashboard/StatCard.vue";
@@ -36,6 +46,36 @@ const { loading, accountData, fetchAnalytics } = usePlatformAnalytics(platform.v
 
 // Determine if we're using Instagram Graph API
 const isGraphApi = computed(() => platform.value === "instagram-graph");
+
+// Timeframe Filter State
+const isDropdownOpen = ref(false);
+const selectedTimeframe = ref("this_week");
+const timeframes = [
+  { label: "Last 7 days", value: "this_week" },
+  { label: "Last 14 days", value: "last_14_days" },
+  { label: "Last 30 days", value: "last_30_days" },
+  { label: "Last 90 days", value: "last_90_days" },
+];
+
+const selectedTimeframeLabel = computed(() => {
+  return timeframes.find((t) => t.value === selectedTimeframe.value)?.label || "Last 7 days";
+});
+
+const fetchData = () => {
+  fetchAnalytics(selectedTimeframe.value).catch((err: unknown) => {
+    const axiosErr = err as AxiosError;
+    if (axiosErr.response?.status === 404) {
+      toast.error("Instagram account not connected. Please connect your account first.");
+      router.push("/connections");
+    }
+  });
+};
+
+const selectTimeframe = (value: string) => {
+  selectedTimeframe.value = value;
+  isDropdownOpen.value = false;
+  fetchData();
+};
 
 // Get user profile data - map to UserProfile expected format
 
@@ -181,13 +221,7 @@ const instagramStats = computed(() => {
 });
 
 onMounted(() => {
-  fetchAnalytics().catch((err: unknown) => {
-    const axiosErr = err as AxiosError;
-    if (axiosErr.response?.status === 404) {
-      toast.error("Instagram account not connected. Please connect your account first.");
-      router.push("/connections");
-    }
-  });
+  fetchData();
 });
 </script>
 
@@ -203,6 +237,52 @@ onMounted(() => {
     <!-- User Profile -->
     <UserProfile v-if="!loading && userInfo" :user-info="userInfo" />
     <UserProfileSkeleton v-else-if="loading" />
+
+    <!-- Filter Actions Row -->
+    <div class="flex justify-end mt-6 mb-6 relative z-50">
+      <div class="relative">
+        <button
+          @click="isDropdownOpen = !isDropdownOpen"
+          class="flex items-center gap-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-4 py-2 border-2 border-black dark:border-white font-bold brutal-hover-lift group"
+        >
+          <Calendar :size="18" class="text-electric" />
+          {{ selectedTimeframeLabel }}
+          <ChevronDown
+            :size="18"
+            class="transition-transform duration-200"
+            :class="{ 'rotate-180': isDropdownOpen }"
+          />
+        </button>
+
+        <div
+          v-if="isDropdownOpen"
+          class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] z-50 flex flex-col"
+        >
+          <button
+            v-for="tf in timeframes"
+            :key="tf.value"
+            @click="selectTimeframe(tf.value)"
+            class="flex items-center justify-between px-4 py-3 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors font-bold text-slate-900 dark:text-white"
+          >
+            {{ tf.label }}
+            <svg
+              v-if="selectedTimeframe === tf.value"
+              class="w-4 h-4 text-electric"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="3"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Stat Cards Grid -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 my-8">

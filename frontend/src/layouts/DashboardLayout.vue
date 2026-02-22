@@ -16,7 +16,8 @@ const mainContentClass = computed(() => [
 
 <template>
   <div
-    class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-display antialiased h-screen flex overflow-hidden">
+    class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-display antialiased h-screen flex overflow-hidden"
+  >
     <!-- Desktop Sidebar -->
     <AppSidebar />
 
@@ -30,7 +31,8 @@ const mainContentClass = computed(() => [
 
       <!-- Page Content -->
       <div
-        class="flex-1 overflow-y-auto overflow-x-hidden p-4 pt-0 pb-24 md:p-8 md:pt-0 md:pb-8 bg-texture-pattern">
+        class="flex-1 overflow-y-auto overflow-x-hidden p-4 pt-0 pb-24 md:p-8 md:pt-0 md:pb-8 bg-texture-pattern"
+      >
         <slot />
       </div>
     </main>

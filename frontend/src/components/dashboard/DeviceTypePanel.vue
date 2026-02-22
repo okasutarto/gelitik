@@ -40,24 +40,20 @@ const primaryDevice = props.devices[0];
 
 <template>
   <div class="brutal-card brutal-hover-lift rounded-none p-6">
-    <h4
-      class="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+    <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
       <Smartphone :size="18" class="text-slate-800 dark:text-white" />
       Device Type
     </h4>
     <div v-if="platform === 'tiktok'" class="p-8 text-center">
-      <p class="text-slate-500 dark:text-slate-400">
-        Device data coming soon for TikTok
-      </p>
+      <p class="text-slate-500 dark:text-slate-400">Device data coming soon for TikTok</p>
     </div>
     <div v-else class="flex items-center justify-center h-full pb-4 gap-8">
       <!-- Donut Chart -->
       <div class="relative size-32">
+        <div class="size-full rounded-full" :style="{ background: conicGradient }" />
         <div
-          class="size-full rounded-full"
-          :style="{ background: conicGradient }" />
-        <div
-          class="absolute inset-4 bg-white dark:bg-slate-800 rounded-full flex flex-col items-center justify-center">
+          class="absolute inset-4 bg-white dark:bg-slate-800 rounded-full flex flex-col items-center justify-center"
+        >
           <span class="text-2xl font-mono font-bold text-slate-900 dark:text-white">
             {{ primaryDevice.percentage }}%
           </span>
@@ -69,13 +65,8 @@ const primaryDevice = props.devices[0];
 
       <!-- Legend -->
       <div class="space-y-2">
-        <div
-          v-for="device in devices"
-          :key="device.name"
-          class="flex items-center gap-2">
-          <span
-            class="size-3 rounded-full"
-            :style="{ backgroundColor: device.color }" />
+        <div v-for="device in devices" :key="device.name" class="flex items-center gap-2">
+          <span class="size-3 rounded-full" :style="{ backgroundColor: device.color }" />
           <span class="text-sm text-slate-600 dark:text-slate-300">
             {{ device.name }}
           </span>

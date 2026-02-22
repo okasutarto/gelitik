@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import type { Platform } from "@/types/platform";
 import type { Video } from "@/types/video";
 import { VideoDetailModal } from "@/components/dashboard";
 import { formatNumber } from "@/utils/format";
+import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-vue-next";
 import {
   calculateEngagementRate,
   formatTimeAgo,
@@ -75,18 +76,91 @@ const hasVideoData = computed(() => {
     props.videos.some((v: Video) => (v.view_count || 0) > 0)
   );
 });
+
+// Sorting
+type SortKey =
+  | "created"
+  | "duration"
+  | "views"
+  | "likes"
+  | "shares"
+  | "saves"
+  | "comments"
+  | "engagement";
+type SortOrder = "asc" | "desc" | null;
+const sortKey = ref<SortKey | null>(null);
+const sortOrder = ref<SortOrder>(null);
+
+const toggleSort = (key: SortKey) => {
+  if (sortKey.value === key) {
+    // Cycle: desc -> asc -> none
+    if (sortOrder.value === "desc") sortOrder.value = "asc";
+    else if (sortOrder.value === "asc") {
+      sortKey.value = null;
+      sortOrder.value = null;
+    } else sortOrder.value = "desc";
+  } else {
+    sortKey.value = key;
+    sortOrder.value = "desc";
+  }
+  currentPage.value = 1;
+};
+
+const sortedContent = computed(() => {
+  const data = [...filteredContent.value];
+  if (!sortKey.value || !sortOrder.value) return data;
+
+  const key = sortKey.value;
+  const order = sortOrder.value === "asc" ? 1 : -1;
+
+  return data.sort((a, b) => {
+    let aVal: number, bVal: number;
+    if (key === "engagement") {
+      aVal = calculateEngagementRate(a);
+      bVal = calculateEngagementRate(b);
+    } else {
+      aVal = (a[key] as number) || 0;
+      bVal = (b[key] as number) || 0;
+    }
+    return (aVal - bVal) * order;
+  });
+});
+
+// Pagination
+const ITEMS_PER_PAGE = 10;
+const currentPage = ref(1);
+
+const totalPages = computed(() => Math.ceil(sortedContent.value.length / ITEMS_PER_PAGE));
+
+const paginatedContent = computed(() => {
+  const start = (currentPage.value - 1) * ITEMS_PER_PAGE;
+  return sortedContent.value.slice(start, start + ITEMS_PER_PAGE);
+});
+
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+  }
+};
+
+// Reset to page 1 and sort when content changes
+watch(
+  () => props.videos,
+  () => {
+    currentPage.value = 1;
+    sortKey.value = null;
+    sortOrder.value = null;
+  }
+);
 </script>
 
 <template>
   <div class="brutal-card rounded-none overflow-hidden">
     <!-- Header -->
     <div
-      class="p-6 flex items-center justify-between border-b-4 border-black bg-neo-accent dark:bg-[#FF0099] dark:border-[#00F0FF]"
+      class="p-6 flex items-center border-b-4 border-black bg-neo-accent dark:bg-[#FF0099] dark:border-[#00F0FF]"
     >
       <h3 class="text-lg font-bold text-slate-900 dark:text-black">Top Performing Content</h3>
-      <button class="text-primary-600 dark:text-white text-sm font-semibold hover:underline">
-        View All
-      </button>
     </div>
 
     <template v-if="filteredContent.length === 0">
@@ -110,19 +184,100 @@ const hasVideoData = computed(() => {
           >
             <tr>
               <th class="px-4 py-4">Content</th>
-              <th class="px-4 py-4 text-center">Date Created</th>
-              <th v-if="platform !== 'instagram'" class="px-4 py-4 text-center">Duration</th>
-              <th class="px-4 py-4 text-center">Views</th>
-              <th class="px-4 py-4 text-center">Likes</th>
-              <th class="px-4 py-4 text-center">Shares</th>
-              <th class="px-4 py-4 text-center">Saves</th>
-              <th class="px-4 py-4 text-center">Comments</th>
-              <th class="px-4 py-4 text-center">Engagement</th>
+              <th
+                class="px-4 py-4 text-center cursor-pointer select-none hover:text-white transition-colors"
+                @click="toggleSort('created')"
+              >
+                <div class="flex items-center justify-center gap-1">
+                  Date Created
+                  <ArrowDown v-if="sortKey === 'created' && sortOrder === 'desc'" :size="14" />
+                  <ArrowUp v-else-if="sortKey === 'created' && sortOrder === 'asc'" :size="14" />
+                  <ArrowUpDown v-else :size="14" class="opacity-40" />
+                </div>
+              </th>
+              <th
+                v-if="platform !== 'instagram'"
+                class="px-4 py-4 text-center cursor-pointer select-none hover:text-white transition-colors"
+                @click="toggleSort('duration')"
+              >
+                <div class="flex items-center justify-center gap-1">
+                  Duration
+                  <ArrowDown v-if="sortKey === 'duration' && sortOrder === 'desc'" :size="14" />
+                  <ArrowUp v-else-if="sortKey === 'duration' && sortOrder === 'asc'" :size="14" />
+                  <ArrowUpDown v-else :size="14" class="opacity-40" />
+                </div>
+              </th>
+              <th
+                class="px-4 py-4 text-center cursor-pointer select-none hover:text-white transition-colors"
+                @click="toggleSort('views')"
+              >
+                <div class="flex items-center justify-center gap-1">
+                  Views
+                  <ArrowDown v-if="sortKey === 'views' && sortOrder === 'desc'" :size="14" />
+                  <ArrowUp v-else-if="sortKey === 'views' && sortOrder === 'asc'" :size="14" />
+                  <ArrowUpDown v-else :size="14" class="opacity-40" />
+                </div>
+              </th>
+              <th
+                class="px-4 py-4 text-center cursor-pointer select-none hover:text-white transition-colors"
+                @click="toggleSort('likes')"
+              >
+                <div class="flex items-center justify-center gap-1">
+                  Likes
+                  <ArrowDown v-if="sortKey === 'likes' && sortOrder === 'desc'" :size="14" />
+                  <ArrowUp v-else-if="sortKey === 'likes' && sortOrder === 'asc'" :size="14" />
+                  <ArrowUpDown v-else :size="14" class="opacity-40" />
+                </div>
+              </th>
+              <th
+                class="px-4 py-4 text-center cursor-pointer select-none hover:text-white transition-colors"
+                @click="toggleSort('shares')"
+              >
+                <div class="flex items-center justify-center gap-1">
+                  Shares
+                  <ArrowDown v-if="sortKey === 'shares' && sortOrder === 'desc'" :size="14" />
+                  <ArrowUp v-else-if="sortKey === 'shares' && sortOrder === 'asc'" :size="14" />
+                  <ArrowUpDown v-else :size="14" class="opacity-40" />
+                </div>
+              </th>
+              <th
+                class="px-4 py-4 text-center cursor-pointer select-none hover:text-white transition-colors"
+                @click="toggleSort('saves')"
+              >
+                <div class="flex items-center justify-center gap-1">
+                  Saves
+                  <ArrowDown v-if="sortKey === 'saves' && sortOrder === 'desc'" :size="14" />
+                  <ArrowUp v-else-if="sortKey === 'saves' && sortOrder === 'asc'" :size="14" />
+                  <ArrowUpDown v-else :size="14" class="opacity-40" />
+                </div>
+              </th>
+              <th
+                class="px-4 py-4 text-center cursor-pointer select-none hover:text-white transition-colors"
+                @click="toggleSort('comments')"
+              >
+                <div class="flex items-center justify-center gap-1">
+                  Comments
+                  <ArrowDown v-if="sortKey === 'comments' && sortOrder === 'desc'" :size="14" />
+                  <ArrowUp v-else-if="sortKey === 'comments' && sortOrder === 'asc'" :size="14" />
+                  <ArrowUpDown v-else :size="14" class="opacity-40" />
+                </div>
+              </th>
+              <th
+                class="px-4 py-4 text-center cursor-pointer select-none hover:text-white transition-colors"
+                @click="toggleSort('engagement')"
+              >
+                <div class="flex items-center justify-center gap-1">
+                  Engagement
+                  <ArrowDown v-if="sortKey === 'engagement' && sortOrder === 'desc'" :size="14" />
+                  <ArrowUp v-else-if="sortKey === 'engagement' && sortOrder === 'asc'" :size="14" />
+                  <ArrowUpDown v-else :size="14" class="opacity-40" />
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-y-2 divide-black">
             <tr
-              v-for="item in filteredContent"
+              v-for="item in paginatedContent"
               :key="item.id"
               @click="openVideoDetail(item.id)"
               class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group cursor-pointer"
@@ -177,7 +332,7 @@ const hasVideoData = computed(() => {
       <!-- Mobile Cards -->
       <div class="md:hidden flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
         <div
-          v-for="item in filteredContent"
+          v-for="item in paginatedContent"
           :key="item.id"
           @click="openVideoDetail(item.id)"
           class="p-4 flex gap-4 active:bg-slate-50 dark:active:bg-slate-700/50 cursor-pointer"
@@ -211,6 +366,61 @@ const hasVideoData = computed(() => {
         </div>
       </div>
     </template>
+
+    <!-- Pagination -->
+    <div
+      v-if="filteredContent.length > ITEMS_PER_PAGE"
+      class="px-6 py-4 flex items-center justify-between border-t-2 border-black dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
+    >
+      <span class="text-sm font-bold text-slate-500 dark:text-slate-400">
+        Showing {{ (currentPage - 1) * ITEMS_PER_PAGE + 1 }}–{{
+          Math.min(currentPage * ITEMS_PER_PAGE, filteredContent.length)
+        }}
+        of {{ filteredContent.length }}
+      </span>
+
+      <div class="flex items-center gap-1">
+        <button
+          @click="goToPage(currentPage - 1)"
+          :disabled="currentPage === 1"
+          class="px-3 py-1.5 text-sm font-bold border-2 border-black dark:border-white transition-colors"
+          :class="
+            currentPage === 1
+              ? 'opacity-30 cursor-not-allowed bg-slate-100 dark:bg-slate-800'
+              : 'bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-900 dark:text-white'
+          "
+        >
+          Prev
+        </button>
+
+        <button
+          v-for="page in totalPages"
+          :key="page"
+          @click="goToPage(page)"
+          class="w-9 h-9 text-sm font-bold border-2 border-black dark:border-white transition-colors"
+          :class="
+            page === currentPage
+              ? 'bg-black dark:bg-electric text-white dark:text-black'
+              : 'bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-900 dark:text-white'
+          "
+        >
+          {{ page }}
+        </button>
+
+        <button
+          @click="goToPage(currentPage + 1)"
+          :disabled="currentPage === totalPages"
+          class="px-3 py-1.5 text-sm font-bold border-2 border-black dark:border-white transition-colors"
+          :class="
+            currentPage === totalPages
+              ? 'opacity-30 cursor-not-allowed bg-slate-100 dark:bg-slate-800'
+              : 'bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-900 dark:text-white'
+          "
+        >
+          Next
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Video Detail Modal -->

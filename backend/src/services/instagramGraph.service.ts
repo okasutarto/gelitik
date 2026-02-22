@@ -373,6 +373,19 @@ export class InstagramGraphService implements PlatformService {
                 console.log('[InstagramGraph] accounts_engaged error:', e.response?.data?.error?.message || e.message);
             }
 
+            // Try profile_links_taps
+            let profileLinkTaps = 0;
+            try {
+                console.log('[InstagramGraph] Fetching profile_links_taps...');
+                const linkTapsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
+                    params: { metric: 'profile_links_taps', metric_type: 'total_value', period: 'day', since, until, access_token: accessToken }
+                });
+                console.log('[InstagramGraph] profile_links_taps response:', JSON.stringify(linkTapsResponse.data));
+                profileLinkTaps = parseMetricValue(linkTapsResponse.data);
+            } catch (e: any) {
+                console.log('[InstagramGraph] profile_links_taps error:', e.response?.data?.error?.message || e.message);
+            }
+
             console.log('[InstagramGraph] Final values - followers:', followers, 'reach:', reach, 'interactions:', totalInteractions);
 
             // Fetch demographics if the account has enough followers
@@ -450,6 +463,7 @@ export class InstagramGraphService implements PlatformService {
                 shares,
                 saves,
                 profileViews,
+                profileLinkTaps,
                 accountsEngaged,
                 demographics
             };
@@ -472,6 +486,7 @@ export class InstagramGraphService implements PlatformService {
                 shares: 0,
                 saves: 0,
                 profileViews: 0,
+                profileLinkTaps: 0,
                 accountsEngaged: 0,
                 demographics: {
                     gender: [],

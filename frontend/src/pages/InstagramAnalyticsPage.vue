@@ -1,33 +1,23 @@
 <script setup lang="ts">
 import { onMounted, computed, ref } from "vue";
 import { useRoute } from "vue-router";
-import {
-  Users,
-  UserPlus,
-  Layers,
-  Heart,
-  UserCheck,
-  Activity,
-  Bookmark,
-  Calendar,
-  ChevronDown,
-} from "lucide-vue-next";
+import { Eye, Heart, UserCheck, Activity, Calendar, ChevronDown } from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
-import StatCard from "@/components/dashboard/StatCard.vue";
+import InsightCard from "@/components/dashboard/InsightCard.vue";
 import UserProfile from "@/components/dashboard/UserProfile.vue";
 import AudienceChart from "@/components/dashboard/AudienceChart.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
 import GenderSplitPanel from "@/components/dashboard/GenderSplitPanel.vue";
 import TopCitiesPanel from "@/components/dashboard/TopCitiesPanel.vue";
 import AgeRangePanel from "@/components/dashboard/AgeRangePanel.vue";
-import StatCardSkeleton from "@/components/loading/StatCardSkeleton.vue";
+
 import UserProfileSkeleton from "@/components/loading/UserProfileSkeleton.vue";
 import ChartSkeleton from "@/components/loading/ChartSkeleton.vue";
 import ContentTableSkeleton from "@/components/loading/ContentTableSkeleton.vue";
 import { usePlatformAnalytics } from "@/composables/usePlatformAnalytics";
 import { useRouter } from "vue-router";
-import { formatNumber } from "@/utils/format";
+
 import { useToast } from "@/composables/useToast";
 import type { AxiosError } from "axios";
 
@@ -119,8 +109,8 @@ const media = computed(() => {
         // The frontend ContentTable expects view_count, likes, comments, shares, saves
         view_count:
           m.media_type === "VIDEO" || m.media_product_type === "REELS"
-            ? m.video_views || m.impressions || m.reach || 0
-            : m.impressions || m.reach || 0,
+            ? m.video_views || m.views || m.reach || 0
+            : m.views || m.reach || 0,
         like_count: m.like_count || 0,
         comment_count: m.comment_count || 0,
         share_count: m.share_count || 0,
@@ -132,92 +122,63 @@ const media = computed(() => {
     : [];
 });
 
-// Format stats for metric cards
-const instagramStats = computed(() => {
+// Combined insight cards matching official Instagram dashboard
+const insightCards = computed(() => {
   const data = accountData.value?.data as any;
   if (!data) return [];
 
-  // Handle Instagram Graph API format
   if (isGraphApi.value && data.insights) {
     const insights = data.insights;
-    const reach = insights.reach || 0;
-    const totalInteractions = insights.totalInteractions || 0;
-    const engagementRate = reach > 0 ? (totalInteractions / reach) * 100 : 0;
 
     return [
       {
-        title: "Accounts Reached",
-        value: formatNumber(reach),
-        change: "8.4%",
-        changeType: "up" as const,
-        icon: UserPlus,
-        subtitle: "Unique accounts",
+        title: "Views",
+        value: insights.views || 0,
+        subtitle: "Content plays & displays",
+        description:
+          "The number of times your content was played or displayed. Content includes reels, posts, stories, videos, live videos and ads.",
+        icon: Eye,
+        subMetrics: [{ label: "Accounts reached", value: insights.reach || 0 }],
       },
       {
-        title: "Profile Views",
-        value: formatNumber(insights.profileViews || 0),
-        change: "10%",
-        changeType: "up" as const,
-        icon: UserCheck,
-        subtitle: "Profile visits",
-      },
-      {
-        title: "Accounts Engaged",
-        value: formatNumber(insights.accountsEngaged || 0),
-        change: "6.2%",
-        changeType: "up" as const,
-        icon: Activity,
-        subtitle: "Engaged with content",
-      },
-      {
-        title: "Saves",
-        value: formatNumber(insights.saves || 0),
-        change: "",
-        changeType: "up" as const,
-        icon: Bookmark,
-        subtitle: "Content saves",
-      },
-      {
-        title: "Engagement Rate",
-        value: engagementRate.toFixed(2) + "%",
-        change: "2.1%",
-        changeType: "up" as const,
+        title: "Interactions",
+        value: insights.totalInteractions || 0,
+        subtitle: "Likes, comments, shares & saves",
+        description:
+          "The total number of interactions on your content, including likes, saves, comments, shares and replies. Includes interactions on boosted content.",
         icon: Heart,
-        subtitle: `${formatNumber(totalInteractions)} total interactions`,
+        subMetrics: [{ label: "Accounts engaged", value: insights.accountsEngaged || 0 }],
+      },
+      {
+        title: "Profile",
+        value: insights.profileViews || 0,
+        subtitle: "Profile activity",
+        description:
+          "These insights measure the number of actions people take when they engage with your profile, including profile visits and external link taps.",
+        icon: UserCheck,
+        subMetrics: [
+          { label: "Profile visits", value: insights.profileViews || 0 },
+          { label: "External link taps", value: insights.profileLinkTaps || 0 },
+        ],
+      },
+      {
+        title: "Engagement",
+        value: insights.saves || 0,
+        subtitle: "Content saves",
+        description:
+          "A breakdown of engagement actions on your content: likes, comments, shares and saves. These metrics help you understand how your audience interacts with your posts.",
+        icon: Activity,
+        subMetrics: [
+          { label: "Likes", value: insights.likes || 0 },
+          { label: "Comments", value: insights.comments || 0 },
+          { label: "Shares", value: insights.shares || 0 },
+          { label: "Saves", value: insights.saves || 0 },
+        ],
       },
     ];
   }
 
-  // Handle Instagram Basic API format
-  if (!data?.analytics) return [];
-
-  const analytics = data.analytics;
-  return [
-    {
-      title: "Accounts Reached",
-      value: formatNumber(analytics.followers || 0),
-      change: "5%",
-      changeType: "up" as const,
-      icon: Users,
-      subtitle: "+5% new accounts",
-    },
-    {
-      title: "Profile Visits",
-      value: "12.5K",
-      change: "8.4%",
-      changeType: "up" as const,
-      icon: UserPlus,
-      subtitle: "From bio link",
-    },
-    {
-      title: "Stories Reach",
-      value: "45.2K",
-      change: "18%",
-      changeType: "up" as const,
-      icon: Layers,
-      subtitle: "Avg per story",
-    },
-  ];
+  return [];
 });
 
 onMounted(() => {
@@ -239,13 +200,13 @@ onMounted(() => {
     <UserProfileSkeleton v-else-if="loading" />
 
     <!-- Filter Actions Row -->
-    <div class="flex justify-end mt-6 mb-6 relative z-50">
+    <div class="flex justify-end mt-6 relative">
       <div class="relative">
         <button
           @click="isDropdownOpen = !isDropdownOpen"
           class="flex items-center gap-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-4 py-2 border-2 border-black dark:border-white font-bold brutal-hover-lift group"
         >
-          <Calendar :size="18" class="text-electric" />
+          <Calendar :size="18" class="text-neo-accent dark:text-electric" />
           {{ selectedTimeframeLabel }}
           <ChevronDown
             :size="18"
@@ -267,7 +228,7 @@ onMounted(() => {
             {{ tf.label }}
             <svg
               v-if="selectedTimeframe === tf.value"
-              class="w-4 h-4 text-electric"
+              class="w-4 h-4 text-neo-accent dark:text-electric"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -284,22 +245,21 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Stat Cards Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 my-8">
+    <!-- Insight Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 mt-6">
       <template v-if="loading">
-        <StatCardSkeleton :count="5" />
+        <InsightCard v-for="i in 4" :key="i" :title="''" :value="0" :loading="true" />
       </template>
       <template v-else>
-        <StatCard
-          v-for="stat in instagramStats"
-          :key="stat.title"
-          :title="stat.title"
-          :value="stat.value"
-          :change="stat.change"
-          :change-type="stat.changeType"
-          :icon="stat.icon"
-          :subtitle="stat.subtitle"
-          platform="instagram"
+        <InsightCard
+          v-for="card in insightCards"
+          :key="card.title"
+          :title="card.title"
+          :value="card.value"
+          :subtitle="card.subtitle"
+          :description="card.description"
+          :icon="card.icon"
+          :sub-metrics="card.subMetrics"
         />
       </template>
     </div>

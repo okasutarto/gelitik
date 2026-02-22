@@ -72,8 +72,9 @@ router.get('/:platform', async (req, res) => {
             // Use Basic Display API
             data = await instagramService.getAnalytics(accessToken, account.accountId, new Date(), new Date());
         } else if (platform === 'instagram-graph') {
+            const timeframe = (req.query.timeframe as string) || 'this_week';
             // Use Graph API for full insights
-            const analyticsData = await instagramGraphService.getAnalytics(accessToken, account.accountId, new Date(), new Date());
+            const analyticsData = await instagramGraphService.getAnalytics(accessToken, account.accountId, new Date(), new Date(), timeframe);
             data = {
                 profile: analyticsData.profile,
                 insights: analyticsData.insights,
@@ -88,7 +89,20 @@ router.get('/:platform', async (req, res) => {
             };
         }
 
-        res.json({ account, data });
+        const sanitizedAccount = {
+            id: account.id,
+            platform: account.platform,
+            accountId: account.accountId,
+            displayName: account.displayName,
+            username: account.username,
+            avatar: account.avatar,
+            isActive: account.isActive,
+            expiresAt: account.expiresAt,
+            createdAt: account.createdAt,
+            updatedAt: account.updatedAt
+        };
+
+        res.json({ account: sanitizedAccount, data });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: `Failed to fetch ${platform} analytics` });

@@ -44,7 +44,6 @@ export class TikTokService implements PlatformService {
       const userInfo = await this.getUserInfo(tokenData.access_token) as TikTokUserInfo;
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('[TikTok] userInfo object:', userInfo);
       }
 
       return {
@@ -93,8 +92,6 @@ export class TikTokService implements PlatformService {
       });
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('[TikTok] Token response:', response.data);
-        console.log('[TikTok] Token scopes:', response.data.scope);
       }
 
       return response.data;
@@ -146,7 +143,7 @@ export class TikTokService implements PlatformService {
     try {
       const params: any = {
         max_count: maxCount,
-        fields: 'id,video_description,create_time,like_count,comment_count,share_count,view_count,cover_image_url,embed_link,duration,height,width'
+        fields: 'id,title,video_description,create_time,like_count,comment_count,share_count,view_count,cover_image_url,embed_link,duration,height,width'
       };
 
       if (cursor) {
@@ -166,7 +163,6 @@ export class TikTokService implements PlatformService {
       );
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('[TikTok] Videos response:', response.data);
       }
 
       const videos = response.data?.data?.videos || [];
@@ -288,7 +284,6 @@ export class TikTokService implements PlatformService {
       );
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('[TikTok] Video query response:', response.data);
       }
 
       const videos = response.data?.data?.videos || [];

@@ -38,6 +38,10 @@ prisma/*.db-journal
 .cache/
 tmp/
 
+# Development utilities
+backend/get_token.ts
+backend/test_*.ts
+
 # Opencode
 .opencode/
 

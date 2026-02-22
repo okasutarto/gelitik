@@ -39,7 +39,11 @@ withDefaults(defineProps<Props>(), {
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <a
-              href="https://www.tiktok.com/@okasp.dev"
+              :href="
+                platform === 'instagram'
+                  ? `https://instagram.com/${userInfo.name}`
+                  : `https://www.tiktok.com/@${userInfo.name}`
+              "
               target="_blank"
               class="text-xl md:text-2xl font-black text-slate-900 dark:text-white hover:underline"
             >
@@ -80,10 +84,10 @@ withDefaults(defineProps<Props>(), {
       <div class="flex items-center gap-1.5">
         <span
           class="text-slate-500 dark:text-electric/70 text-xs font-black uppercase tracking-tighter"
-          >Likes</span
+          >Posts</span
         >
         <span class="font-mono font-bold text-slate-900 dark:text-white text-lg">{{
-          formatNumber(userInfo.likes_count || 0)
+          formatNumber(userInfo.videos_count || 0)
         }}</span>
       </div>
     </div>

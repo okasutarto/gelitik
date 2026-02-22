@@ -16,13 +16,28 @@ import { useRouter } from "vue-router";
 import { formatNumber } from "@/utils/format";
 import { useToast } from "@/composables/useToast";
 import type { AxiosError } from "axios";
+import type { Video } from "@/types/video";
 
 const router = useRouter();
 const toast = useToast();
 const { loading, accountData, fetchAnalytics } = usePlatformAnalytics("tiktok");
 
-const userData = computed(() => accountData.value?.data?.userInfo || null);
-const videos = computed(() => accountData.value?.data?.videos || []);
+const userData = computed(() => {
+  const info = accountData.value?.data?.userInfo as any;
+  if (!info) return null;
+  return {
+    id: info.open_id || "",
+    name: info.display_name || "",
+    avatar_url: info.avatar_url || "",
+    followers_count: info.follower_count || 0,
+    following_count: info.following_count || 0,
+    likes_count: info.likes_count || 0,
+    videos_count: info.video_count || 0,
+    bio: info.bio_description || "",
+    is_verified: info.is_verified || false,
+  };
+});
+const videos = computed<Video[]>(() => (accountData.value?.data?.videos as Video[]) || []);
 
 const tiktokStats = computed(() => {
   if (!userData.value) return [];

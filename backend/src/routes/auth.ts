@@ -2,7 +2,7 @@ import express from 'express';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import { prisma } from '../app';
+import prisma from '../config/prisma';
 import { generateToken } from '../middleware/auth';
 
 const router = express.Router();
@@ -16,7 +16,7 @@ passport.use(new JwtStrategy({
     const user = await prisma.user.findUnique({
       where: { id: payload.userId }
     });
-    
+
     if (user) {
       return done(null, user);
     }
@@ -36,20 +36,20 @@ passport.use(new GoogleStrategy({
     let user = await prisma.user.findUnique({
       where: { googleId: profile.id }
     });
- 
+
     if (user) {
       return done(null, user);
     }
- 
+
     user = await prisma.user.create({
       data: {
         googleId: profile.id,
-        email: profile.emails?.[0]?.value,
+        email: profile.emails?.[0]?.value || '',
         name: profile.displayName,
         avatar: profile.photos?.[0]?.value
       }
     });
- 
+
     return done(null, user);
   } catch (error) {
     return done(error, undefined);
@@ -73,9 +73,9 @@ passport.deserializeUser(async (id: string, done) => {
 });
 
 // Auth routes
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] })); 
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-router.get('/google/callback', 
+router.get('/google/callback',
   passport.authenticate('google', { session: false }),
   (req, res) => {
     const token = generateToken((req.user as any).id);
@@ -87,7 +87,7 @@ router.get('/google/callback',
 router.get('/me', passport.authenticate('jwt', { session: false }), async (req, res) => {
   try {
     const user = req.user as any;
-    
+
     const fullUser = await prisma.user.findUnique({
       where: { id: user.id },
       include: {
@@ -103,7 +103,7 @@ router.get('/me', passport.authenticate('jwt', { session: false }), async (req, 
         }
       }
     });
-    
+
     res.json({
       success: true,
       data: fullUser

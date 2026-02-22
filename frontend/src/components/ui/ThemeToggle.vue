@@ -10,11 +10,10 @@ const { isDark, toggleTheme } = useTheme();
     @click="toggleTheme"
     :class="[
       'p-3 border-neo-3 border-black cursor-pointer transition-transform shadow-neo-hard-sm',
-      isDark
-        ? 'bg-navy border-electric text-electric shadow-brutal-cyber'
-        : 'bg-cyber text-black',
+      isDark ? 'bg-navy border-electric text-electric shadow-brutal-cyber' : 'bg-cyber text-black',
     ]"
-    :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
+    :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+  >
     <Sun v-if="isDark" :size="24" :stroke-width="2" />
     <Moon v-else :size="24" :stroke-width="2" />
   </button>

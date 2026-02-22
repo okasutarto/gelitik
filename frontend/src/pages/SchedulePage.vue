@@ -42,15 +42,14 @@ const handleCreatePost = () => {
         :current-date="selectedDate"
         @prev-month="handlePrevMonth"
         @next-month="handleNextMonth"
-        @create-post="handleCreatePost" />
+        @create-post="handleCreatePost"
+      />
 
       <!-- Calendar Grid -->
       <CalendarView />
 
       <!-- Create Post Modal -->
-      <CreatePostModal
-        :is-open="isCreateModalOpen"
-        @close="isCreateModalOpen = false" />
+      <CreatePostModal :is-open="isCreateModalOpen" @close="isCreateModalOpen = false" />
     </div>
   </DashboardLayout>
 </template>

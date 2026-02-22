@@ -6,7 +6,7 @@ import { formatNumber } from "@/utils/format";
 // Define the precise prop types
 const props = defineProps<{
   show: boolean;
-  videoData: Record<string, unknown> | null;
+  videoData: any;
 }>();
 
 const emit = defineEmits<{

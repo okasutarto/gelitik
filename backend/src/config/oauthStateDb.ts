@@ -84,7 +84,6 @@ export class OAuthStateDb {
     });
 
     if (result.count > 0) {
-      console.log(`[OAuthStateDb] Cleaned up ${result.count} expired states`);
     }
 
     return result.count;

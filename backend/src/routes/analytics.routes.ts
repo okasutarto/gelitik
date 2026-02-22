@@ -73,7 +73,6 @@ router.get('/:platform', async (req, res) => {
             data = await instagramService.getAnalytics(accessToken, account.accountId, new Date(), new Date());
         } else if (platform === 'instagram-graph') {
             const timeframe = (req.query.timeframe as string) || 'this_week';
-            console.log('[Route] Instagram Graph - received timeframe:', req.query.timeframe, '-> using:', timeframe);
             // Use Graph API for full insights
             const analyticsData = await instagramGraphService.getAnalytics(accessToken, account.accountId, new Date(), new Date(), timeframe);
             data = {

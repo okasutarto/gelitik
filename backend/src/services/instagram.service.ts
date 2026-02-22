@@ -40,7 +40,6 @@ export class InstagramService implements PlatformService {
         );
 
         const { access_token, user_id } = tokenResponse.data;
-        console.log('[Instagram Basic] Short-lived token obtained for user_id:', user_id);
 
         // 2. Exchange for Long-lived Token (valid for 60 days)
         const longLivedResponse = await axios.get('https://graph.instagram.com/access_token', {
@@ -53,11 +52,9 @@ export class InstagramService implements PlatformService {
 
         const longLivedToken = longLivedResponse.data.access_token;
         const expiresIn = longLivedResponse.data.expires_in;
-        console.log('[Instagram Basic] Long-lived token obtained, expires in:', expiresIn, 'seconds');
 
         // 3. Get User Profile
         const userProfile = await this.getProfile(longLivedToken);
-        console.log('[Instagram Basic] Profile fetched:', userProfile.username);
 
         return {
             accessToken: longLivedToken,

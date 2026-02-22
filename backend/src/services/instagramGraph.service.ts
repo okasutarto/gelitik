@@ -66,7 +66,6 @@ export class InstagramGraphService implements PlatformService {
         );
 
         const shortLivedToken = tokenResponse.data.access_token;
-        console.log('[Instagram Graph] Short-lived token obtained');
 
         // 2. Exchange for long-lived User Access Token (60 days)
         const longLivedResponse = await axios.get(`${this.graphUrl}/oauth/access_token`, {
@@ -80,11 +79,9 @@ export class InstagramGraphService implements PlatformService {
 
         const accessToken = longLivedResponse.data.access_token;
         const expiresIn = longLivedResponse.data.expires_in;
-        console.log('[Instagram Graph] Long-lived token obtained, expires in:', expiresIn, 'seconds');
 
         // 3. Get Instagram Business Account linked to Facebook Pages
         const userInfo = await this.getInstagramAccount(accessToken);
-        console.log('[Instagram Graph] Instagram account found:', userInfo.username);
 
         // 4. Get full profile details
         const profile = await this.getProfile(accessToken);
@@ -176,7 +173,6 @@ export class InstagramGraphService implements PlatformService {
      */
     async getInsights(accessToken: string, timeframe: string = 'this_week'): Promise<any> {
         const igAccount = await this.getInstagramAccount(accessToken);
-        console.log('[InstagramGraph] Getting insights for account:', igAccount.id, igAccount.username);
 
         // Helper to parse metric value - handles both regular and total_value formats
         const parseMetricValue = (responseData: any): number => {
@@ -197,19 +193,16 @@ export class InstagramGraphService implements PlatformService {
             let mediaCount = 0;
             let followsCount = 0;
             try {
-                console.log('[InstagramGraph] Fetching profile data for follower count...');
                 const profileResponse = await axios.get(`${this.graphUrl}/${igAccount.id}`, {
                     params: {
                         fields: 'followers_count,follows_count,media_count',
                         access_token: accessToken
                     }
                 });
-                console.log('[InstagramGraph] profile response:', JSON.stringify(profileResponse.data));
                 followers = profileResponse.data.followers_count || 0;
                 mediaCount = profileResponse.data.media_count || 0;
                 followsCount = profileResponse.data.follows_count || 0;
             } catch (e2: any) {
-                console.log('[InstagramGraph] profile error:', e2.response?.data?.error?.message || e2.message);
             }
 
             // Determine since/until based on timeframe
@@ -241,7 +234,6 @@ export class InstagramGraphService implements PlatformService {
             let reach = 0;
             let views = 0; // This will hold "views" (total content views including repeats)
             try {
-                console.log('[InstagramGraph] Fetching reach...');
                 const reachResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: {
                         metric: 'reach',
@@ -252,7 +244,6 @@ export class InstagramGraphService implements PlatformService {
                         access_token: accessToken
                     }
                 });
-                console.log('[InstagramGraph] reach response:', JSON.stringify(reachResponse.data));
                 reach = parseMetricValue(reachResponse.data);
             } catch (e: any) {
                 console.error('[InstagramGraph] reach error:', e.response?.data || e.message);
@@ -260,7 +251,6 @@ export class InstagramGraphService implements PlatformService {
 
             // Try views (total content views - matches "Views" on official dashboard)
             try {
-                console.log('[InstagramGraph] Fetching views...');
                 const viewsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: {
                         metric: 'views',
@@ -271,7 +261,6 @@ export class InstagramGraphService implements PlatformService {
                         access_token: accessToken
                     }
                 });
-                console.log('[InstagramGraph] views response:', JSON.stringify(viewsResponse.data));
                 views = parseMetricValue(viewsResponse.data);
             } catch (e: any) {
                 console.error('[InstagramGraph] views error:', e.response?.data?.error?.message || e.message);
@@ -283,11 +272,9 @@ export class InstagramGraphService implements PlatformService {
 
             // Try likes
             try {
-                console.log('[InstagramGraph] Fetching likes...');
                 const likesResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: { metric: 'likes', metric_type: 'total_value', period: 'day', since, until, access_token: accessToken }
                 });
-                console.log('[InstagramGraph] likes response:', JSON.stringify(likesResponse.data));
                 likes = parseMetricValue(likesResponse.data);
             } catch (e: any) {
                 console.error('[InstagramGraph] likes error:', e.response?.data?.error?.message || e.message);
@@ -295,11 +282,9 @@ export class InstagramGraphService implements PlatformService {
 
             // Try comments
             try {
-                console.log('[InstagramGraph] Fetching comments...');
                 const commentsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: { metric: 'comments', metric_type: 'total_value', period: 'day', since, until, access_token: accessToken }
                 });
-                console.log('[InstagramGraph] comments response:', JSON.stringify(commentsResponse.data));
                 comments = parseMetricValue(commentsResponse.data);
             } catch (e: any) {
                 console.error('[InstagramGraph] comments error:', e.response?.data?.error?.message || e.message);
@@ -307,11 +292,9 @@ export class InstagramGraphService implements PlatformService {
 
             // Try shares
             try {
-                console.log('[InstagramGraph] Fetching shares...');
                 const sharesResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: { metric: 'shares', metric_type: 'total_value', period: 'day', since, until, access_token: accessToken }
                 });
-                console.log('[InstagramGraph] shares response:', JSON.stringify(sharesResponse.data));
                 shares = parseMetricValue(sharesResponse.data);
             } catch (e: any) {
                 console.error('[InstagramGraph] shares error:', e.response?.data?.error?.message || e.message);
@@ -322,11 +305,9 @@ export class InstagramGraphService implements PlatformService {
             // Try saves
             let saves = 0;
             try {
-                console.log('[InstagramGraph] Fetching saves...');
                 const savesResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: { metric: 'saves', metric_type: 'total_value', period: 'day', since, until, access_token: accessToken }
                 });
-                console.log('[InstagramGraph] saves response:', JSON.stringify(savesResponse.data));
                 saves = parseMetricValue(savesResponse.data);
             } catch (e: any) {
                 console.error('[InstagramGraph] saves error:', e.response?.data?.error?.message || e.message);
@@ -337,7 +318,6 @@ export class InstagramGraphService implements PlatformService {
             // Try profile_views
             let profileViews = 0;
             try {
-                console.log('[InstagramGraph] Fetching profile_views...');
                 const profileViewsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: {
                       metric: 'profile_views',
@@ -347,16 +327,13 @@ export class InstagramGraphService implements PlatformService {
                       until,
                       access_token: accessToken }
                 });
-                console.log('[InstagramGraph] profile_views response:', JSON.stringify(profileViewsResponse.data));
                 profileViews = parseMetricValue(profileViewsResponse.data);
             } catch (e: any) {
-                console.log('[InstagramGraph] profile_views error:', e.response?.data?.error?.message || e.message);
             }
 
             // Try accounts_engaged
             let accountsEngaged = 0;
             try {
-                console.log('[InstagramGraph] Fetching accounts_engaged...');
                 const accountsEngagedResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: {
                       metric: 'accounts_engaged',
@@ -367,26 +344,20 @@ export class InstagramGraphService implements PlatformService {
                       access_token: accessToken
                     }
                 });
-                console.log('[InstagramGraph] accounts_engaged response:', JSON.stringify(accountsEngagedResponse.data));
                 accountsEngaged = parseMetricValue(accountsEngagedResponse.data);
             } catch (e: any) {
-                console.log('[InstagramGraph] accounts_engaged error:', e.response?.data?.error?.message || e.message);
             }
 
             // Try profile_links_taps
             let profileLinkTaps = 0;
             try {
-                console.log('[InstagramGraph] Fetching profile_links_taps...');
                 const linkTapsResponse = await axios.get(`${this.graphUrl}/${igAccount.id}/insights`, {
                     params: { metric: 'profile_links_taps', metric_type: 'total_value', period: 'day', since, until, access_token: accessToken }
                 });
-                console.log('[InstagramGraph] profile_links_taps response:', JSON.stringify(linkTapsResponse.data));
                 profileLinkTaps = parseMetricValue(linkTapsResponse.data);
             } catch (e: any) {
-                console.log('[InstagramGraph] profile_links_taps error:', e.response?.data?.error?.message || e.message);
             }
 
-            console.log('[InstagramGraph] Final values - followers:', followers, 'reach:', reach, 'interactions:', totalInteractions);
 
             // Fetch demographics if the account has enough followers
             let demographics = {
@@ -447,7 +418,6 @@ export class InstagramGraphService implements PlatformService {
                         cities: cities.map((c: any) => ({ name: c.name, percentage: Math.round((c.count / totalCityCount) * 100) })) // Map to 'name' for TopCitiesPanel
                     };
                 } catch (e: any) {
-                    console.log('[InstagramGraph] Demographics error:', e.response?.data?.error?.message || e.message);
                 }
             }
 
@@ -468,7 +438,6 @@ export class InstagramGraphService implements PlatformService {
                 demographics
             };
 
-            console.log('\n[InstagramGraph] === FETCHED USER INSIGHTS DATA ===\n', JSON.stringify(userInsightsData, null, 2), '\n================================================\n');
 
             return userInsightsData;
         } catch (error: any) {
@@ -549,7 +518,6 @@ export class InstagramGraphService implements PlatformService {
                     media.video_views = media.views || media.reach || 0;
                 }
             } catch (e: any) {
-                console.log('[InstagramGraph] insights error for media', media.id, ':', e.response?.data?.error?.message || e.message);
                 media.video_views = 0;
                 media.views = 0;
                 media.reach = 0;
@@ -616,11 +584,6 @@ export class InstagramGraphService implements PlatformService {
 
         insights.following = profile.follows_count || 0;
 
-        console.log(`\n[InstagramGraph] === FINAL INSIGHTS ===`);
-        console.log(`  Reach: ${insights.reach}, Views: ${insights.views}`);
-        console.log(`  Likes: ${insights.likes}, Comments: ${insights.comments}, Shares: ${insights.shares}, Saves: ${insights.saves}`);
-        console.log(`  Total Interactions: ${insights.totalInteractions}`);
-        console.log('================================================\n');
 
         return {
             profile,

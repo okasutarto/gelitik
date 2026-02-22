@@ -59,8 +59,8 @@ const availablePlatforms = [
     description: "Advanced insights, analytics & publishing (requires Facebook page)",
     icon: Instagram,
     iconColor: "text-pink-600",
-    badge: "Available",
     badgeColor: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+    disabled: false,
   },
   {
     id: "instagram",
@@ -68,8 +68,8 @@ const availablePlatforms = [
     description: "Basic profile & media access",
     icon: Instagram,
     iconColor: "text-pink-400",
-    badge: "Available",
     badgeColor: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+    disabled: false,
   },
   {
     id: "tiktok",
@@ -77,6 +77,7 @@ const availablePlatforms = [
     description: "Connect your TikTok account",
     icon: Music2,
     iconColor: "text-slate-900 dark:text-white",
+    disabled: false,
   },
 ];
 
@@ -94,7 +95,6 @@ const fetchAccounts = async () => {
 const connectPlatform = async (platform: string) => {
   try {
     if (import.meta.env.DEV) {
-      console.log(`[Connections] Connecting to ${platform}...`);
     }
 
     // instagram-graph has its own dedicated route; others use generic /auth/:platform/connect
@@ -105,12 +105,10 @@ const connectPlatform = async (platform: string) => {
 
     const { data } = await api.get(connectUrl);
     if (import.meta.env.DEV) {
-      console.log(`[Connections] Response:`, data);
     }
 
     if (data.success && data.data.authUrl) {
       if (import.meta.env.DEV) {
-        console.log(`[Connections] Redirecting to ${platform} auth...`, data.data.authUrl);
       }
       window.location.href = data.data.authUrl;
     } else {
@@ -246,13 +244,6 @@ onMounted(() => {
           <div class="flex items-center gap-3 w-full">
             <component :is="platform.icon" :size="24" :class="platform.iconColor" />
             <span class="font-bold text-lg">Connect {{ platform.name }}</span>
-            <span
-              v-if="platform.badge"
-              :class="platform.badgeColor"
-              class="ml-auto text-xs font-bold px-2 py-0.5 rounded uppercase"
-            >
-              {{ platform.badge }}
-            </span>
           </div>
           <p
             v-if="platform.description"

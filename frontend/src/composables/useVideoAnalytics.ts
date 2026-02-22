@@ -23,7 +23,7 @@ export function useVideoAnalytics() {
       return data;
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        error.value = err.response?.data?.error || "Failed to fetch video analytics";
+        error.value = (err.response?.data as any)?.error || "Failed to fetch video analytics";
       } else {
         error.value = "Failed to fetch video analytics";
       }

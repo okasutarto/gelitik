@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const engagementData = computed(() => {
   if (!props.videos || props.videos.length === 0) {
-    return { likes: 0, comments: 0, shares: 0 };
+    return { likes: 0, comments: 0, shares: 0, total: 0 };
   }
 
   const totalLikes = props.videos.reduce((sum, v) => sum + (v.like_count || 0), 0);

@@ -16,6 +16,7 @@ import { useRouter } from "vue-router";
 import { formatNumber } from "@/utils/format";
 import { useToast } from "@/composables/useToast";
 import type { AxiosError } from "axios";
+import type { Video } from "@/types/video";
 
 const router = useRouter();
 const toast = useToast();
@@ -36,7 +37,7 @@ const userData = computed(() => {
     is_verified: info.is_verified || false,
   };
 });
-const videos = computed(() => accountData.value?.data?.videos || []);
+const videos = computed<Video[]>(() => (accountData.value?.data?.videos as Video[]) || []);
 
 const tiktokStats = computed(() => {
   if (!userData.value) return [];

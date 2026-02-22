@@ -48,10 +48,10 @@ app.use(cors({
       // In development, allow all origins
       return callback(null, true);
     }
-    
+
     // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
-    
+
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {

@@ -113,7 +113,7 @@ const chartOptions = computed(() => ({
         label: (context: TooltipItem<"bar">) => {
           const video = displayedVideos.value[context.dataIndex];
           if (!video) return "";
-          const value = context.parsed.y;
+          const value = context.parsed.y || 0;
 
           if (sortBy.value === "engagement") {
             return `${sortBy.value.charAt(0).toUpperCase() + sortBy.value.slice(1)}: ${value.toFixed(2)}%`;

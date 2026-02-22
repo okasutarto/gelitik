@@ -1,10 +1,10 @@
-import { ref, type ComponentPublicInstance } from "vue";
+import { ref } from "vue";
 
 // Global toast state
-const toastContainerRef = ref<ComponentPublicInstance | null>(null);
+const toastContainerRef = ref<any>(null);
 
 export function useToast() {
-  const setToastContainer = (ref: ComponentPublicInstance) => {
+  const setToastContainer = (ref: any) => {
     toastContainerRef.value = ref;
   };
 

@@ -85,6 +85,9 @@ const getBarClass = (group: AgeGroup) => {
           :key="group.label"
           class="flex flex-col items-center justify-end gap-2 group h-full"
         >
+          <span class="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">
+            {{ group.percentage }}%
+          </span>
           <div
             :class="['w-8 rounded-t transition-colors group-hover:opacity-80', getBarClass(group)]"
             :style="{ height: getBarHeight(group.percentage) }"

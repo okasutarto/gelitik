@@ -62,7 +62,7 @@ const getBarColor = (index: number) => {
           <span class="text-sm text-slate-600 dark:text-slate-300 min-w-[80px]">
             {{ city.name }}
           </span>
-          <div class="flex-1 mx-4 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+          <div class="flex-1 mx-4 h-2 bg-slate-300 dark:bg-slate-700 rounded-full overflow-hidden">
             <div
               :class="['h-full rounded-full transition-all', getBarColor(index)]"
               :style="{ width: `${city.percentage}%` }"

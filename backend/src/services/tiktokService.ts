@@ -43,9 +43,6 @@ export class TikTokService implements PlatformService {
       const tokenData = await this.exchangeCodeForToken(code, codeVerifier);
       const userInfo = await this.getUserInfo(tokenData.access_token) as TikTokUserInfo;
 
-      if (process.env.NODE_ENV === 'development') {
-      }
-
       return {
         accessToken: tokenData.access_token,
         refreshToken: tokenData.refresh_token,
@@ -90,9 +87,6 @@ export class TikTokService implements PlatformService {
           'Content-Type': 'application/x-www-form-urlencoded'
         }
       });
-
-      if (process.env.NODE_ENV === 'development') {
-      }
 
       return response.data;
     } catch (error) {
@@ -161,9 +155,6 @@ export class TikTokService implements PlatformService {
           }
         }
       );
-
-      if (process.env.NODE_ENV === 'development') {
-      }
 
       const videos = response.data?.data?.videos || [];
       return {
@@ -314,9 +305,6 @@ export class TikTokService implements PlatformService {
           }
         }
       );
-
-      if (process.env.NODE_ENV === 'development') {
-      }
 
       const videos = response.data?.data?.videos || [];
 

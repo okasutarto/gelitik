@@ -29,7 +29,7 @@ export class InstagramGraphService implements PlatformService {
         this.appId = process.env.INSTAGRAM_APP_ID || '';
         this.appSecret = process.env.INSTAGRAM_APP_SECRET || '';
         // But use the Graph API callback URL
-        this.redirectUri = process.env.INSTAGRAM_GRAPH_REDIRECT_URI || 'http://localhost:3000/auth/instagram-graph/callback';
+        this.redirectUri = process.env.INSTAGRAM_GRAPH_REDIRECT_URI || (() => { throw new Error('INSTAGRAM_GRAPH_REDIRECT_URI environment variable is required'); })();
         // Initialize cache with 60-second Time To Live (TTL)
         this.cache = new NodeCache({ stdTTL: 60 });
     }
@@ -566,7 +566,6 @@ export class InstagramGraphService implements PlatformService {
         const cachedData = this.cache.get(cacheKey);
 
         if (cachedData) {
-            console.log('[InstagramGraph] Serving getAnalytics from cache');
             return cachedData;
         }
 

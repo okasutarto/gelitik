@@ -99,9 +99,9 @@ const formattedDelta = (val: number) => {
           </h3>
         </div>
         <div
-          class="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center bg-white dark:bg-slate-800"
+          class="size-11 rounded-full border-3 border-black dark:border-electric flex items-center justify-center bg-neo-accent dark:bg-hotpink"
         >
-          <component :is="icon" class="text-neo-accent dark:text-electric" />
+          <component :is="icon" :size="22" class="text-black dark:text-navy" :stroke-width="2" />
         </div>
       </div>
 

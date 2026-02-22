@@ -84,9 +84,9 @@ const showTooltip = ref(false);
         </div>
         <div
           v-if="icon"
-          class="w-10 h-10 rounded-full border-2 border-black dark:border-white flex items-center justify-center bg-white dark:bg-slate-800"
+          class="size-11 rounded-full border-3 border-black dark:border-electric flex items-center justify-center bg-neo-accent dark:bg-hotpink"
         >
-          <component :is="icon" :size="18" class="text-neo-accent dark:text-electric" />
+          <component :is="icon" :size="22" class="text-black dark:text-navy" :stroke-width="2" />
         </div>
       </div>
 

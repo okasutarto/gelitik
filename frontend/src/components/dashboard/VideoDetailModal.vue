@@ -72,7 +72,7 @@ const engagementRate = computed((): number => {
             class="bg-blue-400 dark:bg-[#00F0FF] border-2 border-black dark:border-electric p-4 shadow-brutal-sm transition-transform hover:-translate-y-1"
           >
             <div class="flex items-center gap-2 mb-2">
-              <Eye :size="18" class="text-black" />
+              <Eye :size="18" class="text-black" fill="currentColor" />
               <span class="text-xs font-black uppercase text-slate-700 dark:text-black">Views</span>
             </div>
             <p class="text-2xl font-mono font-bold text-slate-900 dark:text-black">
@@ -83,7 +83,7 @@ const engagementRate = computed((): number => {
             class="bg-pink-400 dark:bg-[#FF0099] border-2 border-black dark:border-electric p-4 shadow-brutal-sm transition-transform hover:-translate-y-1"
           >
             <div class="flex items-center gap-2 mb-2">
-              <Heart :size="18" class="text-black" />
+              <Heart :size="18" class="text-black" fill="currentColor" />
               <span class="text-xs font-black uppercase text-slate-700 dark:text-black">Likes</span>
             </div>
             <p class="text-2xl font-mono font-bold text-slate-900 dark:text-black">
@@ -94,7 +94,7 @@ const engagementRate = computed((): number => {
             class="bg-yellow-400 dark:bg-[#FFCC00] border-2 border-black dark:border-electric p-4 shadow-brutal-sm transition-transform hover:-translate-y-1"
           >
             <div class="flex items-center gap-2 mb-2">
-              <MessageCircle :size="18" class="text-black" />
+              <MessageCircle :size="18" class="text-black" fill="currentColor" />
               <span class="text-xs font-black uppercase text-slate-700 dark:text-black"
                 >Comments</span
               >
@@ -107,7 +107,7 @@ const engagementRate = computed((): number => {
             class="bg-green-400 dark:bg-[#6B2CF5] border-2 border-black dark:border-electric p-4 shadow-brutal-sm transition-transform hover:-translate-y-1"
           >
             <div class="flex items-center gap-2 mb-2">
-              <Share2 :size="18" class="text-black" />
+              <Share2 :size="18" class="text-black" fill="currentColor" />
               <span class="text-xs font-black uppercase text-slate-700 dark:text-black"
                 >Shares</span
               >

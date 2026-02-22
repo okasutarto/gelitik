@@ -204,7 +204,7 @@ onMounted(() => {
       <div class="relative">
         <button
           @click="isDropdownOpen = !isDropdownOpen"
-          class="flex items-center gap-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-4 py-2 border-2 border-black dark:border-white font-bold brutal-hover-lift group"
+          class="flex items-center gap-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-4 py-2 border-2 border-black dark:border-electric font-bold brutal-hover-lift group"
         >
           <Calendar :size="18" class="text-neo-accent dark:text-electric" />
           {{ selectedTimeframeLabel }}
@@ -217,7 +217,7 @@ onMounted(() => {
 
         <div
           v-if="isDropdownOpen"
-          class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] z-50 flex flex-col"
+          class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 border-2 border-black dark:border-electric shadow-brutal z-50 flex flex-col"
         >
           <button
             v-for="tf in timeframes"

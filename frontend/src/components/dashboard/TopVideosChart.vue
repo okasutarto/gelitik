@@ -152,7 +152,7 @@ const toggleSortDirection = () => {
 </script>
 
 <template>
-  <div class="brutal-card brutal-hover-lift rounded-none h-full flex flex-col p-6">
+  <div class="h-full flex flex-col">
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
       <div>

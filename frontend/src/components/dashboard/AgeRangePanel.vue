@@ -48,40 +48,59 @@ const getBarHeight = (percentage: number) => {
 };
 
 const getBarClass = (group: AgeGroup) => {
-  if (group.highlight) return "bg-purple-500 shadow-lg shadow-purple-200 dark:shadow-purple-900/30";
-  if (group.percentage >= 60) return "bg-purple-400";
-  if (group.percentage >= 40) return "bg-purple-300";
-  return "bg-purple-200 dark:bg-purple-800";
+  if (group.highlight)
+    return "bg-primary-500 border border-black dark:border-slate-600 shadow-brutal-sm";
+  return "bg-slate-200 dark:bg-slate-700 border border-black/10 dark:border-slate-600";
 };
 </script>
 
 <template>
   <div class="brutal-card brutal-hover-lift rounded-none p-6">
-    <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-      <Cake :size="18" class="text-purple-500" />
-      Age Range
-    </h4>
-    <div class="flex items-end justify-between h-32 px-2">
-      <div
-        v-for="group in displayGroups"
-        :key="group.label"
-        class="flex flex-col items-center justify-end gap-2 group h-full"
-      >
-        <div
-          :class="['w-8 rounded-t transition-colors group-hover:opacity-80', getBarClass(group)]"
-          :style="{ height: getBarHeight(group.percentage) }"
-        />
-        <span
-          :class="[
-            'text-xs',
-            group.highlight
-              ? 'text-slate-900 dark:text-white font-bold'
-              : 'text-slate-500 dark:text-slate-400',
-          ]"
-        >
-          {{ group.label }}
-        </span>
+    <!-- Skeleton -->
+    <template v-if="loading">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-5 h-5 bg-slate-200 dark:bg-slate-800 rounded skeleton-pulse"></div>
+        <div class="w-24 h-5 bg-slate-200 dark:bg-slate-800 rounded skeleton-pulse"></div>
       </div>
-    </div>
+      <div class="flex justify-between h-48 px-2">
+        <div v-for="i in 5" :key="i" class="flex flex-col items-center justify-end gap-2 h-full">
+          <div
+            class="w-8 bg-slate-200 dark:bg-slate-800 rounded-t skeleton-pulse"
+            :style="{ height: [40, 80, 100, 60, 30][i - 1] + '%' }"
+          />
+          <div class="w-6 h-3 bg-slate-200 dark:bg-slate-800 rounded skeleton-pulse"></div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Content -->
+    <template v-else>
+      <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+        <Cake :size="18" class="text-primary-500" />
+        Age Range
+      </h4>
+      <div class="flex justify-between h-48 px-2">
+        <div
+          v-for="group in displayGroups"
+          :key="group.label"
+          class="flex flex-col items-center justify-end gap-2 group h-full"
+        >
+          <div
+            :class="['w-8 rounded-t transition-colors group-hover:opacity-80', getBarClass(group)]"
+            :style="{ height: getBarHeight(group.percentage) }"
+          />
+          <span
+            :class="[
+              'text-xs',
+              group.highlight
+                ? 'text-slate-900 dark:text-white font-bold'
+                : 'text-slate-500 dark:text-slate-400',
+            ]"
+          >
+            {{ group.label }}
+          </span>
+        </div>
+      </div>
+    </template>
   </div>
 </template>

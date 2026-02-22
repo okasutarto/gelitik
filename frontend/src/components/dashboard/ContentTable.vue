@@ -111,7 +111,7 @@ const hasVideoData = computed(() => {
             <tr>
               <th class="px-4 py-4">Content</th>
               <th class="px-4 py-4 text-center">Date Created</th>
-              <th class="px-4 py-4 text-center">Duration</th>
+              <th v-if="platform !== 'instagram'" class="px-4 py-4 text-center">Duration</th>
               <th class="px-4 py-4 text-center">Views</th>
               <th class="px-4 py-4 text-center">Likes</th>
               <th class="px-4 py-4 text-center">Shares</th>
@@ -145,7 +145,10 @@ const hasVideoData = computed(() => {
               <td class="px-4 py-4 whitespace-nowrap font-semibold text-xs text-center">
                 {{ formatDate(item.created) }}
               </td>
-              <td class="px-4 py-4 whitespace-nowrap font-semibold text-center">
+              <td
+                v-if="platform !== 'instagram'"
+                class="px-4 py-4 whitespace-nowrap font-semibold text-center"
+              >
                 {{ formatDuration(item.duration || 0) }}
               </td>
               <td class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">

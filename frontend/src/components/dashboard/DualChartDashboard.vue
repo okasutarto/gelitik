@@ -42,8 +42,8 @@ const downloadChartAsPNG = () => {
 <template>
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 relative z-10">
     <!-- View Distribution Chart (Left) -->
-    <div class="brutal-card p-6 h-[400px] flex flex-col relative group brutal-hover-lift">
-      <div class="flex items-center justify-between mb-2">
+    <div class="brutal-card p-6 flex flex-col relative group brutal-hover-lift">
+      <!-- <div class="flex items-center justify-between mb-2">
         <div>
           <h2
             class="text-xl font-black uppercase tracking-tight text-slate-900 border-b-4 border-transparent"
@@ -64,14 +64,14 @@ const downloadChartAsPNG = () => {
         >
           <Download :size="20" />
         </button>
-      </div>
+      </div> -->
       <div class="flex-1 min-h-0 relative w-full h-full overflow-hidden">
         <TopVideosChart :videos="videos" />
       </div>
     </div>
 
     <!-- Engagement Breakdown (Right) -->
-    <div class="brutal-card p-6 h-[400px] flex flex-col brutal-hover-lift">
+    <div class="brutal-card p-6 flex flex-col brutal-hover-lift">
       <div class="mb-2">
         <h2
           class="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-electric/70 border-b-4 border-transparent"

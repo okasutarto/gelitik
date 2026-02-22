@@ -53,7 +53,7 @@ const userInfo = computed(() => {
       followers_count: data.insights?.followers || 0,
       following_count: data.profile.follows_count || data.insights?.following || 0,
       likes_count: data.insights?.totalInteractions || 0,
-      video_count: data.insights?.mediaCount || 0,
+      videos_count: data.insights?.mediaCount || data.profile?.media_count || 0,
     };
   }
 
@@ -207,7 +207,7 @@ onMounted(() => {
     <!-- Stat Cards Grid -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 my-8">
       <template v-if="loading">
-        <StatCardSkeleton :count="6" />
+        <StatCardSkeleton :count="5" />
       </template>
       <template v-else>
         <StatCard

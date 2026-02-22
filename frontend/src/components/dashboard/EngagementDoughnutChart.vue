@@ -102,7 +102,7 @@ const chartOptions = computed<ChartOptions<"doughnut">>(() => ({
 </script>
 
 <template>
-  <div class="brutal-card brutal-hover-lift rounded-none p-6 h-full">
+  <div class="p-6 h-full">
     <div class="flex items-center justify-end mb-6">
       <div class="text-right">
         <p class="text-3xl font-mono font-black text-slate-900 dark:text-white">

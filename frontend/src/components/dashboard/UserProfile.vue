@@ -84,10 +84,10 @@ withDefaults(defineProps<Props>(), {
       <div class="flex items-center gap-1.5">
         <span
           class="text-slate-500 dark:text-electric/70 text-xs font-black uppercase tracking-tighter"
-          >Likes</span
+          >Posts</span
         >
         <span class="font-mono font-bold text-slate-900 dark:text-white text-lg">{{
-          formatNumber(userInfo.likes_count || 0)
+          formatNumber(userInfo.videos_count || 0)
         }}</span>
       </div>
     </div>

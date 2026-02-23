@@ -35,7 +35,7 @@ const engagementRate = computed((): number => {
         class="sticky top-0 bg-white dark:bg-navy border-b-4 border-black dark:border-electric p-4 flex items-center justify-between z-10"
       >
         <h2 class="text-2xl font-black uppercase text-slate-900 dark:text-white">
-          Video Analytics
+          Content Analytics
         </h2>
         <button
           @click="emit('close')"
@@ -56,9 +56,12 @@ const engagementRate = computed((): number => {
           />
           <div class="flex-1 min-w-0">
             <h3 class="text-xl font-black text-slate-900 dark:text-white mb-2 line-clamp-2">
-              {{ videoData.title || videoData.description || "Untitled Video" }}
+              {{ videoData.title || videoData.description || "Untitled Content" }}
             </h3>
-            <p class="text-sm text-slate-600 dark:text-slate-400">
+            <p
+              v-if="videoData.duration && videoData.duration > 0"
+              class="text-sm text-slate-600 dark:text-slate-400"
+            >
               Duration: {{ Math.floor(videoData.duration / 60) }}:{{
                 (videoData.duration % 60).toString().padStart(2, "0")
               }}

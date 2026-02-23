@@ -6,12 +6,12 @@ import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
 import InsightCard from "@/components/dashboard/InsightCard.vue";
 import UserProfile from "@/components/dashboard/UserProfile.vue";
-import AudienceChart from "@/components/dashboard/AudienceChart.vue";
-import EngagementChart from "@/components/dashboard/EngagementChart.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
 import GenderSplitPanel from "@/components/dashboard/GenderSplitPanel.vue";
 import TopCitiesPanel from "@/components/dashboard/TopCitiesPanel.vue";
 import AgeRangePanel from "@/components/dashboard/AgeRangePanel.vue";
+import ContentFormatBreakdown from "@/components/dashboard/ContentFormatBreakdown.vue";
+import DualChartDashboard from "@/components/dashboard/DualChartDashboard.vue";
 
 import UserProfileSkeleton from "@/components/loading/UserProfileSkeleton.vue";
 import ChartSkeleton from "@/components/loading/ChartSkeleton.vue";
@@ -182,6 +182,32 @@ const insightCards = computed(() => {
   return [];
 });
 
+// Determine content formats from media
+const contentFormats = computed(() => {
+  const vids = media.value;
+  if (!vids.length) return [];
+
+  const formats = vids.reduce((acc: any, t: any) => {
+    // Map Meta API types or fallback to internal types
+    const type = t.media_product_type === "REELS" ? "REELS" : t.media_type || "IMAGE";
+    if (!acc[type]) {
+      acc[type] = { type, count: 0, totalReach: 0, totalEng: 0 };
+    }
+    acc[type].count += 1;
+    acc[type].totalReach += t.view_count || 0;
+    acc[type].totalEng +=
+      (t.like_count || 0) + (t.comment_count || 0) + (t.share_count || 0) + (t.saves || 0);
+    return acc;
+  }, {});
+
+  return Object.values(formats).map((f: any) => ({
+    type: f.type,
+    count: f.count,
+    avgReach: f.count > 0 ? f.totalReach / f.count : 0,
+    avgEngagement: f.count > 0 ? f.totalEng / f.count : 0,
+  }));
+});
+
 onMounted(() => {
   fetchData();
 });
@@ -266,48 +292,33 @@ onMounted(() => {
     </div>
 
     <!-- Charts Row -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-      <!-- Audience Growth Chart -->
-      <div>
-        <ChartSkeleton v-if="loading" />
-        <template v-else>
-          <AudienceChart
-            platform="instagram"
-            title="Follower Net Growth"
-            subtitle="Instagram specific growth metrics"
-            :historical-data="(accountData?.data as any)?.insights?.historical"
-          />
-        </template>
-      </div>
-
-      <!-- Engagement Over Time Chart -->
-      <div>
-        <ChartSkeleton v-if="loading" />
-        <template v-else>
-          <EngagementChart
-            title="Engagement Over Time"
-            subtitle="Likes vs Comments"
-            :historical-data="(accountData?.data as any)?.insights?.historical"
-          />
-        </template>
-      </div>
+    <div class="mb-8">
+      <ChartSkeleton v-if="loading" />
+      <DualChartDashboard v-else :videos="media" />
     </div>
 
     <!-- Instagram-Specific Panels -->
+
+    <!-- Format Breakdown -->
+    <div class="mb-8">
+      <ContentFormatBreakdown :formats="contentFormats" :loading="loading" />
+    </div>
+
     <!-- Demographics row -->
     <div
+      v-if="!loading && (accountData?.data as any)?.insights?.demographics"
       class="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-8 border border-slate-200 dark:border-slate-800"
     >
       <GenderSplitPanel
-        :data="(accountData?.data as any)?.insights?.demographics?.gender || []"
+        :data="(accountData?.data as any).insights.demographics.gender"
         :loading="loading"
       />
       <TopCitiesPanel
-        :data="(accountData?.data as any)?.insights?.demographics?.cities || []"
+        :data="(accountData?.data as any).insights.demographics.cities"
         :loading="loading"
       />
       <AgeRangePanel
-        :data="(accountData?.data as any)?.insights?.demographics?.age || []"
+        :data="(accountData?.data as any).insights.demographics.age"
         :loading="loading"
       />
     </div>

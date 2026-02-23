@@ -18,6 +18,25 @@ const routes: RouteRecordRaw[] = [
       guestOnly: true,
     },
   },
+  {
+    path: "/register",
+    name: "register",
+    component: () => import("@/pages/SignupPage.vue"),
+    meta: {
+      title: "Sign Up - Gelitik",
+      requiresAuth: false,
+      guestOnly: true,
+    },
+  },
+  {
+    path: "/verify-email",
+    name: "verify-email",
+    component: () => import("@/pages/VerifyEmailPage.vue"),
+    meta: {
+      title: "Verify Email - Gelitik",
+      requiresAuth: false,
+    },
+  },
 
   // Dashboard Routes
   {

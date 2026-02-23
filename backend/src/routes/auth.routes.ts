@@ -19,6 +19,7 @@ const tiktokService = new TikTokService();
 router.post('/register', validate(schemas.register), AuthController.register);
 router.post('/login', validate(schemas.login), AuthController.login);
 router.get('/me', authenticateJwt, AuthController.getMe);
+router.get('/verify-email', AuthController.verifyEmail);
 
 // Google Auth
 router.get('/google', (req, res, next) => {

@@ -27,8 +27,7 @@ const handleForgotPassword = () => {
 };
 
 const handleSignup = () => {
-  // TODO: Implement signup flow - redirect to registration page
-  window.location.href = "/register";
+  router.push("/register");
 };
 </script>
 

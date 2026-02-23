@@ -11,7 +11,8 @@ import GenderSplitPanel from "@/components/dashboard/GenderSplitPanel.vue";
 import TopCitiesPanel from "@/components/dashboard/TopCitiesPanel.vue";
 import AgeRangePanel from "@/components/dashboard/AgeRangePanel.vue";
 import ContentFormatBreakdown from "@/components/dashboard/ContentFormatBreakdown.vue";
-import DualChartDashboard from "@/components/dashboard/DualChartDashboard.vue";
+import AudienceChart from "@/components/dashboard/AudienceChart.vue";
+import EngagementChart from "@/components/dashboard/EngagementChart.vue";
 
 import UserProfileSkeleton from "@/components/loading/UserProfileSkeleton.vue";
 import ChartSkeleton from "@/components/loading/ChartSkeleton.vue";
@@ -292,23 +293,39 @@ onMounted(() => {
     </div>
 
     <!-- Charts Row -->
-    <div class="mb-8">
-      <ChartSkeleton v-if="loading" />
-      <DualChartDashboard v-else :videos="media" />
-    </div>
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+      <!-- Audience Growth Chart -->
+      <div>
+        <ChartSkeleton v-if="loading" />
+        <template v-else>
+          <AudienceChart
+            platform="instagram"
+            title="Follower Net Growth"
+            subtitle="Instagram specific growth metrics"
+            :historical-data="(accountData?.data as any)?.insights?.historical"
+          />
+        </template>
+      </div>
 
-    <!-- Instagram-Specific Panels -->
-
-    <!-- Format Breakdown -->
-    <div class="mb-8">
-      <ContentFormatBreakdown :formats="contentFormats" :loading="loading" />
+      <!-- Engagement Over Time Chart -->
+      <div>
+        <ChartSkeleton v-if="loading" />
+        <template v-else>
+          <EngagementChart
+            title="Engagement Over Time"
+            subtitle="Likes vs Comments"
+            :historical-data="(accountData?.data as any)?.insights?.historical"
+          />
+        </template>
+      </div>
     </div>
 
     <!-- Demographics row -->
     <div
       v-if="!loading && (accountData?.data as any)?.insights?.demographics"
-      class="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-8 border border-slate-200 dark:border-slate-800"
+      class="mb-8 grid grid-cols-1 lg:grid-cols-4 gap-8 border border-slate-200 dark:border-slate-800"
     >
+      <ContentFormatBreakdown :formats="contentFormats" :loading="loading" />
       <GenderSplitPanel
         :data="(accountData?.data as any).insights.demographics.gender"
         :loading="loading"

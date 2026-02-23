@@ -9,6 +9,10 @@ const mockPrisma = {
   session: {
     create: vi.fn(),
     deleteMany: vi.fn()
+  },
+  socialAccount: {
+    findMany: vi.fn(),
+    findUnique: vi.fn()
   }
 }
 

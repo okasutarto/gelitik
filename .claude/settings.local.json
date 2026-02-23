@@ -42,7 +42,9 @@
       "Bash(npx ts-node:*)",
       "Bash(python3 -c:*)",
       "Bash(D\" grep \"^)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(npm run test:run)",
+      "Bash(npm test)"
     ]
   }
 }

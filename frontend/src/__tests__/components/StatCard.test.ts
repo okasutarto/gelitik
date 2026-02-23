@@ -21,7 +21,7 @@ describe('StatCard', () => {
     expect(wrapper.text()).toContain('Total Followers')
   })
 
-  it('displays formatted value', () => {
+  it('displays formatted value', async () => {
     const wrapper = mount(StatCard, {
       props: {
         title: 'Total Views',
@@ -30,7 +30,10 @@ describe('StatCard', () => {
       }
     })
 
-    // Should format number (1.5M or 1,500,000)
+    // Wait for animation to complete
+    await new Promise(resolve => setTimeout(resolve, 900))
+
+    // Should format number (1.5M)
     const text = wrapper.text()
     expect(text).toContain('1.5M')
   })

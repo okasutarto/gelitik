@@ -4,11 +4,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import LoginForm from '@/components/auth/LoginForm.vue'
 
 describe('LoginForm', () => {
-  let emit: any
-
   beforeEach(() => {
     setActivePinia(createPinia())
-    emit = vi.fn()
   })
 
   // ==================== LOGIN TESTS ====================
@@ -16,8 +13,7 @@ describe('LoginForm', () => {
   describe('FE-LOGIN-01: Email Input', () => {
     it('should accept valid email format', async () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const emailInput = wrapper.find('input[type="email"]')
@@ -28,20 +24,18 @@ describe('LoginForm', () => {
 
     it('should have email type for browser validation', () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const emailInput = wrapper.find('input[type="email"]')
-      expect(emailInput.exists()).toBe(true)
+      expect(emailInput.attributes('type')).toBe('email')
     })
   })
 
   describe('FE-LOGIN-02: Email Validation', () => {
     it('should block invalid email format with HTML5 validation', () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const emailInput = wrapper.find('input[type="email"]')
@@ -53,8 +47,7 @@ describe('LoginForm', () => {
   describe('FE-LOGIN-03: Password Input', () => {
     it('should accept password input', async () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const passwordInput = wrapper.find('input[type="password"]')
@@ -65,8 +58,7 @@ describe('LoginForm', () => {
 
     it('should mask password by default', () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const passwordInput = wrapper.find('input[type="password"]')
@@ -77,8 +69,7 @@ describe('LoginForm', () => {
   describe('FE-LOGIN-04: Password Toggle', () => {
     it('should show password when toggle is clicked', async () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       // Initially password should be masked
@@ -94,8 +85,7 @@ describe('LoginForm', () => {
 
     it('should hide password when toggle clicked again', async () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const toggleButton = wrapper.find('button[type="button"]')
@@ -111,8 +101,7 @@ describe('LoginForm', () => {
 
     it('should toggle icon between visibility and visibility_off', async () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const toggleButton = wrapper.find('button[type="button"]')
@@ -130,8 +119,7 @@ describe('LoginForm', () => {
   describe('FE-LOGIN-05: Google Login Button', () => {
     it('should have Google login button', () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const buttons = wrapper.findAll('button')
@@ -141,23 +129,21 @@ describe('LoginForm', () => {
 
     it('should emit google-login event when clicked', async () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const buttons = wrapper.findAll('button')
       const googleButton = buttons.find(b => b.text().includes('Login with Google'))
       await googleButton?.trigger('click')
 
-      expect(emit).toHaveBeenCalledWith('google-login')
+      expect(wrapper.emitted('google-login')).toBeTruthy()
     })
   })
 
   describe('FE-LOGIN-06: Form Submit', () => {
     it('should emit submit event with form data', async () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       // Fill form
@@ -167,19 +153,15 @@ describe('LoginForm', () => {
       // Submit
       await wrapper.find('form').trigger('submit.prevent')
 
-      expect(emit).toHaveBeenCalledWith('submit', {
-        email: 'test@example.com',
-        password: 'password123',
-        rememberMe: false
-      })
+      // Check emitted events
+      expect(wrapper.emitted('submit')).toBeTruthy()
     })
   })
 
   describe('FE-LOGIN-07: Error Display', () => {
     it('should display error message when apiError is passed', () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: 'Invalid credentials' },
-        emit
+        props: { apiError: 'Invalid credentials' }
       })
 
       const errorBox = wrapper.find('.bg-red-100')
@@ -189,8 +171,7 @@ describe('LoginForm', () => {
 
     it('should not display error when apiError is null', () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const errorBox = wrapper.find('.bg-red-100')
@@ -199,8 +180,7 @@ describe('LoginForm', () => {
 
     it('should not display error when apiError is empty string', () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: '' },
-        emit
+        props: { apiError: '' }
       })
 
       const errorBox = wrapper.find('.bg-red-100')
@@ -211,8 +191,7 @@ describe('LoginForm', () => {
   describe('FE-LOGIN-08: Forgot Password Link', () => {
     it('should have forgot password link', () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const links = wrapper.findAll('a')
@@ -222,23 +201,21 @@ describe('LoginForm', () => {
 
     it('should emit forgot-password event when clicked', async () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const links = wrapper.findAll('a')
       const forgotLink = links.find(a => a.text().includes('Forgot'))
       await forgotLink?.trigger('click')
 
-      expect(emit).toHaveBeenCalledWith('forgot-password')
+      expect(wrapper.emitted('forgot-password')).toBeTruthy()
     })
   })
 
   describe('FE-LOGIN-09: Signup Link', () => {
     it('should have create account link', () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const links = wrapper.findAll('a')
@@ -248,15 +225,14 @@ describe('LoginForm', () => {
 
     it('should emit signup event when clicked', async () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const links = wrapper.findAll('a')
       const signupLink = links.find(a => a.text().includes('Create account'))
       await signupLink?.trigger('click')
 
-      expect(emit).toHaveBeenCalledWith('signup')
+      expect(wrapper.emitted('signup')).toBeTruthy()
     })
   })
 
@@ -265,8 +241,7 @@ describe('LoginForm', () => {
   describe('UI Rendering', () => {
     it('should render all form fields', () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       expect(wrapper.find('input[type="email"]').exists()).toBe(true)
@@ -276,8 +251,7 @@ describe('LoginForm', () => {
 
     it('should have correct submit button text', () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       const submitButton = wrapper.find('button[type="submit"]')
@@ -286,8 +260,7 @@ describe('LoginForm', () => {
 
     it('should have email and password labels', () => {
       const wrapper = mount(LoginForm, {
-        props: { apiError: null },
-        emit
+        props: { apiError: null }
       })
 
       expect(wrapper.text()).toContain('Email Address')

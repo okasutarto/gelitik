@@ -4,20 +4,15 @@ import { createPinia, setActivePinia } from 'pinia'
 import SignupForm from '@/components/auth/SignupForm.vue'
 
 describe('SignupForm', () => {
-  let emit: any
-
   beforeEach(() => {
     setActivePinia(createPinia())
-    emit = vi.fn()
   })
 
   // ==================== SIGNUP TESTS ====================
 
   describe('FE-SIGNUP-01: Name Input', () => {
     it('should accept name input', async () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const nameInput = wrapper.find('input[type="text"]')
       await nameInput.setValue('John Doe')
@@ -26,9 +21,7 @@ describe('SignupForm', () => {
     })
 
     it('should have name field as required', () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const nameInput = wrapper.find('input[type="text"]')
       expect(nameInput.attributes('required')).toBeDefined()
@@ -37,9 +30,7 @@ describe('SignupForm', () => {
 
   describe('FE-SIGNUP-02: Email Input', () => {
     it('should accept valid email format', async () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const emailInput = wrapper.find('input[type="email"]')
       await emailInput.setValue('test@example.com')
@@ -48,9 +39,7 @@ describe('SignupForm', () => {
     })
 
     it('should have email type for browser validation', () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const emailInput = wrapper.find('input[type="email"]')
       expect(emailInput.attributes('type')).toBe('email')
@@ -59,9 +48,7 @@ describe('SignupForm', () => {
 
   describe('FE-SIGNUP-03: Password Input', () => {
     it('should accept password input', async () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const passwordInput = wrapper.find('input[type="password"]')
       await passwordInput.setValue('password123')
@@ -70,9 +57,7 @@ describe('SignupForm', () => {
     })
 
     it('should mask password by default', () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const passwordInput = wrapper.find('input[type="password"]')
       expect(passwordInput.exists()).toBe(true)
@@ -81,18 +66,14 @@ describe('SignupForm', () => {
 
   describe('FE-SIGNUP-04: Password Min Length', () => {
     it('should have minlength validation of 6', () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const passwordInput = wrapper.find('input[type="password"]')
       expect(passwordInput.attributes('minlength')).toBe('6')
     })
 
     it('should block password less than 6 characters with HTML5 validation', () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const passwordInput = wrapper.find('input[type="password"]')
       // HTML5 minlength validation will prevent form submission
@@ -102,9 +83,7 @@ describe('SignupForm', () => {
 
   describe('FE-SIGNUP-05: Password Toggle', () => {
     it('should show password when toggle is clicked', async () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       // Initially password should be masked
       expect(wrapper.find('input[type="password"]').exists()).toBe(true)
@@ -118,9 +97,7 @@ describe('SignupForm', () => {
     })
 
     it('should hide password when toggle clicked again', async () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const toggleButton = wrapper.findAll('button[type="button"]').find(b => b.classes('right-4'))
 
@@ -134,9 +111,7 @@ describe('SignupForm', () => {
     })
 
     it('should toggle icon between visibility and visibility_off', async () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const toggleButton = wrapper.findAll('button[type="button"]').find(b => b.classes('right-4'))
 
@@ -152,31 +127,25 @@ describe('SignupForm', () => {
 
   describe('FE-SIGNUP-06: Google Signup Button', () => {
     it('should have Google signup button', () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const googleButton = wrapper.findAll('button').find(b => b.text().includes('Sign Up with Google'))
       expect(googleButton?.exists()).toBe(true)
     })
 
     it('should emit google-signup event when clicked', async () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const googleButton = wrapper.findAll('button').find(b => b.text().includes('Sign Up with Google'))
       await googleButton?.trigger('click')
 
-      expect(emit).toHaveBeenCalledWith('google-signup')
+      expect(wrapper.emitted('google-signup')).toBeTruthy()
     })
   })
 
   describe('FE-SIGNUP-07: Form Submit', () => {
     it('should emit submit event with form data', async () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       // Fill form
       await wrapper.find('input[type="text"]').setValue('John Doe')
@@ -186,11 +155,13 @@ describe('SignupForm', () => {
       // Submit
       await wrapper.find('form').trigger('submit.prevent')
 
-      expect(emit).toHaveBeenCalledWith('submit', {
+      expect(wrapper.emitted('submit')).toBeTruthy()
+      const emitted = wrapper.emitted('submit')
+      expect(emitted?.[0]).toEqual([{
         name: 'John Doe',
         email: 'test@example.com',
         password: 'password123'
-      })
+      }])
     })
   })
 
@@ -198,10 +169,7 @@ describe('SignupForm', () => {
     // Note: SignupForm currently doesn't have error prop
     // This test documents expected behavior if error handling is added
     it('should be able to accept error prop in future', () => {
-      const wrapper = mount(SignupForm, {
-        emit,
-        props: {}
-      })
+      const wrapper = mount(SignupForm)
 
       // Currently no error prop - but component structure supports it
       expect(wrapper.exists()).toBe(true)
@@ -210,9 +178,7 @@ describe('SignupForm', () => {
 
   describe('FE-SIGNUP-09: Login Link', () => {
     it('should have sign in link', () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const links = wrapper.findAll('a')
       const loginLink = links.find(a => a.text().includes('Sign in'))
@@ -220,15 +186,13 @@ describe('SignupForm', () => {
     })
 
     it('should emit login event when clicked', async () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const links = wrapper.findAll('a')
       const loginLink = links.find(a => a.text().includes('Sign in'))
       await loginLink?.trigger('click')
 
-      expect(emit).toHaveBeenCalledWith('login')
+      expect(wrapper.emitted('login')).toBeTruthy()
     })
   })
 
@@ -236,9 +200,7 @@ describe('SignupForm', () => {
 
   describe('UI Rendering', () => {
     it('should render all form fields', () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       expect(wrapper.find('input[type="text"]').exists()).toBe(true) // Name
       expect(wrapper.find('input[type="email"]').exists()).toBe(true)
@@ -247,18 +209,14 @@ describe('SignupForm', () => {
     })
 
     it('should have correct submit button text', () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const submitButton = wrapper.find('button[type="submit"]')
       expect(submitButton.text()).toContain('Create Account')
     })
 
     it('should have all labels', () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       expect(wrapper.text()).toContain('Full Name')
       expect(wrapper.text()).toContain('Email Address')
@@ -266,9 +224,7 @@ describe('SignupForm', () => {
     })
 
     it('should have Google signup button with correct text', () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       expect(wrapper.text()).toContain('Sign Up with Google')
     })
@@ -278,18 +234,14 @@ describe('SignupForm', () => {
 
   describe('Password Visibility State', () => {
     it('should start with password hidden', () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const passwordInput = wrapper.find('input[type="password"]')
       expect(passwordInput.exists()).toBe(true)
     })
 
     it('should toggle password visibility correctly', async () => {
-      const wrapper = mount(SignupForm, {
-        emit
-      })
+      const wrapper = mount(SignupForm)
 
       const toggleButton = wrapper.findAll('button[type="button"]').find(b => b.classes('right-4'))
 

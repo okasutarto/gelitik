@@ -120,7 +120,7 @@ const handleSubmit = () => {
 
       <button
         type="submit"
-        class="w-full bg-[#FFCC00] border-[4px] border-black p-5 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] font-[900] text-2xl uppercase tracking-tighter transition-all active:translate-x-1 active:translate-y-1 active:shadow-none mt-6 text-slate-900"
+        class="w-full bg-[#FFCC00] border-[4px] border-black p-5 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] font-[900] text-2xl uppercase tracking-tighter transition-all active:translate-x-1 active:translate-y-1 active:shadow-none mt-6 text-slate-900 hover:bg-[#E5F522]"
       >
         Sign In
       </button>

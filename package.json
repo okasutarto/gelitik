@@ -1,0 +1,15 @@
+{
+  "name": "gelitik",
+  "private": true,
+  "scripts": {
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd frontend && npm test",
+    "test:backend": "cd backend && npm test",
+    "test:run": "npm run test:frontend:run && npm run test:backend:run",
+    "test:frontend:run": "cd frontend && npm run test:run",
+    "test:backend:run": "cd backend && npm run test:run",
+    "test:coverage": "npm run test:frontend:coverage && npm run test:backend:coverage",
+    "test:frontend:coverage": "cd frontend && npm run test:coverage",
+    "test:backend:coverage": "cd backend && npm run test:coverage"
+  }
+}

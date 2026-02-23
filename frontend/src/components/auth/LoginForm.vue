@@ -16,6 +16,7 @@ const emit = defineEmits<{
 
 const email = ref("");
 const password = ref("");
+const showPassword = ref(false);
 
 const handleSubmit = () => {
   emit("submit", {
@@ -85,12 +86,23 @@ const handleSubmit = () => {
             >Forgot?</a
           >
         </div>
-        <input
-          v-model="password"
-          type="password"
-          placeholder="••••••••"
-          class="w-full bg-white border-[3px] border-black p-4 font-bold placeholder:text-gray-400 focus:outline-none transition-colors text-slate-900"
-        />
+        <div class="relative">
+          <input
+            v-model="password"
+            :type="showPassword ? 'text' : 'password'"
+            placeholder="••••••••"
+            class="w-full bg-white border-[3px] border-black p-4 font-bold placeholder:text-gray-400 focus:outline-none transition-colors text-slate-900 pr-12"
+          />
+          <button
+            type="button"
+            @click="showPassword = !showPassword"
+            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-900 hover:text-slate-600 transition-colors"
+          >
+            <span class="material-symbols-outlined select-none">
+              {{ showPassword ? "visibility_off" : "visibility" }}
+            </span>
+          </button>
+        </div>
       </div>
 
       <button

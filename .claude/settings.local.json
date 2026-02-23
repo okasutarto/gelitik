@@ -44,7 +44,8 @@
       "Bash(D\" grep \"^)",
       "Bash(git merge:*)",
       "Bash(npm run test:run)",
-      "Bash(npm test)"
+      "Bash(npm test)",
+      "Bash(git pull:*)"
     ]
   }
 }

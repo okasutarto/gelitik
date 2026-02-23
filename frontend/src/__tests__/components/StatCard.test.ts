@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { markRaw } from 'vue'
 import StatCard from '@/components/dashboard/StatCard.vue'
 import { h } from 'vue'
 
@@ -95,9 +96,9 @@ describe('StatCard', () => {
   })
 
   it('displays icon when provided as component', () => {
-    const MockIcon = {
+    const MockIcon = markRaw({
       render: () => h('svg', { class: 'mock-icon' })
-    }
+    })
 
     const wrapper = mount(StatCard, {
       props: {

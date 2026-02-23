@@ -1,40 +1,29 @@
-import nodemailer from 'nodemailer';
-import { FRONTEND_URL } from '../config/env';
+import { Resend } from 'resend';
+import { FRONTEND_URL, RESEND_API_KEY } from '../config/env';
 
 class EmailService {
-    private transporter: nodemailer.Transporter | null = null;
+    private resend: Resend | null = null;
     private isInitialized = false;
 
     constructor() {
         this.initialize();
     }
 
-    private async initialize() {
-        try {
-            // For development, use Ethereal Email (auto-generated test accounts)
-            // In production, you would configure SMTP credentials here from process.env
-            const testAccount = await nodemailer.createTestAccount();
-
-            this.transporter = nodemailer.createTransport({
-                host: testAccount.smtp.host,
-                port: testAccount.smtp.port,
-                secure: testAccount.smtp.secure,
-                auth: {
-                    user: testAccount.user,
-                    pass: testAccount.pass,
-                },
-            });
-
+    private initialize() {
+        if (RESEND_API_KEY) {
+            this.resend = new Resend(RESEND_API_KEY);
             this.isInitialized = true;
-            console.log('✉️  Email service initialized (Ethereal test mode)');
-        } catch (error) {
-            console.error('Failed to initialize email service:', error);
+        } else {
+            console.warn('⚠️  RESEND_API_KEY not found. Email service is disabled.');
         }
     }
 
     async sendVerificationEmail(to: string, token: string, name: string) {
-        if (!this.isInitialized || !this.transporter) {
-            console.warn('Email service not initialized. Skipping email send.');
+        if (!this.isInitialized || !this.resend) {
+            // Fallback for local testing without an API key
+            const verificationUrl = `${FRONTEND_URL}/verify-email?token=${token}`;
+            console.warn('🚨 EMAIL SERVICE DISABLED. If you are testing locally, manually click this link to verify:');
+            console.warn(`🔗 ${verificationUrl}`);
             return;
         }
 
@@ -54,18 +43,19 @@ class EmailService {
         `;
 
         try {
-            const info = await this.transporter.sendMail({
-                from: '"Gelitik Team" <noreply@gelitik.app>',
-                to,
+            const response = await this.resend.emails.send({
+                from: 'Gelitik Team <onboarding@resend.dev>', // Update this when you have a custom domain!
+                to: [to],
                 subject: 'Please verify your email address - Gelitik',
-                html,
+                html: html,
             });
 
-            console.log('✅ Verification email sent to:', to);
-            // In Ethereal mode, this URL lets you preview the email in your browser!
-            console.log('🔎 Preview URL: %s', nodemailer.getTestMessageUrl(info));
+            if (response.error) {
+                console.error('Resend API Error:', response.error);
+                throw new Error(response.error.message);
+            }
         } catch (error) {
-            console.error('Error sending verification email:', error);
+            console.error('Error sending verification email via Resend:', error);
             throw new Error('Failed to send verification email');
         }
     }

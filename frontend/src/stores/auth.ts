@@ -56,8 +56,8 @@ export const useAuthStore = defineStore("auth", () => {
   const register = async (email: string, password: string, name: string) => {
     isLoading.value = true;
     try {
-      const { data } = await api.post("/auth/register", { email, password, name });
-      setAuth(data.user, data.token);
+      await api.post("/auth/register", { email, password, name });
+      // Do not auto-login; user must verify email first
       return { success: true };
     } catch (error: unknown) {
       let message = "Registration failed";

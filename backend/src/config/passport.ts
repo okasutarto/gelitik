@@ -27,12 +27,12 @@ passport.use(new LocalStrategy({
         const user = await prisma.user.findUnique({ where: { email } });
 
         if (!user || !user.password) {
-            return done(null, false, { message: 'Invalid credentials' });
+            return done(null, false, { message: 'No account found with this email' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return done(null, false, { message: 'Invalid credentials' });
+            return done(null, false, { message: 'Incorrect password' });
         }
 
         return done(null, user);

@@ -1,18 +1,30 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import LoginForm from "@/components/auth/LoginForm.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const apiError = ref<string | null>(null);
 
 // Event handlers
 const handleLogin = async (data: { email: string; password: string; rememberMe: boolean }) => {
   try {
+    apiError.value = null;
     await authStore.login(data.email, data.password);
     router.push("/dashboard");
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Login failed:", error);
+
+    if (error && typeof error === "object" && "response" in error) {
+      const axiosError = error as { response?: { data?: { error?: string } } };
+      apiError.value = axiosError.response?.data?.error || "Failed to log in. Please try again.";
+    } else if (error instanceof Error) {
+      apiError.value = error.message;
+    } else {
+      apiError.value = "An unexpected error occurred.";
+    }
   }
 };
 
@@ -106,6 +118,13 @@ const handleSignup = () => {
             Welcome Back
           </h2>
           <p class="font-bold text-slate-600">Enter your details to access your dashboard.</p>
+        </div>
+
+        <div
+          v-if="apiError"
+          class="bg-red-100 border-[3px] border-red-500 p-4 shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]"
+        >
+          <p class="font-bold text-red-900 text-sm italic">{{ apiError }}</p>
         </div>
 
         <LoginForm

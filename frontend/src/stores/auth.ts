@@ -40,7 +40,13 @@ export const useAuthStore = defineStore("auth", () => {
       setAuth(data.user, data.token);
       return { success: true };
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Login failed";
+      let message = "Login failed";
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { error?: string } } };
+        message = axiosError.response?.data?.error || message;
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
       return { success: false, error: message };
     } finally {
       isLoading.value = false;
@@ -54,7 +60,13 @@ export const useAuthStore = defineStore("auth", () => {
       setAuth(data.user, data.token);
       return { success: true };
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Registration failed";
+      let message = "Registration failed";
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { error?: string } } };
+        message = axiosError.response?.data?.error || message;
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
       return { success: false, error: message };
     } finally {
       isLoading.value = false;

@@ -10,21 +10,13 @@ const apiError = ref<string | null>(null);
 
 // Event handlers
 const handleLogin = async (data: { email: string; password: string; rememberMe: boolean }) => {
-  try {
-    apiError.value = null;
-    await authStore.login(data.email, data.password);
-    router.push("/dashboard");
-  } catch (error: unknown) {
-    console.error("Login failed:", error);
+  apiError.value = null;
+  const result = await authStore.login(data.email, data.password);
 
-    if (error && typeof error === "object" && "response" in error) {
-      const axiosError = error as { response?: { data?: { error?: string } } };
-      apiError.value = axiosError.response?.data?.error || "Failed to log in. Please try again.";
-    } else if (error instanceof Error) {
-      apiError.value = error.message;
-    } else {
-      apiError.value = "An unexpected error occurred.";
-    }
+  if (result.success) {
+    router.push("/dashboard");
+  } else {
+    apiError.value = result.error || "Failed to log in. Please try again.";
   }
 };
 

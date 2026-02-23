@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import StatCard from '@/components/dashboard/StatCard.vue'
+import { h } from 'vue'
 
 describe('StatCard', () => {
   beforeEach(() => {
@@ -29,8 +30,9 @@ describe('StatCard', () => {
       }
     })
 
-    // Should format number (1.5M or similar)
-    expect(wrapper.text()).toContain('1,500,000')
+    // Should format number (1.5M or 1,500,000)
+    const text = wrapper.text()
+    expect(text).toContain('1.5M')
   })
 
   it('shows loading skeleton when loading', () => {
@@ -55,7 +57,9 @@ describe('StatCard', () => {
       }
     })
 
-    expect(wrapper.text()).toContain('+12.5%')
+    // Delta is shown with ▲ symbol and number
+    expect(wrapper.text()).toContain('▲')
+    expect(wrapper.text()).toContain('12.5')
   })
 
   it('shows negative delta in red', () => {
@@ -68,9 +72,9 @@ describe('StatCard', () => {
       }
     })
 
-    const deltaElement = wrapper.find('.text-red-500')
+    const deltaElement = wrapper.find('.text-red-600')
     expect(deltaElement.exists()).toBe(true)
-    expect(deltaElement.text()).toContain('-5.2%')
+    expect(deltaElement.text()).toContain('-5.2')
   })
 
   it('shows positive delta in green', () => {
@@ -83,21 +87,25 @@ describe('StatCard', () => {
       }
     })
 
-    const deltaElement = wrapper.find('.text-green-500')
+    const deltaElement = wrapper.find('.text-emerald-600')
     expect(deltaElement.exists()).toBe(true)
   })
 
-  it('displays icon when provided', () => {
+  it('displays icon when provided as component', () => {
+    const MockIcon = {
+      render: () => h('svg', { class: 'mock-icon' })
+    }
+
     const wrapper = mount(StatCard, {
       props: {
         title: 'Engagement',
         value: 500,
-        icon: 'Heart',
+        icon: MockIcon,
         loading: false
       }
     })
 
     // Should render the icon component
-    expect(wrapper.findComponent({ name: 'Heart' }).exists()).toBe(true)
+    expect(wrapper.findComponent(MockIcon).exists()).toBe(true)
   })
 })

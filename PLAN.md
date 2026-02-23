@@ -45,6 +45,15 @@ This document outlines the scope and implementation plan for the Gelitik analyti
   - [ ] **Dual Chart Dashboard** (`DualChartDashboard.vue`).
   - [ ] **Engagement Doughnut Chart** (`EngagementDoughnutChart.vue`).
 
+## 6. Edge Cases & Error Handling (Quality of Life)
+
+- **Goal:** Ensure a robust and frustration-free experience for users when things go wrong.
+- **Tasks:**
+  - [x] Password visibility toggles (Eye icon).
+  - [x] Clear API error messaging on Login/Signup (e.g., "Invalid Credentials", "Please verify your email").
+  - [ ] Graceful 404 pages for undefined routes.
+  - [x] Safe fallbacks when API returns no demographic data.
+
 ---
 
 ## Out of Scope (For Future Consideration)

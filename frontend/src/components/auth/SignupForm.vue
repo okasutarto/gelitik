@@ -1,32 +1,28 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-interface LoginFormData {
+interface SignupFormData {
+  name: string;
   email: string;
   password: string;
-  rememberMe: boolean;
 }
 
-defineProps<{
-  apiError?: string | null;
-}>();
-
 const emit = defineEmits<{
-  (e: "submit", data: LoginFormData): void;
-  (e: "google-login"): void;
-  (e: "forgot-password"): void;
-  (e: "signup"): void;
+  (e: "submit", data: SignupFormData): void;
+  (e: "google-signup"): void;
+  (e: "login"): void;
 }>();
 
+const name = ref("");
 const email = ref("");
 const password = ref("");
 const showPassword = ref(false);
 
 const handleSubmit = () => {
   emit("submit", {
+    name: name.value,
     email: email.value,
     password: password.value,
-    rememberMe: false,
   });
 };
 </script>
@@ -34,7 +30,7 @@ const handleSubmit = () => {
 <template>
   <div class="space-y-6">
     <button
-      @click="$emit('google-login')"
+      @click="$emit('google-signup')"
       class="w-full bg-white border-[3px] border-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-3 font-black text-lg transition-all active:translate-x-1 active:translate-y-1 active:shadow-none text-slate-900"
     >
       <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -55,19 +51,30 @@ const handleSubmit = () => {
           fill="#EA4335"
         />
       </svg>
-      Login with Google
+      Sign Up with Google
     </button>
 
     <div class="relative flex items-center py-4">
       <div class="flex-grow border-t-[3px] border-black"></div>
       <span
-        class="flex-shrink mx-4 w-10 h-10 rounded-full bg-[#FFCC00] border-[3px] border-black flex items-center justify-center font-black text-sm"
+        class="flex-shrink mx-4 w-10 h-10 rounded-full bg-[#FFCC00] border-[3px] border-black flex items-center justify-center font-black text-sm text-slate-900"
         >OR</span
       >
       <div class="flex-grow border-t-[3px] border-black"></div>
     </div>
 
     <form @submit.prevent="handleSubmit" class="space-y-4">
+      <div class="space-y-2">
+        <label class="font-black uppercase text-sm tracking-wider text-slate-900">Full Name</label>
+        <input
+          v-model="name"
+          type="text"
+          required
+          placeholder="John Doe"
+          class="w-full bg-white border-[3px] border-black p-4 font-bold placeholder:text-gray-400 focus:outline-none transition-colors text-slate-900"
+        />
+      </div>
+
       <div class="space-y-2">
         <label class="font-black uppercase text-sm tracking-wider text-slate-900"
           >Email Address</label
@@ -82,20 +89,13 @@ const handleSubmit = () => {
       </div>
 
       <div class="space-y-2">
-        <div class="flex justify-between">
-          <label class="font-black uppercase text-sm tracking-wider text-slate-900">Password</label>
-          <a
-            href="#"
-            @click.prevent="$emit('forgot-password')"
-            class="text-sm font-bold underline text-slate-900"
-            >Forgot?</a
-          >
-        </div>
+        <label class="font-black uppercase text-sm tracking-wider text-slate-900">Password</label>
         <div class="relative">
           <input
             v-model="password"
             :type="showPassword ? 'text' : 'password'"
             required
+            minlength="6"
             placeholder="••••••••"
             class="w-full bg-white border-[3px] border-black p-4 font-bold placeholder:text-gray-400 focus:outline-none transition-colors text-slate-900 pr-12"
           />
@@ -111,28 +111,21 @@ const handleSubmit = () => {
         </div>
       </div>
 
-      <div
-        v-if="apiError"
-        class="bg-red-100 border-[3px] border-red-500 p-4 shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]"
-      >
-        <p class="font-bold text-red-900 text-sm italic">{{ apiError }}</p>
-      </div>
-
       <button
         type="submit"
-        class="w-full bg-[#FFCC00] border-[4px] border-black p-5 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] font-[900] text-2xl uppercase tracking-tighter transition-all active:translate-x-1 active:translate-y-1 active:shadow-none mt-6 text-slate-900 hover:bg-[#E5F522]"
+        class="w-full bg-neo-accent border-[4px] border-black p-5 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] font-[900] text-2xl uppercase tracking-tighter transition-all active:translate-x-1 active:translate-y-1 active:shadow-none mt-6 text-slate-900 hover:bg-[#E5F522]"
       >
-        Sign In
+        Create Account
       </button>
     </form>
 
     <p class="text-center font-bold text-slate-900">
-      New here?
+      Already have an account?
       <a
         href="#"
-        @click.prevent="$emit('signup')"
+        @click.prevent="$emit('login')"
         class="font-black underline decoration-2 underline-offset-4 text-slate-900"
-        >Create account</a
+        >Sign in</a
       >
     </p>
   </div>

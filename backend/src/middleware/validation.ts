@@ -45,7 +45,7 @@ export function validate(schema: Joi.ObjectSchema) {
 
       return res.status(400).json({
         success: false,
-        error: 'Validation failed',
+        error: errors.length > 0 ? errors[0].message : 'Validation failed',
         details: errors
       });
     }

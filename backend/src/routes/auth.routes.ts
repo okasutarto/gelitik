@@ -19,6 +19,7 @@ const tiktokService = new TikTokService();
 router.post('/register', validate(schemas.register), AuthController.register);
 router.post('/login', validate(schemas.login), AuthController.login);
 router.get('/me', authenticateJwt, AuthController.getMe);
+router.get('/verify-email', AuthController.verifyEmail);
 
 // Google Auth
 router.get('/google', (req, res, next) => {
@@ -28,11 +29,7 @@ router.get('/google', (req, res, next) => {
     passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
 });
 
-router.get('/google/callback', passport.authenticate('google', { session: false, failureRedirect: '/login' }), (req, res) => {
-    // User is serialized by Passport - redirect to login with success flag
-    // Token is stored server-side in session, no token in URL
-    res.redirect(`${FRONTEND_URL}/login?auth=success`);
-});
+router.get('/google/callback', passport.authenticate('google', { session: false, failureRedirect: `${FRONTEND_URL}/login?error=google_failed` }), AuthController.googleCallback);
 
 // === Platform Connection (Protected) ===
 // Initiate Auth Flow

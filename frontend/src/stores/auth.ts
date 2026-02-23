@@ -40,7 +40,13 @@ export const useAuthStore = defineStore("auth", () => {
       setAuth(data.user, data.token);
       return { success: true };
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Login failed";
+      let message = "Login failed";
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { error?: string } } };
+        message = axiosError.response?.data?.error || message;
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
       return { success: false, error: message };
     } finally {
       isLoading.value = false;
@@ -50,11 +56,17 @@ export const useAuthStore = defineStore("auth", () => {
   const register = async (email: string, password: string, name: string) => {
     isLoading.value = true;
     try {
-      const { data } = await api.post("/auth/register", { email, password, name });
-      setAuth(data.user, data.token);
+      await api.post("/auth/register", { email, password, name });
+      // Do not auto-login; user must verify email first
       return { success: true };
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Registration failed";
+      let message = "Registration failed";
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { error?: string } } };
+        message = axiosError.response?.data?.error || message;
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
       return { success: false, error: message };
     } finally {
       isLoading.value = false;

@@ -20,3 +20,6 @@ export const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // PORT - Optional, defaults to 3000
 export const PORT = parseInt(process.env.PORT || '3000', 10);
+
+// RESEND_API_KEY - Optional, required for production emails
+export const RESEND_API_KEY = process.env.RESEND_API_KEY || '';

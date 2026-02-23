@@ -150,14 +150,20 @@ router.beforeEach(async (to, _from, next) => {
 
   const authStore = useAuthStore();
 
-  // Handle Google OAuth callback (e.g. /login?auth=success)
-  // Tokens are now stored server-side, no token in URL
-  if (to.path === "/login" && to.query.auth === "success") {
-    await authStore.checkSession();
-    if (authStore.isAuthenticated) {
+  // Handle Google OAuth callback (e.g. /login?token=xyz)
+  if (to.path === "/login" && to.query.token) {
+    const token = to.query.token as string;
+    // We only have the token, so we save it first
+    localStorage.setItem("token", token);
+    authStore.token = token; // Manually update state before checkSession
+
+    // Fetch the user object from the backend using the new token
+    const success = await authStore.checkSession();
+
+    if (success) {
       return next("/dashboard");
     }
-    return next("/login");
+    return next(`/login?error=session_failed`);
   }
 
   // Handle auth errors (e.g. /login?error=invalid_state)

@@ -37,6 +37,16 @@ const routes: RouteRecordRaw[] = [
       requiresAuth: false,
     },
   },
+  {
+    path: "/forgot-password",
+    name: "forgot-password",
+    component: () => import("@/pages/ForgotPasswordPage.vue"),
+    meta: {
+      title: "Forgot Password - Gelitik",
+      requiresAuth: false,
+      guestOnly: true,
+    },
+  },
 
   // Dashboard Routes
   {

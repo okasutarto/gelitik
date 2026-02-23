@@ -24,10 +24,14 @@ api.interceptors.response.use(
     // Handle specific HTTP status codes
     switch (error.response?.status) {
       case 401:
-        // Unauthorized - clear session and redirect
+        // Unauthorized - clear session
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        window.location.href = "/login";
+
+        // Only redirect if not already logging in and not already on the login page
+        if (error.config?.url !== "/auth/login" && window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
         break;
 
       case 403:

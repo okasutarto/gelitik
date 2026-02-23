@@ -1,35 +1,20 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "@/stores/auth";
-import LoginForm from "@/components/auth/LoginForm.vue";
 
 const router = useRouter();
-const authStore = useAuthStore();
-const apiError = ref<string | null>(null);
+const email = ref("");
+const isSubmitted = ref(false);
 
-// Event handlers
-const handleLogin = async (data: { email: string; password: string; rememberMe: boolean }) => {
-  apiError.value = null;
-  const result = await authStore.login(data.email, data.password);
-
-  if (result.success) {
-    router.push("/dashboard");
-  } else {
-    apiError.value = result.error || "Failed to log in. Please try again.";
-  }
+const handleSubmit = () => {
+  // Mock submission for MVP
+  // In the future this would call an API like: await api.post('/auth/forgot-password', { email: email.value })
+  console.log("Password reset requested for:", email.value);
+  isSubmitted.value = true;
 };
 
-const handleGoogleLogin = () => {
-  window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/auth/google`;
-};
-
-const handleForgotPassword = () => {
-  router.push("/forgot-password");
-};
-
-const handleSignup = () => {
-  router.push("/register");
+const handleBackToLogin = () => {
+  router.push("/login");
 };
 </script>
 
@@ -63,21 +48,8 @@ const handleSignup = () => {
           class="bg-white border-[3px] border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-sm rotate-[-2deg]"
         >
           <p class="text-2xl font-black leading-tight text-slate-900">
-            "Social media management that actually hits."
+            "Forgot your password? We've got your back."
           </p>
-          <div class="mt-4 flex items-center gap-3">
-            <div
-              class="w-10 h-10 rounded-full border-[2px] border-black bg-gray-200 overflow-hidden"
-            >
-              <img
-                alt="avatar"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBY-DKnb1ETvEtUH0lqwKQh-BooCoDYuV77L4YhOMWHqA4HAfw1aX5HbEs2oE-QDOypgeTvSudFI25OHDUBsgLI51LZfwXTguAWGVxxIYbZ0Ox8tu5C73yQjD8IA3nc3CiOjBeOWT9gpheJadqWmq_7YOHe5Dmh-5msitLybLPkFVZDfVZr_WtFxpJgqZVol94QZHGtGJmLoVS39XDf1voFHw2pdo5TCJJmP1tWxCdPC1TFOYZeN8Yo5c1OW7K_BuWjkKq5n0f8b34c"
-              />
-            </div>
-            <div>
-              <p class="font-black text-sm text-slate-700">@marketing_guru</p>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -105,18 +77,59 @@ const handleSignup = () => {
 
         <div class="space-y-2">
           <h2 class="text-5xl font-[900] tracking-tighter uppercase text-slate-900">
-            Welcome Back
+            Reset Password
           </h2>
-          <p class="font-bold text-slate-600">Enter your details to access your dashboard.</p>
+          <p class="font-bold text-slate-600">
+            {{
+              isSubmitted
+                ? "Check your email for reset instructions."
+                : "Enter your email address and we'll send you a link to reset your password."
+            }}
+          </p>
         </div>
 
-        <LoginForm
-          :api-error="apiError"
-          @submit="handleLogin"
-          @google-login="handleGoogleLogin"
-          @forgot-password="handleForgotPassword"
-          @signup="handleSignup"
-        />
+        <div v-if="!isSubmitted">
+          <form @submit.prevent="handleSubmit" class="space-y-4">
+            <div class="space-y-2">
+              <label class="font-black uppercase text-sm tracking-wider text-slate-900"
+                >Email Address</label
+              >
+              <input
+                v-model="email"
+                type="email"
+                required
+                placeholder="name@company.com"
+                class="w-full bg-white border-[3px] border-black p-4 font-bold placeholder:text-gray-400 focus:outline-none transition-colors text-slate-900"
+              />
+            </div>
+
+            <button
+              type="submit"
+              class="w-full bg-[#FFCC00] border-[4px] border-black p-5 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] font-[900] text-2xl uppercase tracking-tighter transition-all active:translate-x-1 active:translate-y-1 active:shadow-none mt-6 text-slate-900"
+            >
+              Send Reset Link
+            </button>
+          </form>
+        </div>
+        <div v-else class="space-y-6">
+          <div
+            class="bg-green-100 border-[3px] border-green-500 p-4 shadow-[4px_4px_0px_0px_rgba(34,197,94,1)]"
+          >
+            <p class="font-bold text-green-900 text-sm">
+              If an account exists with that email, a password reset link has been sent. Follow the
+              instructions in the email to reset your password.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex justify-center mt-6">
+          <button
+            @click="handleBackToLogin"
+            class="font-black underline decoration-2 underline-offset-4 text-slate-900 hover:text-slate-600 transition-colors"
+          >
+            Return to Login
+          </button>
+        </div>
 
         <div class="md:hidden mt-12 w-full pt-8 border-t-[3px] border-black/10 text-center">
           <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">

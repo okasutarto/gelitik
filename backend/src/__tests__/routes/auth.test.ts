@@ -44,9 +44,11 @@ describe('Auth Routes', () => {
         email: 'new@example.com',
         password: 'hashed',
         name: 'New User',
+        avatar: null,
+        emailVerified: false,
+        verificationToken: null,
         googleId: null,
-        tiktokId: null,
-        instagramId: null,
+        githubId: null,
         createdAt: new Date(),
         updatedAt: new Date()
       })
@@ -71,9 +73,11 @@ describe('Auth Routes', () => {
         email: 'existing@example.com',
         password: 'hashed',
         name: 'Existing',
+        avatar: null,
+        emailVerified: true,
+        verificationToken: null,
         googleId: null,
-        tiktokId: null,
-        instagramId: null,
+        githubId: null,
         createdAt: new Date(),
         updatedAt: new Date()
       })
@@ -124,9 +128,11 @@ describe('Auth Routes', () => {
         email: 'test@example.com',
         password: '$2a$10$hashedpassword', // bcrypt hash for 'password123'
         name: 'Test User',
+        avatar: null,
+        emailVerified: true,
+        verificationToken: null,
         googleId: null,
-        tiktokId: null,
-        instagramId: null,
+        githubId: null,
         createdAt: new Date(),
         updatedAt: new Date()
       })

@@ -43,8 +43,11 @@ Gelitik is a comprehensive web application designed to provide deep, actionable 
 
 - **Cross-Platform Analytics**: Seamlessly integrate and pull data from both Instagram Graph API and TikTok APIs.
 - **Neo-Brutalist UI**: A stunning, modern, and highly responsive dark-mode compatible interface built with Tailwind CSS.
-- **Interactive Data Visualization**: Rich, dynamic charts (Doughnut, Bar, Line) powered by Chart.js and `vue-chartjs`.
-- **Secure OAuth Flows**: Robust authentication flows using Passport.js for Google, GitHub, TikTok, and Instagram integrations.
+- **Historical Data Tracking**: Automatic daily database snapshots of follower counts and engagement metrics.
+- **Interactive Data Visualization**: Rich, dynamic charts (Doughnut, Bar, Line) with custom date-range filtering (7D, 14D, 30D, 90D) powered by Chart.js.
+- **KPI Delta Insights**: Real-time calculated growth indicators comparing current metrics against historical snapshots.
+- **Secure OAuth Flows**: Robust authentication flows using Passport.js for Google, TikTok, and Instagram integrations.
+- **Connection Management**: Custom UI and explicit confirmation modals for managing linked social accounts safely.
 - **Automated Data Processing**: Background cron jobs powered by `node-cron` to periodically sync and cache social media analytics.
 - **Security & Validation**: Built-in protections including API rate limiting, Joi input validation, CSRF state verification, and centralized error handling.
 - **Type-Safe Backend**: Complete end-to-end type safety using TypeScript, Express, and Prisma ORM with a PostgreSQL database.
@@ -53,7 +56,7 @@ Gelitik is a comprehensive web application designed to provide deep, actionable 
 
 Here is a glimpse of the Gelitik dashboard analyzing real-time Instagram and TikTok metrics:
 
-![Gelitik Dashboard Demo](https://placehold.co/1200x600/1E1E1E/FFFFFF?text=Gelitik+Neo-Brutalist+Dashboard+%7C+Social+Analytics)
+![Gelitik Dashboard Demo](image-1.png)
 _An overview of the main analytics dashboard highlighting user engagement and demographic charts in dark mode._
 
 ## <a id="tech-stack"></a>Tech Stack
@@ -310,6 +313,8 @@ Deploying Gelitik requires setting up both the backend and frontend separately.
 - [x] TikTok OAuth and Basic Analytics Integration.
 - [x] Meta App approval and Instagram Graph API configuration.
 - [x] Comprehensive security audit and code quality hardening.
+- [x] Historical data tracking and date-range filtering mechanisms.
+- [x] Enhanced connection management with custom confirmation modals.
 - [ ] Comprehensive unit and integration testing setup.
 - [ ] Export reports functionality (PDF/CSV).
 - [ ] Real-time WebSocket notifications for completed background jobs.

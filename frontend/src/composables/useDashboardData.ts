@@ -38,8 +38,8 @@ export function useDashboardData() {
         value: dashboardStore.totalEngagementRate.toFixed(2) + "%",
         rawValue: dashboardStore.totalEngagementRate,
         subtitle: "Avg. across platforms",
-        delta: deltas.engagement.delta !== 0 ? parseFloat(deltas.engagement.delta.toFixed(2)) : undefined,
-        deltaPercent: deltas.engagement.percent !== 0 ? deltas.engagement.percent : undefined,
+        delta: parseFloat(deltas.engagement.delta.toFixed(2)),
+        deltaPercent: deltas.engagement.percent,
         deltaLabel: "vs. earliest snapshot",
       },
       {

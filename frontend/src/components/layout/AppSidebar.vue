@@ -237,7 +237,9 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
                 v-if="platform.connected"
                 :class="[
                   'absolute rounded-full bg-green-500 border border-green-600 shadow-sm',
-                  isCollapsed ? 'top-1 right-1 size-2' : 'top-2 right-2 size-2.5',
+                  isCollapsed
+                    ? 'top-1 right-1 size-2'
+                    : 'top-1/2 -translate-y-1/2 right-4 size-2.5',
                 ]"
                 :title="`${platform.name} is connected`"
               />

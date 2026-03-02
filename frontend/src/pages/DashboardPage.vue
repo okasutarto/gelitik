@@ -71,7 +71,7 @@ const kpiIcons = [Users, Heart, FileText, Eye];
             <h2 class="text-4xl lg:text-5xl font-black uppercase text-slate-900 leading-tight">
               Overview
             </h2>
-            <div v-if="!isLoading" class="relative group">
+            <div class="relative group">
               <Info
                 :size="18"
                 class="text-slate-900 opacity-50 hover:opacity-100 cursor-help transition-opacity mt-1"

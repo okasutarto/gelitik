@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Bar, Line } from "vue-chartjs";
+import { Line } from "vue-chartjs";
 import { useTheme } from "@/composables/useTheme";
 import type { Platform } from "@/types/platform";
 import ChartTimeframeControl from "@/components/dashboard/ChartTimeframeControl.vue";
@@ -75,9 +75,15 @@ const chartData = computed(() => {
         datasets.push({
           label: "Instagram",
           data: sortedDates.map((d) => igMap.get(d) ?? 0),
-          backgroundColor: isDark.value ? "#FF0099" : "#ec4899",
-          borderRadius: 4,
-          barPercentage: 0.6,
+          borderColor: isDark.value ? "#FF0099" : "#ec4899",
+          backgroundColor: isDark.value ? "rgba(255, 0, 153, 0.1)" : "rgba(236, 72, 153, 0.1)",
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: isDark.value ? "#FF0099" : "#fff",
+          pointBorderColor: isDark.value ? "#fff" : "#ec4899",
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
         });
       }
 
@@ -87,9 +93,15 @@ const chartData = computed(() => {
         datasets.push({
           label: "TikTok",
           data: sortedDates.map((d) => ttMap.get(d) ?? 0),
-          backgroundColor: isDark.value ? "#00F0FF" : "#0f172a",
-          borderRadius: 4,
-          barPercentage: 0.6,
+          borderColor: isDark.value ? "#00F0FF" : "#0f172a",
+          backgroundColor: isDark.value ? "rgba(0, 240, 255, 0.1)" : "rgba(15, 23, 42, 0.1)",
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: isDark.value ? "#00F0FF" : "#fff",
+          pointBorderColor: isDark.value ? "#fff" : "#0f172a",
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
         });
       }
 
@@ -108,9 +120,7 @@ const chartData = computed(() => {
       : props.historicalData?.reach;
 
     let displayLabels = labels;
-    let displayData = isFollowers
-      ? [4000, 5000, 7000, 5500, 8000, 6500, 9000]
-      : [1500, 2200, 1800, 3100, 2800, 4200, 3900];
+    let displayData: number[] = [];
 
     if (historySource && historySource.length > 0) {
       // Sort chronologically just in case API returns out of order
@@ -179,7 +189,7 @@ const chartOptions = computed(() => ({
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      display: props.platform === "all",
+      display: true,
       position: "top" as const,
       align: "end" as const,
       labels: {
@@ -232,8 +242,6 @@ const chartOptions = computed(() => ({
     },
   },
 }));
-
-const isBarChart = computed(() => props.platform === "all");
 </script>
 
 <template>
@@ -270,8 +278,7 @@ const isBarChart = computed(() => props.platform === "all");
 
       <!-- Chart -->
       <div class="h-64 w-full">
-        <Bar v-if="isBarChart" :data="chartData" :options="chartOptions" />
-        <Line v-else :data="chartData" :options="chartOptions" />
+        <Line :data="chartData" :options="chartOptions" />
       </div>
     </div>
   </div>

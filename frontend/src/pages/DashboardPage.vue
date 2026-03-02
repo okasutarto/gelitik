@@ -35,14 +35,14 @@ const kpiIcons = [Users, Heart, FileText, Eye];
     >
       <div class="flex items-center justify-between">
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-3">
+          <div class="flex items-start gap-3">
             <h2 class="text-4xl lg:text-5xl font-black uppercase text-slate-900 leading-tight">
               Overview
             </h2>
             <div v-if="!isLoading" class="relative group">
               <Info
                 :size="18"
-                class="text-slate-900 opacity-50 hover:opacity-100 cursor-help transition-opacity mt-2"
+                class="text-slate-900 opacity-50 hover:opacity-100 cursor-help transition-opacity mt-1"
               />
               <div
                 class="absolute left-0 top-full mt-2 w-72 p-3 rounded border-2 border-black dark:border-electric bg-white dark:bg-navy text-xs text-slate-700 dark:text-slate-300 leading-relaxed opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-lg"

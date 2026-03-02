@@ -68,11 +68,13 @@ _An overview of the main analytics dashboard highlighting user engagement and de
 | **Tailwind CSS**            | Utility-first CSS framework for styling the neo-brutalist interface.             |
 | **Pinia**                   | State management library for handling global app state on the frontend.          |
 | **Chart.js / vue-chartjs**  | Rendering beautiful, interactive data visualizations.                            |
+| **Lucide Icons**            | Clean, crisp SVG icons used heavily across the dashboard.                        |
 | **Node.js & Express**       | Backend runtime and framework for handling API requests and OAuth routes.        |
 | **TypeScript**              | Static typing across both frontend and backend to prevent runtime errors.        |
 | **Prisma**                  | Modern Next-Generation ORM for database modeling and migrations.                 |
-| **PostgreSQL**              | Relational database (hosted on Supabase) for storing user and analytics data.    |
+| **PostgreSQL**              | Relational database for storing user, OAuth state, and snapshot analytics data.  |
 | **Passport.js**             | Handling secure OAuth 2.0 authentication strategies (TikTok, Instagram, Google). |
+| **Node-Cron**               | Automating daily database snapshots and external API background fetching.        |
 
 ## <a id="prerequisites"></a>Prerequisites
 
@@ -194,13 +196,19 @@ _Expected JSON Output:_
 
 The Gelitik backend exposes several RESTful endpoints for authentication and analytics data retrieval.
 
-| Method | Endpoint                   | Description                                                                            | Request Body                 | Response Format                                                                |
-| :----- | :------------------------- | :------------------------------------------------------------------------------------- | :--------------------------- | :----------------------------------------------------------------------------- |
-| `GET`  | `/auth/tiktok`             | Initiates the TikTok OAuth 2.0 flow.                                                   | None                         | `302 Redirect` to TikTok login.                                                |
-| `GET`  | `/auth/tiktok/callback`    | Handles the callback from TikTok, exchanges code for token, and redirects to frontend. | `?code=string`               | `302 Redirect` to Frontend `/dashboard`                                        |
-| `GET`  | `/auth/instagram-graph`    | Initiates the Meta/Instagram Graph API OAuth flow.                                     | None                         | `302 Redirect` to Meta login.                                                  |
-| `GET`  | `/api/analytics/instagram` | Fetches the cached or live Instagram analytics for the authenticated user.             | None (Requires Bearer Token) | `JSON` containing profile stats, media performance, and audience demographics. |
-| `POST` | `/api/auth/logout`         | Clears the session and invalidates the current JWT token.                              | None                         | `{ "message": "Logged out successfully" }`                                     |
+| Method   | Endpoint                         | Description                                                                            | Request Body              |
+| :------- | :------------------------------- | :------------------------------------------------------------------------------------- | :------------------------ |
+| `GET`    | `/auth/tiktok/connect`           | Initiates the TikTok OAuth 2.0 connection flow.                                        | None                      |
+| `GET`    | `/auth/tiktok/callback`          | Handles the callback from TikTok, exchanges code for token, and redirects to frontend. | `?code=string`            |
+| `GET`    | `/auth/instagram-graph/connect`  | Initiates the Meta/Instagram Graph API OAuth flow for Business Accounts.               | None                      |
+| `GET`    | `/auth/instagram-graph/callback` | Handles the Meta OAuth callback and stores encrypted tokens.                           | `?code=string`            |
+| `GET`    | `/api/accounts`                  | Lists all connected social media accounts for the authenticated user.                  | None (Requires JWT)       |
+| `DELETE` | `/api/accounts/:id`              | Disconnects a social account and permanently deletes its associated analytics data.    | None (Requires JWT)       |
+| `GET`    | `/api/accounts/status`           | Gets a brief connection status list (used for sidebar UI dots).                        | None (Requires JWT)       |
+| `GET`    | `/api/analytics/history`         | Retrieves daily aggregated DB snapshots for follower growth & engagement filtering.    | `?days=number` (optional) |
+| `GET`    | `/api/analytics/instagram-graph` | Fetches the latest live Instagram Business analytics (audience, engagement, media).    | None (Requires JWT)       |
+| `GET`    | `/api/analytics/tiktok`          | Fetches the latest live TikTok Analytics (video metrics, profile views, followers).    | None (Requires JWT)       |
+| `POST`   | `/api/auth/logout`               | Clears the session and invalidates the current JWT token.                              | None                      |
 
 ## <a id="project-structure"></a>Project Structure
 
@@ -225,15 +233,18 @@ gelitik/
     ├── public/               # Static assets
     ├── src/                  # Frontend source code
     │   ├── assets/           # CSS files (Tailwind imports)
-    │   ├── components/       # Reusable Vue components (Charts, Cards, Modals)
-    │   ├── composables/      # Vue 3 custom hooks
-    │   ├── layouts/          # Application shell layouts (Sidebar, Header)
+    │   ├── components/       # Reusable Vue components
+    │   │   ├── dashboard/    # Complex domain widgets (Charts, KPI Cards, Tables)
+    │   │   ├── layout/       # Structural components (Sidebar, PageHeader)
+    │   │   └── loading/      # Specialized skeleton loaders for empty states
+    │   ├── composables/      # Vue 3 custom hooks (e.g. useDashboardData)
+    │   ├── layouts/          # Application shell wrappers (DashboardLayout)
     │   ├── pages/            # View components matching routes
     │   ├── router/           # Vue Router configuration
     │   ├── services/         # Axios config and API helper classes
     │   ├── stores/           # Pinia state management stores
-    │   ├── types/            # TypeScript interfaces for frontend
-    │   └── utils/            # Shared utility functions
+    │   ├── types/            # TypeScript interfaces for frontend types
+    │   └── utils/            # Shared utility functions (e.g. formatters)
     ├── index.html            # Vite entry point
     ├── vite.config.ts        # Vite build configuration
     └── package.json          # Frontend dependencies

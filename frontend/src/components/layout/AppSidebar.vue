@@ -82,7 +82,9 @@ const platformItems = computed<SubNavItem[]>(() => [
     path: "/dashboard/instagram-graph",
     icon: Instagram,
     color: "pink",
-    connected: connectedPlatforms.value.includes("instagram"),
+    connected:
+      connectedPlatforms.value.includes("instagram") ||
+      connectedPlatforms.value.includes("instagram-graph"),
   },
   {
     name: "TikTok",

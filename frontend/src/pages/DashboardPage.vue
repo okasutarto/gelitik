@@ -35,9 +35,24 @@ const kpiIcons = [Users, Heart, FileText, Eye];
     >
       <div class="flex items-center justify-between">
         <div class="flex-1 min-w-0">
-          <h2 class="text-4xl lg:text-5xl font-black uppercase text-slate-900 leading-tight">
-            Overview
-          </h2>
+          <div class="flex items-center gap-3">
+            <h2 class="text-4xl lg:text-5xl font-black uppercase text-slate-900 leading-tight">
+              Overview
+            </h2>
+            <div v-if="!isLoading" class="relative group">
+              <Info
+                :size="18"
+                class="text-slate-900 opacity-50 hover:opacity-100 cursor-help transition-opacity mt-2"
+              />
+              <div
+                class="absolute left-0 top-full mt-2 w-72 p-3 rounded border-2 border-black dark:border-electric bg-white dark:bg-navy text-xs text-slate-700 dark:text-slate-300 leading-relaxed opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-lg"
+              >
+                Instagram metrics reflect the <strong>last 7 days</strong>. TikTok metrics are based
+                on <strong>recent content</strong>. For detailed time-range filtering, visit each
+                platform's analytics page.
+              </div>
+            </div>
+          </div>
           <p class="text-sm font-bold opacity-60 uppercase text-slate-900 mt-2">
             Welcome back to your master dashboard.
           </p>
@@ -55,7 +70,7 @@ const kpiIcons = [Users, Heart, FileText, Eye];
             :class="{ 'animate-spin': isLoading }"
             title="Refresh data"
           >
-            <RefreshCw :size="16" class="text-slate-900" />
+            <RefreshCw :size="16" class="text-slate-900 dark:text-white" />
           </button>
         </div>
       </div>
@@ -75,16 +90,6 @@ const kpiIcons = [Users, Heart, FileText, Eye];
       >
         Retry
       </button>
-    </div>
-
-    <!-- Data Source Info -->
-    <div v-if="!isLoading" class="flex items-start gap-2 mb-6 px-1">
-      <Info :size="16" class="text-black dark:text-white mt-0.5 shrink-0" />
-      <p class="text-sm text-black dark:text-white leading-relaxed">
-        Instagram metrics reflect the <strong>last 7 days</strong>. TikTok metrics are based on
-        <strong>recent content</strong>. For detailed time-range filtering, visit each platform's
-        analytics page.
-      </p>
     </div>
 
     <!-- KPI Stat Cards -->

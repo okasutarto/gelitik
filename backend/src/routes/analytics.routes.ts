@@ -58,6 +58,50 @@ router.get('/overview', async (req, res) => {
 });
 
 /**
+ * GET /api/analytics/history
+ * Returns daily analytics snapshots for all connected accounts, grouped by platform
+ */
+router.get('/history', async (req, res) => {
+    const userId = (req.user as any)?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    try {
+        const days = parseInt(req.query.days as string) || 30;
+        const since = new Date();
+        since.setDate(since.getDate() - days);
+        since.setHours(0, 0, 0, 0);
+
+        const accounts = await prisma.socialAccount.findMany({
+            where: { userId, isActive: true },
+            include: {
+                analytics: {
+                    where: { date: { gte: since } },
+                    orderBy: { date: 'asc' }
+                }
+            }
+        });
+
+        const history: Record<string, { date: string; followers: number; totalViews: number; totalLikes: number; engagementRate: number }[]> = {};
+
+        for (const account of accounts) {
+            const platform = account.platform;
+            history[platform] = account.analytics.map(a => ({
+                date: a.date.toISOString().split('T')[0],
+                followers: a.followers,
+                totalViews: a.totalViews,
+                totalLikes: a.totalLikes,
+                engagementRate: a.engagementRate
+            }));
+        }
+
+        res.json(history);
+    } catch (error) {
+        console.error('History fetch error:', error);
+        res.status(500).json({ error: 'Failed to fetch analytics history' });
+    }
+});
+
+/**
  * GET /api/analytics/:platform
  * Platform-specific deep dive
  */
@@ -121,6 +165,71 @@ router.get('/:platform', validatePlatform, async (req, res) => {
             createdAt: account.createdAt,
             updatedAt: account.updatedAt
         };
+
+        // Record daily analytics snapshot (one per account per day)
+        try {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let snapshotFollowers = 0;
+            let snapshotFollowing = 0;
+            let snapshotLikes = 0;
+            let snapshotComments = 0;
+            let snapshotShares = 0;
+            let snapshotViews = 0;
+            let snapshotEngagement = 0;
+
+            if (platform === 'tiktok' && data?.analytics) {
+                snapshotFollowers = data.analytics.followers || 0;
+                snapshotFollowing = data.analytics.following || 0;
+                snapshotLikes = data.analytics.totalLikes || 0;
+                snapshotComments = data.analytics.totalComments || 0;
+                snapshotShares = data.analytics.totalShares || 0;
+                snapshotViews = data.analytics.totalViews || 0;
+                snapshotEngagement = data.analytics.engagementRate || 0;
+            } else if ((platform === 'instagram-graph' || platform === 'instagram') && data?.insights) {
+                snapshotFollowers = data.insights.followers || data.profile?.followers_count || 0;
+                snapshotFollowing = data.insights.following || data.profile?.follows_count || 0;
+                snapshotLikes = data.insights.likes || 0;
+                snapshotComments = data.insights.comments || 0;
+                snapshotShares = data.insights.shares || 0;
+                snapshotViews = data.insights.views || data.insights.reach || 0;
+                snapshotEngagement = data.insights.reach > 0
+                    ? (data.insights.totalInteractions / data.insights.reach) * 100 : 0;
+            }
+
+            await prisma.analytics.upsert({
+                where: {
+                    accountId_date: {
+                        accountId: account.id,
+                        date: today
+                    }
+                },
+                update: {
+                    followers: snapshotFollowers,
+                    following: snapshotFollowing,
+                    totalLikes: snapshotLikes,
+                    totalComments: snapshotComments,
+                    totalShares: snapshotShares,
+                    totalViews: snapshotViews,
+                    engagementRate: snapshotEngagement
+                },
+                create: {
+                    accountId: account.id,
+                    date: today,
+                    followers: snapshotFollowers,
+                    following: snapshotFollowing,
+                    totalLikes: snapshotLikes,
+                    totalComments: snapshotComments,
+                    totalShares: snapshotShares,
+                    totalViews: snapshotViews,
+                    engagementRate: snapshotEngagement
+                }
+            });
+        } catch (snapshotError) {
+            // Don't fail the request if snapshot recording fails
+            console.error('[Analytics] Snapshot upsert error:', snapshotError);
+        }
 
         res.json({ account: sanitizedAccount, data });
     } catch (error) {

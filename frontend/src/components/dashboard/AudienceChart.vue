@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Bar, Line } from "vue-chartjs";
+import { Line } from "vue-chartjs";
 import { useTheme } from "@/composables/useTheme";
 import type { Platform } from "@/types/platform";
 import ChartTimeframeControl from "@/components/dashboard/ChartTimeframeControl.vue";
@@ -11,11 +11,17 @@ interface HistoricalData {
   followers?: { date: string; value: number }[];
 }
 
+interface FollowerHistoryEntry {
+  date: string;
+  followers: number;
+}
+
 interface Props {
   platform: Platform;
   title?: string;
   subtitle?: string;
   historicalData?: HistoricalData;
+  followerHistory?: Record<string, FollowerHistoryEntry[]>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -33,28 +39,79 @@ const metricOptions = [
 
 const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-// Mock data - in real app, this would come from API
-// Mock data - in real app, this would come from API
+// Check if we have real history data for the combined chart
+const hasHistoryData = computed(() => {
+  if (!props.followerHistory) return false;
+  return Object.values(props.followerHistory).some((arr) => arr.length > 0);
+});
+
 const chartData = computed(() => {
   if (props.platform === "all") {
-    return {
-      labels,
-      datasets: [
-        {
+    // Use real follower history data from DB snapshots
+    if (hasHistoryData.value && props.followerHistory) {
+      // Collect all unique dates across platforms
+      const allDates = new Set<string>();
+      for (const entries of Object.values(props.followerHistory)) {
+        for (const entry of entries) {
+          allDates.add(entry.date);
+        }
+      }
+      const sortedDates = [...allDates].sort();
+      const displayLabels = sortedDates.map((d) => {
+        const date = new Date(d);
+        return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      });
+
+      const datasets = [];
+
+      // Instagram (check both instagram-graph and instagram keys)
+      const igKey = props.followerHistory["instagram-graph"]
+        ? "instagram-graph"
+        : props.followerHistory["instagram"]
+          ? "instagram"
+          : null;
+      if (igKey && props.followerHistory[igKey].length > 0) {
+        const igMap = new Map(props.followerHistory[igKey].map((e) => [e.date, e.followers]));
+        datasets.push({
           label: "Instagram",
-          data: [2000, 3000, 4000, 2500, 3500, 4500, 3000],
-          backgroundColor: isDark.value ? "#FF0099" : "#ec4899",
-          borderRadius: 4,
-          barPercentage: 0.6,
-        },
-        {
+          data: sortedDates.map((d) => igMap.get(d) ?? 0),
+          borderColor: isDark.value ? "#FF0099" : "#ec4899",
+          backgroundColor: isDark.value ? "rgba(255, 0, 153, 0.1)" : "rgba(236, 72, 153, 0.1)",
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: isDark.value ? "#FF0099" : "#fff",
+          pointBorderColor: isDark.value ? "#fff" : "#ec4899",
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        });
+      }
+
+      // TikTok
+      if (props.followerHistory["tiktok"]?.length > 0) {
+        const ttMap = new Map(props.followerHistory["tiktok"].map((e) => [e.date, e.followers]));
+        datasets.push({
           label: "TikTok",
-          data: [2500, 3000, 4500, 3000, 3500, 4500, 3500],
-          backgroundColor: isDark.value ? "#00F0FF" : "#0f172a",
-          borderRadius: 4,
-          barPercentage: 0.6,
-        },
-      ],
+          data: sortedDates.map((d) => ttMap.get(d) ?? 0),
+          borderColor: isDark.value ? "#00F0FF" : "#0f172a",
+          backgroundColor: isDark.value ? "rgba(0, 240, 255, 0.1)" : "rgba(15, 23, 42, 0.1)",
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: isDark.value ? "#00F0FF" : "#fff",
+          pointBorderColor: isDark.value ? "#fff" : "#0f172a",
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        });
+      }
+
+      return { labels: displayLabels, datasets };
+    }
+
+    // No history data yet - return empty chart
+    return {
+      labels: [],
+      datasets: [],
     };
   } else if (props.platform === "instagram") {
     const isFollowers = selectedMetric.value === "followers";
@@ -63,9 +120,7 @@ const chartData = computed(() => {
       : props.historicalData?.reach;
 
     let displayLabels = labels;
-    let displayData = isFollowers
-      ? [4000, 5000, 7000, 5500, 8000, 6500, 9000]
-      : [1500, 2200, 1800, 3100, 2800, 4200, 3900];
+    let displayData: number[] = [];
 
     if (historySource && historySource.length > 0) {
       // Sort chronologically just in case API returns out of order
@@ -134,7 +189,7 @@ const chartOptions = computed(() => ({
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      display: props.platform === "all",
+      display: true,
       position: "top" as const,
       align: "end" as const,
       labels: {
@@ -187,14 +242,19 @@ const chartOptions = computed(() => ({
     },
   },
 }));
-
-const isBarChart = computed(() => props.platform === "all");
 </script>
 
 <template>
   <div class="brutal-card brutal-hover-lift rounded-none p-6">
     <div v-if="platform === 'tiktok'" class="p-8 text-center">
       <p class="text-slate-500 dark:text-slate-400">Audience data coming soon for TikTok</p>
+    </div>
+    <div v-else-if="platform === 'all' && !hasHistoryData" class="p-8 text-center">
+      <p class="text-sm font-bold text-slate-500 dark:text-slate-400">No historical data yet</p>
+      <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+        Follower snapshots are recorded each time you view your analytics. Check back after a few
+        days.
+      </p>
     </div>
     <div v-else>
       <!-- Header -->
@@ -218,8 +278,7 @@ const isBarChart = computed(() => props.platform === "all");
 
       <!-- Chart -->
       <div class="h-64 w-full">
-        <Bar v-if="isBarChart" :data="chartData" :options="chartOptions" />
-        <Line v-else :data="chartData" :options="chartOptions" />
+        <Line :data="chartData" :options="chartOptions" />
       </div>
     </div>
   </div>

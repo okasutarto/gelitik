@@ -21,32 +21,44 @@ export function useDashboardData() {
   const instagramStore = useInstagramStore();
 
   // KPI cards for the overview page
-  const kpiCards = computed(() => [
-    {
-      title: "Total Audience",
-      value: formatNumber(dashboardStore.totalFollowers),
-      rawValue: dashboardStore.totalFollowers,
-      subtitle: "Combined followers",
-    },
-    {
-      title: "Engagement Rate",
-      value: dashboardStore.totalEngagementRate.toFixed(2) + "%",
-      rawValue: dashboardStore.totalEngagementRate,
-      subtitle: "Avg. across platforms",
-    },
-    {
-      title: "Total Posts",
-      value: formatNumber(dashboardStore.totalPosts),
-      rawValue: dashboardStore.totalPosts,
-      subtitle: "Published content",
-    },
-    {
-      title: "Total Views",
-      value: formatNumber(dashboardStore.totalViews),
-      rawValue: dashboardStore.totalViews,
-      subtitle: "Impressions + views",
-    },
-  ]);
+  const kpiCards = computed(() => {
+    const deltas = dashboardStore.kpiDeltas;
+    return [
+      {
+        title: "Total Audience",
+        value: formatNumber(dashboardStore.totalFollowers),
+        rawValue: dashboardStore.totalFollowers,
+        subtitle: "Combined followers",
+        delta: deltas.followers.delta,
+        deltaPercent: deltas.followers.percent,
+        deltaLabel: "vs. earliest snapshot",
+      },
+      {
+        title: "Engagement Rate",
+        value: dashboardStore.totalEngagementRate.toFixed(2) + "%",
+        rawValue: dashboardStore.totalEngagementRate,
+        subtitle: "Avg. across platforms",
+        delta: parseFloat(deltas.engagement.delta.toFixed(2)),
+        deltaPercent: deltas.engagement.percent,
+        deltaLabel: "vs. earliest snapshot",
+      },
+      {
+        title: "Total Views",
+        value: formatNumber(dashboardStore.totalViews),
+        rawValue: dashboardStore.totalViews,
+        subtitle: "Combined platform views",
+        delta: deltas.views.delta,
+        deltaPercent: deltas.views.percent,
+        deltaLabel: "vs. earliest snapshot",
+      },
+      {
+        title: "Total Posts",
+        value: formatNumber(dashboardStore.totalPosts),
+        rawValue: dashboardStore.totalPosts,
+        subtitle: "Published content",
+      }
+    ];
+  });
 
   // Platform health snapshots
   const platformHealth = computed(() => ({
@@ -57,11 +69,11 @@ export function useDashboardData() {
   // Combined top content
   const topContent = computed(() => dashboardStore.topContent);
 
-  // Audience growth placeholder (to be connected when time-series data is available)
-  const audienceGrowth = computed(() => ({
-    instagram: [] as { date: string; value: number }[],
-    tiktok: [] as { date: string; value: number }[],
-  }));
+  // Historical follower data from DB snapshots
+  const followerHistory = computed(() => dashboardStore.followerHistory);
+
+  // Combined engagement history for the engagement chart
+  const engagementHistory = computed(() => dashboardStore.combinedEngagementHistory);
 
   // Heatmap data derived from media post times
   const heatmapData = computed(() => {
@@ -122,7 +134,10 @@ export function useDashboardData() {
     kpiCards,
     platformHealth,
     topContent,
-    audienceGrowth,
+    followerHistory,
+    engagementHistory,
+    selectedDays: computed(() => dashboardStore.selectedDays),
+    setDateRange: dashboardStore.setDateRange,
     heatmapData,
     isLoading,
     error,

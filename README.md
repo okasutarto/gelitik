@@ -43,8 +43,11 @@ Gelitik is a comprehensive web application designed to provide deep, actionable 
 
 - **Cross-Platform Analytics**: Seamlessly integrate and pull data from both Instagram Graph API and TikTok APIs.
 - **Neo-Brutalist UI**: A stunning, modern, and highly responsive dark-mode compatible interface built with Tailwind CSS.
-- **Interactive Data Visualization**: Rich, dynamic charts (Doughnut, Bar, Line) powered by Chart.js and `vue-chartjs`.
-- **Secure OAuth Flows**: Robust authentication flows using Passport.js for Google, GitHub, TikTok, and Instagram integrations.
+- **Historical Data Tracking**: Automatic daily database snapshots of follower counts and engagement metrics.
+- **Interactive Data Visualization**: Rich, dynamic charts (Doughnut, Bar, Line) with custom date-range filtering (7D, 14D, 30D, 90D) powered by Chart.js.
+- **KPI Delta Insights**: Real-time calculated growth indicators comparing current metrics against historical snapshots.
+- **Secure OAuth Flows**: Robust authentication flows using Passport.js for Google, TikTok, and Instagram integrations.
+- **Connection Management**: Custom UI and explicit confirmation modals for managing linked social accounts safely.
 - **Automated Data Processing**: Background cron jobs powered by `node-cron` to periodically sync and cache social media analytics.
 - **Security & Validation**: Built-in protections including API rate limiting, Joi input validation, CSRF state verification, and centralized error handling.
 - **Type-Safe Backend**: Complete end-to-end type safety using TypeScript, Express, and Prisma ORM with a PostgreSQL database.
@@ -53,7 +56,7 @@ Gelitik is a comprehensive web application designed to provide deep, actionable 
 
 Here is a glimpse of the Gelitik dashboard analyzing real-time Instagram and TikTok metrics:
 
-![Gelitik Dashboard Demo](https://placehold.co/1200x600/1E1E1E/FFFFFF?text=Gelitik+Neo-Brutalist+Dashboard+%7C+Social+Analytics)
+![Gelitik Dashboard Demo](image-1.png)
 _An overview of the main analytics dashboard highlighting user engagement and demographic charts in dark mode._
 
 ## <a id="tech-stack"></a>Tech Stack
@@ -65,11 +68,13 @@ _An overview of the main analytics dashboard highlighting user engagement and de
 | **Tailwind CSS**            | Utility-first CSS framework for styling the neo-brutalist interface.             |
 | **Pinia**                   | State management library for handling global app state on the frontend.          |
 | **Chart.js / vue-chartjs**  | Rendering beautiful, interactive data visualizations.                            |
+| **Lucide Icons**            | Clean, crisp SVG icons used heavily across the dashboard.                        |
 | **Node.js & Express**       | Backend runtime and framework for handling API requests and OAuth routes.        |
 | **TypeScript**              | Static typing across both frontend and backend to prevent runtime errors.        |
 | **Prisma**                  | Modern Next-Generation ORM for database modeling and migrations.                 |
-| **PostgreSQL**              | Relational database (hosted on Supabase) for storing user and analytics data.    |
+| **PostgreSQL**              | Relational database for storing user, OAuth state, and snapshot analytics data.  |
 | **Passport.js**             | Handling secure OAuth 2.0 authentication strategies (TikTok, Instagram, Google). |
+| **Node-Cron**               | Automating daily database snapshots and external API background fetching.        |
 
 ## <a id="prerequisites"></a>Prerequisites
 
@@ -191,13 +196,19 @@ _Expected JSON Output:_
 
 The Gelitik backend exposes several RESTful endpoints for authentication and analytics data retrieval.
 
-| Method | Endpoint                   | Description                                                                            | Request Body                 | Response Format                                                                |
-| :----- | :------------------------- | :------------------------------------------------------------------------------------- | :--------------------------- | :----------------------------------------------------------------------------- |
-| `GET`  | `/auth/tiktok`             | Initiates the TikTok OAuth 2.0 flow.                                                   | None                         | `302 Redirect` to TikTok login.                                                |
-| `GET`  | `/auth/tiktok/callback`    | Handles the callback from TikTok, exchanges code for token, and redirects to frontend. | `?code=string`               | `302 Redirect` to Frontend `/dashboard`                                        |
-| `GET`  | `/auth/instagram-graph`    | Initiates the Meta/Instagram Graph API OAuth flow.                                     | None                         | `302 Redirect` to Meta login.                                                  |
-| `GET`  | `/api/analytics/instagram` | Fetches the cached or live Instagram analytics for the authenticated user.             | None (Requires Bearer Token) | `JSON` containing profile stats, media performance, and audience demographics. |
-| `POST` | `/api/auth/logout`         | Clears the session and invalidates the current JWT token.                              | None                         | `{ "message": "Logged out successfully" }`                                     |
+| Method   | Endpoint                         | Description                                                                            | Request Body              |
+| :------- | :------------------------------- | :------------------------------------------------------------------------------------- | :------------------------ |
+| `GET`    | `/auth/tiktok/connect`           | Initiates the TikTok OAuth 2.0 connection flow.                                        | None                      |
+| `GET`    | `/auth/tiktok/callback`          | Handles the callback from TikTok, exchanges code for token, and redirects to frontend. | `?code=string`            |
+| `GET`    | `/auth/instagram-graph/connect`  | Initiates the Meta/Instagram Graph API OAuth flow for Business Accounts.               | None                      |
+| `GET`    | `/auth/instagram-graph/callback` | Handles the Meta OAuth callback and stores encrypted tokens.                           | `?code=string`            |
+| `GET`    | `/api/accounts`                  | Lists all connected social media accounts for the authenticated user.                  | None (Requires JWT)       |
+| `DELETE` | `/api/accounts/:id`              | Disconnects a social account and permanently deletes its associated analytics data.    | None (Requires JWT)       |
+| `GET`    | `/api/accounts/status`           | Gets a brief connection status list (used for sidebar UI dots).                        | None (Requires JWT)       |
+| `GET`    | `/api/analytics/history`         | Retrieves daily aggregated DB snapshots for follower growth & engagement filtering.    | `?days=number` (optional) |
+| `GET`    | `/api/analytics/instagram-graph` | Fetches the latest live Instagram Business analytics (audience, engagement, media).    | None (Requires JWT)       |
+| `GET`    | `/api/analytics/tiktok`          | Fetches the latest live TikTok Analytics (video metrics, profile views, followers).    | None (Requires JWT)       |
+| `POST`   | `/api/auth/logout`               | Clears the session and invalidates the current JWT token.                              | None                      |
 
 ## <a id="project-structure"></a>Project Structure
 
@@ -222,15 +233,18 @@ gelitik/
     ├── public/               # Static assets
     ├── src/                  # Frontend source code
     │   ├── assets/           # CSS files (Tailwind imports)
-    │   ├── components/       # Reusable Vue components (Charts, Cards, Modals)
-    │   ├── composables/      # Vue 3 custom hooks
-    │   ├── layouts/          # Application shell layouts (Sidebar, Header)
+    │   ├── components/       # Reusable Vue components
+    │   │   ├── dashboard/    # Complex domain widgets (Charts, KPI Cards, Tables)
+    │   │   ├── layout/       # Structural components (Sidebar, PageHeader)
+    │   │   └── loading/      # Specialized skeleton loaders for empty states
+    │   ├── composables/      # Vue 3 custom hooks (e.g. useDashboardData)
+    │   ├── layouts/          # Application shell wrappers (DashboardLayout)
     │   ├── pages/            # View components matching routes
     │   ├── router/           # Vue Router configuration
     │   ├── services/         # Axios config and API helper classes
     │   ├── stores/           # Pinia state management stores
-    │   ├── types/            # TypeScript interfaces for frontend
-    │   └── utils/            # Shared utility functions
+    │   ├── types/            # TypeScript interfaces for frontend types
+    │   └── utils/            # Shared utility functions (e.g. formatters)
     ├── index.html            # Vite entry point
     ├── vite.config.ts        # Vite build configuration
     └── package.json          # Frontend dependencies
@@ -310,6 +324,8 @@ Deploying Gelitik requires setting up both the backend and frontend separately.
 - [x] TikTok OAuth and Basic Analytics Integration.
 - [x] Meta App approval and Instagram Graph API configuration.
 - [x] Comprehensive security audit and code quality hardening.
+- [x] Historical data tracking and date-range filtering mechanisms.
+- [x] Enhanced connection management with custom confirmation modals.
 - [ ] Comprehensive unit and integration testing setup.
 - [ ] Export reports functionality (PDF/CSV).
 - [ ] Real-time WebSocket notifications for completed background jobs.

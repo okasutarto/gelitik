@@ -3,9 +3,6 @@ import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   LayoutDashboard,
-  BarChart3,
-  CalendarDays,
-  Users,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -14,7 +11,6 @@ import {
   Zap,
   Plus,
   ChevronDown,
-  Bell,
 } from "lucide-vue-next";
 import { useSidebar } from "@/composables/useSidebar";
 import api from "@/services/api";
@@ -24,17 +20,10 @@ const router = useRouter();
 const { isCollapsed, toggleSidebar, initSidebar } = useSidebar();
 
 const isPlatformsOpen = ref(true);
-const isToolsOpen = ref(true);
 
 const togglePlatforms = () => {
   if (!isCollapsed.value) {
     isPlatformsOpen.value = !isPlatformsOpen.value;
-  }
-};
-
-const toggleTools = () => {
-  if (!isCollapsed.value) {
-    isToolsOpen.value = !isToolsOpen.value;
   }
 };
 
@@ -82,7 +71,9 @@ const platformItems = computed<SubNavItem[]>(() => [
     path: "/dashboard/instagram-graph",
     icon: Instagram,
     color: "pink",
-    connected: connectedPlatforms.value.includes("instagram"),
+    connected:
+      connectedPlatforms.value.includes("instagram") ||
+      connectedPlatforms.value.includes("instagram-graph"),
   },
   {
     name: "TikTok",
@@ -92,14 +83,6 @@ const platformItems = computed<SubNavItem[]>(() => [
     connected: connectedPlatforms.value.includes("tiktok"),
   },
 ]);
-
-// Tools section items
-const toolsItems: NavItem[] = [
-  { name: "Notifications", path: "/notifications", icon: Bell },
-  { name: "Analytics", path: "/analytics", icon: BarChart3 },
-  { name: "Schedule", path: "/schedule", icon: CalendarDays },
-  { name: "Audience", path: "/audience", icon: Users },
-];
 
 // Settings (bottom)
 const settingsItem: NavItem = {
@@ -247,7 +230,9 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
                 v-if="platform.connected"
                 :class="[
                   'absolute rounded-full bg-green-500 border border-green-600 shadow-sm',
-                  isCollapsed ? 'top-1 right-1 size-2' : 'top-2 right-2 size-2.5',
+                  isCollapsed
+                    ? 'top-1 right-1 size-2'
+                    : 'top-1/2 -translate-y-1/2 right-4 size-2.5',
                 ]"
                 :title="`${platform.name} is connected`"
               />

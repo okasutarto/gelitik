@@ -1,8 +1,9 @@
 import { defineStore } from "pinia";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useTiktokStore } from "./tiktokStore";
 import { useInstagramStore } from "./instagramStore";
 import { formatNumber } from "@/utils/format";
+import api from "@/services/api";
 
 export interface KpiCardData {
   label: string;
@@ -28,7 +29,9 @@ export const useDashboardStore = defineStore("dashboard", () => {
   const tiktokStore = useTiktokStore();
   const instagramStore = useInstagramStore();
 
-  const isLoading = computed(() => tiktokStore.isLoading || instagramStore.isLoading);
+  const isHistoryLoading = ref(false);
+
+  const isLoading = computed(() => tiktokStore.isLoading || instagramStore.isLoading || isHistoryLoading.value);
   const error = computed(() => tiktokStore.error || instagramStore.error);
 
   // Aggregated KPI data
@@ -57,33 +60,47 @@ export const useDashboardStore = defineStore("dashboard", () => {
   });
 
   const totalViews = computed(() => {
-    const igImpressions = instagramStore.data?.insights?.impressions ?? 0;
+    const igViews = instagramStore.data?.insights?.views ?? 0;
     const ttViews = tiktokStore.data?.analytics?.totalViews ?? 0;
-    return igImpressions + ttViews;
+    return igViews + ttViews;
   });
 
-  // Platform health snapshots
+  // Compute growth delta from history snapshots for any numeric metric
+  function getMetricDelta(platformKey: string, metric: 'followers' | 'totalViews' | 'engagementRate') {
+    const entries = followerHistory.value[platformKey];
+    if (!entries || entries.length < 2) return { growth: 0, percent: 0 };
+    const oldest = entries[0][metric];
+    const newest = entries[entries.length - 1][metric];
+    const growth = newest - oldest;
+    const percent = oldest > 0 ? (growth / oldest) * 100 : 0;
+    return { growth, percent };
+  }
+
+  // Platform health snapshots (with real follower growth from history)
   const instagramHealth = computed<PlatformSnapshot | null>(() => {
     if (!instagramStore.data?.insights) return null;
     const insights = instagramStore.data.insights;
+    const igKey = followerHistory.value['instagram-graph'] ? 'instagram-graph' : 'instagram';
+    const delta = getMetricDelta(igKey, 'followers');
     return {
       platform: "instagram",
       followers: insights.followers,
-      followerGrowth: 0, // Requires historical data
-      followerGrowthPercent: 0,
+      followerGrowth: delta.growth,
+      followerGrowthPercent: delta.percent,
       engagementRate: insights.reach > 0 ? (insights.totalInteractions / insights.reach) * 100 : 0,
-      postsThisWeek: 0, // Requires time-based filtering
+      postsThisWeek: 0,
     };
   });
 
   const tiktokHealth = computed<PlatformSnapshot | null>(() => {
     if (!tiktokStore.data?.analytics) return null;
     const analytics = tiktokStore.data.analytics;
+    const delta = getMetricDelta('tiktok', 'followers');
     return {
       platform: "tiktok",
       followers: analytics.followers,
-      followerGrowth: 0,
-      followerGrowthPercent: 0,
+      followerGrowth: delta.growth,
+      followerGrowthPercent: delta.percent,
       engagementRate: analytics.engagementRate,
       postsThisWeek: 0,
     };
@@ -123,18 +140,105 @@ export const useDashboardStore = defineStore("dashboard", () => {
     totalViews: formatNumber(totalViews.value),
   }));
 
+  // KPI deltas from history (combined across platforms)
+  const kpiDeltas = computed(() => {
+    const igKey = followerHistory.value['instagram-graph'] ? 'instagram-graph' : 'instagram';
+
+    // Followers delta
+    const igFDelta = getMetricDelta(igKey, 'followers');
+    const ttFDelta = getMetricDelta('tiktok', 'followers');
+    const followersDelta = igFDelta.growth + ttFDelta.growth;
+    const igOldestF = (followerHistory.value[igKey]?.[0]?.followers) ?? 0;
+    const ttOldestF = (followerHistory.value['tiktok']?.[0]?.followers) ?? 0;
+    const totalOldestF = igOldestF + ttOldestF;
+    const followersPercent = totalOldestF > 0 ? (followersDelta / totalOldestF) * 100 : 0;
+
+    // Views delta
+    const igVDelta = getMetricDelta(igKey, 'totalViews');
+    const ttVDelta = getMetricDelta('tiktok', 'totalViews');
+    const viewsDelta = igVDelta.growth + ttVDelta.growth;
+    const igOldestV = (followerHistory.value[igKey]?.[0]?.totalViews) ?? 0;
+    const ttOldestV = (followerHistory.value['tiktok']?.[0]?.totalViews) ?? 0;
+    const totalOldestV = igOldestV + ttOldestV;
+    const viewsPercent = totalOldestV > 0 ? (viewsDelta / totalOldestV) * 100 : 0;
+
+    // Engagement rate delta (average across platforms)
+    const igEDelta = getMetricDelta(igKey, 'engagementRate');
+    const ttEDelta = getMetricDelta('tiktok', 'engagementRate');
+    const platformCount = (igEDelta.growth !== 0 ? 1 : 0) + (ttEDelta.growth !== 0 ? 1 : 0);
+    const engagementDelta = platformCount > 0 ? (igEDelta.growth + ttEDelta.growth) / platformCount : 0;
+    const engagementPercent = platformCount > 0 ? (igEDelta.percent + ttEDelta.percent) / platformCount : 0;
+
+    return {
+      followers: { delta: followersDelta, percent: followersPercent },
+      views: { delta: viewsDelta, percent: viewsPercent },
+      engagement: { delta: engagementDelta, percent: engagementPercent },
+    };
+  });
+
+  // Combined engagement history from DB snapshots (totalLikes + engagementRate by date)
+  const combinedEngagementHistory = computed(() => {
+    const igKey = followerHistory.value['instagram-graph'] ? 'instagram-graph' : 'instagram';
+    const igEntries = followerHistory.value[igKey] ?? [];
+    const ttEntries = followerHistory.value['tiktok'] ?? [];
+
+    const likesMap = new Map<string, number>();
+    const engagementMap = new Map<string, { sum: number; count: number }>();
+
+    for (const entry of [...igEntries, ...ttEntries]) {
+      likesMap.set(entry.date, (likesMap.get(entry.date) ?? 0) + (entry.totalLikes ?? 0));
+      const existing = engagementMap.get(entry.date) ?? { sum: 0, count: 0 };
+      engagementMap.set(entry.date, { sum: existing.sum + (entry.engagementRate ?? 0), count: existing.count + 1 });
+    }
+
+    const allDates = [...new Set([...likesMap.keys()])].sort();
+
+    return {
+      likes: allDates.map(date => ({ date, value: likesMap.get(date) ?? 0 })),
+      comments: allDates.map(date => {
+        const eng = engagementMap.get(date);
+        return { date, value: eng ? parseFloat((eng.sum / eng.count).toFixed(2)) : 0 };
+      }),
+    };
+  });
+
+  // Historical analytics data from DB snapshots
+  const selectedDays = ref(30);
+  const followerHistory = ref<Record<string, { date: string; followers: number; totalViews: number; totalLikes: number; engagementRate: number }[]>>({});
+
   // Fetch all data
   async function fetchAll() {
-    await Promise.all([tiktokStore.fetch(), instagramStore.fetch()]);
+    await Promise.all([tiktokStore.fetch(), instagramStore.fetch(), fetchHistory()]);
+  }
+
+  async function fetchHistory(days?: number) {
+    isHistoryLoading.value = true;
+    try {
+      const d = days ?? selectedDays.value;
+      const { data } = await api.get('/api/analytics/history', { params: { days: d } });
+      followerHistory.value = data;
+    } catch (err) {
+      console.error('[DashboardStore] History fetch error:', err);
+    } finally {
+      isHistoryLoading.value = false;
+    }
+  }
+
+  async function setDateRange(days: number) {
+    selectedDays.value = days;
+    await fetchHistory(days);
   }
 
   async function refreshAll() {
     await Promise.all([tiktokStore.refresh(), instagramStore.refresh()]);
+    // Re-fetch history after refresh to pick up the new snapshot
+    await fetchHistory();
   }
 
   function clearAll() {
     tiktokStore.clear();
     instagramStore.clear();
+    followerHistory.value = {};
   }
 
   return {
@@ -148,7 +252,13 @@ export const useDashboardStore = defineStore("dashboard", () => {
     tiktokHealth,
     topContent,
     kpiSummary,
+    kpiDeltas,
+    followerHistory,
+    combinedEngagementHistory,
+    selectedDays,
     fetchAll,
+    fetchHistory,
+    setDateRange,
     refreshAll,
     clearAll,
   };

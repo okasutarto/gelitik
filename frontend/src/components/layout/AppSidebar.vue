@@ -20,17 +20,10 @@ const router = useRouter();
 const { isCollapsed, toggleSidebar, initSidebar } = useSidebar();
 
 const isPlatformsOpen = ref(true);
-const isToolsOpen = ref(true);
 
 const togglePlatforms = () => {
   if (!isCollapsed.value) {
     isPlatformsOpen.value = !isPlatformsOpen.value;
-  }
-};
-
-const toggleTools = () => {
-  if (!isCollapsed.value) {
-    isToolsOpen.value = !isToolsOpen.value;
   }
 };
 

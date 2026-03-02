@@ -3,9 +3,6 @@ import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   LayoutDashboard,
-  BarChart3,
-  CalendarDays,
-  Users,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -14,7 +11,6 @@ import {
   Zap,
   Plus,
   ChevronDown,
-  Bell,
 } from "lucide-vue-next";
 import { useSidebar } from "@/composables/useSidebar";
 import api from "@/services/api";
@@ -94,14 +90,6 @@ const platformItems = computed<SubNavItem[]>(() => [
     connected: connectedPlatforms.value.includes("tiktok"),
   },
 ]);
-
-// Tools section items
-const toolsItems: NavItem[] = [
-  { name: "Notifications", path: "/notifications", icon: Bell },
-  { name: "Analytics", path: "/analytics", icon: BarChart3 },
-  { name: "Schedule", path: "/schedule", icon: CalendarDays },
-  { name: "Audience", path: "/audience", icon: Users },
-];
 
 // Settings (bottom)
 const settingsItem: NavItem = {

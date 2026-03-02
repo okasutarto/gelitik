@@ -4,11 +4,14 @@ import { useRouter } from "vue-router";
 import api from "@/services/api";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
-import { Instagram, Music2, Plus, Trash2, CheckCircle } from "lucide-vue-next";
+import { Instagram, Music2, Plus, Trash2, CheckCircle, AlertTriangle, X } from "lucide-vue-next";
 import { useToast } from "@/composables/useToast";
 
 const router = useRouter();
 const toast = useToast();
+
+const showDisconnectModal = ref(false);
+const accountToDisconnect = ref<ConnectedAccount | null>(null);
 
 interface ConnectedAccount {
   id: string;
@@ -121,15 +124,26 @@ const connectPlatform = async (platform: string) => {
   }
 };
 
-const disconnectAccount = async (accountId: string) => {
-  if (!confirm("Are you sure you want to disconnect this account?")) return;
+const confirmDisconnect = (account: ConnectedAccount) => {
+  accountToDisconnect.value = account;
+  showDisconnectModal.value = true;
+};
+
+const disconnectAccount = async () => {
+  if (!accountToDisconnect.value) return;
+
+  const accountId = accountToDisconnect.value.id;
+  showDisconnectModal.value = false;
 
   try {
     await api.delete(`/api/accounts/${accountId}`);
     await fetchAccounts();
+    toast.success("Account disconnected successfully");
   } catch (error) {
     console.error("Disconnect error:", error);
     toast.error("Failed to disconnect account");
+  } finally {
+    accountToDisconnect.value = null;
   }
 };
 
@@ -207,7 +221,7 @@ onMounted(() => {
           </div>
 
           <button
-            @click="disconnectAccount(account.id)"
+            @click="confirmDisconnect(account)"
             class="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
             title="Disconnect account"
           >
@@ -252,6 +266,62 @@ onMounted(() => {
             {{ platform.description }}
           </p>
         </button>
+      </div>
+    </div>
+
+    <!-- Disconnect Confirmation Modal -->
+    <div
+      v-if="showDisconnectModal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+    >
+      <div
+        class="bg-white dark:bg-navy w-full max-w-md border-4 border-black dark:border-electric shadow-brutal-lg dark:shadow-brutal-cyber-lg p-6 relative"
+      >
+        <!-- Close Button -->
+        <button
+          @click="showDisconnectModal = false"
+          class="absolute top-4 right-4 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        >
+          <X :size="20" class="text-slate-500" />
+        </button>
+
+        <div class="flex items-start gap-4 mb-6">
+          <div
+            class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 border-2 border-red-500 flex items-center justify-center shrink-0"
+          >
+            <AlertTriangle :size="24" class="text-red-600 dark:text-red-400" />
+          </div>
+          <div>
+            <h3 class="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white">
+              Disconnect Account
+            </h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">
+              Are you sure you want to disconnect
+              <span class="font-bold text-slate-900 dark:text-white">
+                @{{ accountToDisconnect?.username }} </span
+              >?
+              <br />
+              All synced analytics will be permanently deleted. This action cannot be undone.
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="flex items-center gap-3 justify-end pt-4 border-t-2 border-slate-100 dark:border-slate-800"
+        >
+          <button
+            @click="showDisconnectModal = false"
+            class="px-5 py-2.5 text-sm font-bold uppercase tracking-wide border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400 transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            @click="disconnectAccount"
+            class="px-5 py-2.5 text-sm font-black uppercase tracking-wide bg-red-500 hover:bg-red-600 text-white border-4 border-black shadow-brutal-sm brutal-hover-lift transition-all"
+          >
+            Disconnect
+          </button>
+        </div>
       </div>
     </div>
   </DashboardLayout>

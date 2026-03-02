@@ -109,6 +109,21 @@ const insightClasses = computed(() => {
                 <p class="text-2xl font-black text-slate-900 dark:text-white">
                   {{ formatNumber(instagram.followers) }}
                 </p>
+                <p
+                  v-if="instagram.followerGrowth !== 0"
+                  class="text-xs font-bold mt-0.5"
+                  :class="
+                    instagram.followerGrowth >= 0
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-red-600 dark:text-red-400'
+                  "
+                >
+                  {{ instagram.followerGrowth >= 0 ? "▲" : "▼" }}
+                  {{ instagram.followerGrowth >= 0 ? "+" : ""
+                  }}{{ formatNumber(instagram.followerGrowth) }} ({{
+                    instagram.followerGrowthPercent >= 0 ? "+" : ""
+                  }}{{ instagram.followerGrowthPercent.toFixed(1) }}%)
+                </p>
               </div>
               <div>
                 <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">
@@ -147,6 +162,21 @@ const insightClasses = computed(() => {
                 </p>
                 <p class="text-2xl font-black text-slate-900 dark:text-white">
                   {{ formatNumber(tiktok.followers) }}
+                </p>
+                <p
+                  v-if="tiktok.followerGrowth !== 0"
+                  class="text-xs font-bold mt-0.5"
+                  :class="
+                    tiktok.followerGrowth >= 0
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-red-600 dark:text-red-400'
+                  "
+                >
+                  {{ tiktok.followerGrowth >= 0 ? "▲" : "▼" }}
+                  {{ tiktok.followerGrowth >= 0 ? "+" : ""
+                  }}{{ formatNumber(tiktok.followerGrowth) }} ({{
+                    tiktok.followerGrowthPercent >= 0 ? "+" : ""
+                  }}{{ tiktok.followerGrowthPercent.toFixed(1) }}%)
                 </p>
               </div>
               <div>

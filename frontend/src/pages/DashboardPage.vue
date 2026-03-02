@@ -5,12 +5,14 @@ import StatCard from "@/components/dashboard/StatCard.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
 import PlatformHealthComparison from "@/components/dashboard/PlatformHealthComparison.vue";
 import AudienceChart from "@/components/dashboard/AudienceChart.vue";
+import EngagementChart from "@/components/dashboard/EngagementChart.vue";
 import { useDashboardData } from "@/composables/useDashboardData";
 
 const {
   kpiCards,
   platformHealth,
   followerHistory,
+  engagementHistory,
   isLoading,
   error,
   lastUpdated,
@@ -95,6 +97,9 @@ const kpiIcons = [Users, Heart, FileText, Eye];
           :value="card.value"
           :icon="kpiIcons[index]"
           :subtitle="card.subtitle"
+          :delta="card.delta"
+          :delta-percent="card.deltaPercent"
+          :delta-label="card.deltaLabel"
         />
       </template>
     </div>
@@ -106,6 +111,15 @@ const kpiIcons = [Users, Heart, FileText, Eye];
         title="Audience Growth"
         subtitle="Daily follower snapshots"
         :follower-history="followerHistory"
+      />
+    </div>
+
+    <!-- Engagement Over Time -->
+    <div class="mb-12">
+      <EngagementChart
+        title="Engagement Over Time"
+        subtitle="Combined likes & comments by post date"
+        :historical-data="engagementHistory"
       />
     </div>
 

@@ -21,32 +21,38 @@ export function useDashboardData() {
   const instagramStore = useInstagramStore();
 
   // KPI cards for the overview page
-  const kpiCards = computed(() => [
-    {
-      title: "Total Audience",
-      value: formatNumber(dashboardStore.totalFollowers),
-      rawValue: dashboardStore.totalFollowers,
-      subtitle: "Combined followers",
-    },
-    {
-      title: "Engagement Rate",
-      value: dashboardStore.totalEngagementRate.toFixed(2) + "%",
-      rawValue: dashboardStore.totalEngagementRate,
-      subtitle: "Avg. across platforms",
-    },
-    {
-      title: "Total Posts",
-      value: formatNumber(dashboardStore.totalPosts),
-      rawValue: dashboardStore.totalPosts,
-      subtitle: "Published content",
-    },
-    {
-      title: "Total Views",
-      value: formatNumber(dashboardStore.totalViews),
-      rawValue: dashboardStore.totalViews,
-      subtitle: "Combined platform views",
-    },
-  ]);
+  const kpiCards = computed(() => {
+    const deltas = dashboardStore.kpiDeltas;
+    return [
+      {
+        title: "Total Audience",
+        value: formatNumber(dashboardStore.totalFollowers),
+        rawValue: dashboardStore.totalFollowers,
+        subtitle: "Combined followers",
+        delta: deltas.followers.delta,
+        deltaPercent: deltas.followers.percent,
+        deltaLabel: "vs. earliest snapshot",
+      },
+      {
+        title: "Engagement Rate",
+        value: dashboardStore.totalEngagementRate.toFixed(2) + "%",
+        rawValue: dashboardStore.totalEngagementRate,
+        subtitle: "Avg. across platforms",
+      },
+      {
+        title: "Total Posts",
+        value: formatNumber(dashboardStore.totalPosts),
+        rawValue: dashboardStore.totalPosts,
+        subtitle: "Published content",
+      },
+      {
+        title: "Total Views",
+        value: formatNumber(dashboardStore.totalViews),
+        rawValue: dashboardStore.totalViews,
+        subtitle: "Combined platform views",
+      },
+    ];
+  });
 
   // Platform health snapshots
   const platformHealth = computed(() => ({
@@ -59,6 +65,9 @@ export function useDashboardData() {
 
   // Historical follower data from DB snapshots
   const followerHistory = computed(() => dashboardStore.followerHistory);
+
+  // Combined engagement history for the engagement chart
+  const engagementHistory = computed(() => dashboardStore.combinedEngagementHistory);
 
   // Heatmap data derived from media post times
   const heatmapData = computed(() => {
@@ -120,6 +129,7 @@ export function useDashboardData() {
     platformHealth,
     topContent,
     followerHistory,
+    engagementHistory,
     heatmapData,
     isLoading,
     error,

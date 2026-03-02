@@ -63,28 +63,42 @@ export const useDashboardStore = defineStore("dashboard", () => {
     return igViews + ttViews;
   });
 
-  // Platform health snapshots
+  // Compute follower growth from history snapshots
+  function getFollowerDelta(platformKey: string) {
+    const entries = followerHistory.value[platformKey];
+    if (!entries || entries.length < 2) return { growth: 0, percent: 0 };
+    const oldest = entries[0].followers;
+    const newest = entries[entries.length - 1].followers;
+    const growth = newest - oldest;
+    const percent = oldest > 0 ? (growth / oldest) * 100 : 0;
+    return { growth, percent };
+  }
+
+  // Platform health snapshots (with real follower growth from history)
   const instagramHealth = computed<PlatformSnapshot | null>(() => {
     if (!instagramStore.data?.insights) return null;
     const insights = instagramStore.data.insights;
+    const igKey = followerHistory.value['instagram-graph'] ? 'instagram-graph' : 'instagram';
+    const delta = getFollowerDelta(igKey);
     return {
       platform: "instagram",
       followers: insights.followers,
-      followerGrowth: 0, // Requires historical data
-      followerGrowthPercent: 0,
+      followerGrowth: delta.growth,
+      followerGrowthPercent: delta.percent,
       engagementRate: insights.reach > 0 ? (insights.totalInteractions / insights.reach) * 100 : 0,
-      postsThisWeek: 0, // Requires time-based filtering
+      postsThisWeek: 0,
     };
   });
 
   const tiktokHealth = computed<PlatformSnapshot | null>(() => {
     if (!tiktokStore.data?.analytics) return null;
     const analytics = tiktokStore.data.analytics;
+    const delta = getFollowerDelta('tiktok');
     return {
       platform: "tiktok",
       followers: analytics.followers,
-      followerGrowth: 0,
-      followerGrowthPercent: 0,
+      followerGrowth: delta.growth,
+      followerGrowthPercent: delta.percent,
       engagementRate: analytics.engagementRate,
       postsThisWeek: 0,
     };
@@ -123,6 +137,57 @@ export const useDashboardStore = defineStore("dashboard", () => {
     totalPosts: formatNumber(totalPosts.value),
     totalViews: formatNumber(totalViews.value),
   }));
+
+  // KPI deltas from history (combined across platforms)
+  const kpiDeltas = computed(() => {
+    const igKey = followerHistory.value['instagram-graph'] ? 'instagram-graph' : 'instagram';
+    const igDelta = getFollowerDelta(igKey);
+    const ttDelta = getFollowerDelta('tiktok');
+
+    const followersDelta = igDelta.growth + ttDelta.growth;
+    const igOldest = (followerHistory.value[igKey]?.[0]?.followers) ?? 0;
+    const ttOldest = (followerHistory.value['tiktok']?.[0]?.followers) ?? 0;
+    const totalOldest = igOldest + ttOldest;
+    const followersPercent = totalOldest > 0 ? (followersDelta / totalOldest) * 100 : 0;
+
+    return {
+      followers: { delta: followersDelta, percent: followersPercent },
+    };
+  });
+
+  // Combined engagement history (merging both platforms by date)
+  const combinedEngagementHistory = computed(() => {
+    const igData = instagramStore.data as Record<string, unknown> | null;
+    const ttData = tiktokStore.data as Record<string, unknown> | null;
+    const igHistorical = (igData?.insights as Record<string, unknown>)?.historical as { likes?: { date: string; value: number }[]; comments?: { date: string; value: number }[] } | undefined;
+    const ttHistorical = (ttData?.analytics as Record<string, unknown>)?.historical as { likes?: { date: string; value: number }[]; comments?: { date: string; value: number }[] } | undefined;
+
+    const likesMap = new Map<string, number>();
+    const commentsMap = new Map<string, number>();
+
+    // Add Instagram data
+    for (const entry of igHistorical?.likes ?? []) {
+      likesMap.set(entry.date, (likesMap.get(entry.date) ?? 0) + entry.value);
+    }
+    for (const entry of igHistorical?.comments ?? []) {
+      commentsMap.set(entry.date, (commentsMap.get(entry.date) ?? 0) + entry.value);
+    }
+
+    // Add TikTok data
+    for (const entry of ttHistorical?.likes ?? []) {
+      likesMap.set(entry.date, (likesMap.get(entry.date) ?? 0) + entry.value);
+    }
+    for (const entry of ttHistorical?.comments ?? []) {
+      commentsMap.set(entry.date, (commentsMap.get(entry.date) ?? 0) + entry.value);
+    }
+
+    const allDates = [...new Set([...likesMap.keys(), ...commentsMap.keys()])].sort();
+
+    return {
+      likes: allDates.map(date => ({ date, value: likesMap.get(date) ?? 0 })),
+      comments: allDates.map(date => ({ date, value: commentsMap.get(date) ?? 0 })),
+    };
+  });
 
   // Historical follower data from DB snapshots
   const followerHistory = ref<Record<string, { date: string; followers: number }[]>>({});
@@ -164,7 +229,9 @@ export const useDashboardStore = defineStore("dashboard", () => {
     tiktokHealth,
     topContent,
     kpiSummary,
+    kpiDeltas,
     followerHistory,
+    combinedEngagementHistory,
     fetchAll,
     fetchHistory,
     refreshAll,

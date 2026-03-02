@@ -30,17 +30,20 @@ const loading = ref(true);
 
 const platformIcons = {
   instagram: Instagram,
+  "instagram-graph": Instagram,
   tiktok: Music2,
 };
 
 // Static color mappings for Tailwind (avoid dynamic classes)
 const platformBgColors: Record<string, string> = {
   instagram: "bg-pink-100 dark:bg-pink-900/30",
+  "instagram-graph": "bg-pink-100 dark:bg-pink-900/30",
   tiktok: "bg-slate-100 dark:bg-slate-800",
 };
 
 const platformIconColors: Record<string, string> = {
   instagram: "text-pink-600 dark:text-pink-400",
+  "instagram-graph": "text-pink-600 dark:text-pink-400",
   tiktok: "text-slate-600 dark:text-slate-300",
 };
 
@@ -275,7 +278,7 @@ onMounted(() => {
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
     >
       <div
-        class="bg-white dark:bg-navy w-full max-w-md border-4 border-black dark:border-electric shadow-brutal-lg dark:shadow-brutal-cyber-lg p-6 relative"
+        class="bg-white dark:bg-navy w-full max-w-xl border-4 border-black dark:border-electric shadow-brutal-lg dark:shadow-brutal-cyber-lg p-6 relative"
       >
         <!-- Close Button -->
         <button
@@ -285,25 +288,26 @@ onMounted(() => {
           <X :size="20" class="text-slate-500" />
         </button>
 
-        <div class="flex items-start gap-4 mb-6">
+        <div class="flex items-center gap-4 mb-6">
           <div
-            class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 border-2 border-red-500 flex items-center justify-center shrink-0"
+            class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 border-2 border-red-500 flex items-center justify-center shrink-0"
           >
-            <AlertTriangle :size="24" class="text-red-600 dark:text-red-400" />
+            <AlertTriangle :size="20" class="text-red-600 dark:text-red-400" />
           </div>
           <div>
             <h3 class="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white">
               Disconnect Account
             </h3>
-            <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">
-              Are you sure you want to disconnect
-              <span class="font-bold text-slate-900 dark:text-white">
-                @{{ accountToDisconnect?.username }} </span
-              >?
-              <br />
-              All synced analytics will be permanently deleted. This action cannot be undone.
-            </p>
           </div>
+        </div>
+
+        <div class="text-center mb-4">
+          <p class="text-lg text-slate-600 dark:text-slate-400 mt-2">
+            Are you sure you want to disconnect
+            <span class="font-bold text-slate-900 dark:text-white">
+              @{{ accountToDisconnect?.username }} </span
+            >?
+          </p>
         </div>
 
         <div
@@ -311,7 +315,7 @@ onMounted(() => {
         >
           <button
             @click="showDisconnectModal = false"
-            class="px-5 py-2.5 text-sm font-bold uppercase tracking-wide border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400 transition-all"
+            class="px-5 py-2.5 text-sm font-bold uppercase tracking-wide border-3 border-black dark:border-electric text-slate-600 dark:text-slate-400 transition-all brutal-hover-lift"
           >
             Cancel
           </button>

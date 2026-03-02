@@ -43,12 +43,6 @@ export function useDashboardData() {
         deltaLabel: "vs. earliest snapshot",
       },
       {
-        title: "Total Posts",
-        value: formatNumber(dashboardStore.totalPosts),
-        rawValue: dashboardStore.totalPosts,
-        subtitle: "Published content",
-      },
-      {
         title: "Total Views",
         value: formatNumber(dashboardStore.totalViews),
         rawValue: dashboardStore.totalViews,
@@ -57,6 +51,12 @@ export function useDashboardData() {
         deltaPercent: deltas.views.percent,
         deltaLabel: "vs. earliest snapshot",
       },
+      {
+        title: "Total Posts",
+        value: formatNumber(dashboardStore.totalPosts),
+        rawValue: dashboardStore.totalPosts,
+        subtitle: "Published content",
+      }
     ];
   });
 

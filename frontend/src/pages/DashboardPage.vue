@@ -6,6 +6,9 @@ import ContentTable from "@/components/dashboard/ContentTable.vue";
 import PlatformHealthComparison from "@/components/dashboard/PlatformHealthComparison.vue";
 import AudienceChart from "@/components/dashboard/AudienceChart.vue";
 import EngagementChart from "@/components/dashboard/EngagementChart.vue";
+import StatCardSkeleton from "@/components/loading/StatCardSkeleton.vue";
+import ChartSkeleton from "@/components/loading/ChartSkeleton.vue";
+import ContentTableSkeleton from "@/components/loading/ContentTableSkeleton.vue";
 import { useDashboardData } from "@/composables/useDashboardData";
 
 const {
@@ -86,8 +89,8 @@ const kpiIcons = [Users, Heart, FileText, Eye];
 
     <!-- KPI Stat Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-      <template v-if="isLoading && kpiCards.length === 0">
-        <StatCard v-for="i in 4" :key="i" title="" :value="0" :loading="true" />
+      <template v-if="isLoading">
+        <StatCardSkeleton :count="4" />
       </template>
       <template v-else>
         <StatCard
@@ -106,7 +109,9 @@ const kpiIcons = [Users, Heart, FileText, Eye];
 
     <!-- Audience Chart -->
     <div class="mb-12">
+      <ChartSkeleton v-if="isLoading" />
       <AudienceChart
+        v-else
         platform="all"
         title="Audience Growth"
         subtitle="Daily follower snapshots"
@@ -116,9 +121,11 @@ const kpiIcons = [Users, Heart, FileText, Eye];
 
     <!-- Engagement Over Time -->
     <div class="mb-12">
+      <ChartSkeleton v-if="isLoading" />
       <EngagementChart
+        v-else
         title="Engagement Over Time"
-        subtitle="Combined likes & comments by post date"
+        subtitle="Combined likes &amp; comments by post date"
         :historical-data="engagementHistory"
       />
     </div>
@@ -133,6 +140,7 @@ const kpiIcons = [Users, Heart, FileText, Eye];
     </div>
 
     <!-- Top Performing Content -->
-    <ContentTable platform="all" :videos="topContent" />
+    <ContentTableSkeleton v-if="isLoading" />
+    <ContentTable v-else platform="all" :videos="topContent" />
   </DashboardLayout>
 </template>

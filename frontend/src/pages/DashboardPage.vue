@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { Users, Heart, FileText, Eye, RefreshCw, Info } from "lucide-vue-next";
+import {
+  Users,
+  Heart,
+  FileText,
+  Eye,
+  RefreshCw,
+  Info,
+  Calendar,
+  ChevronDown,
+} from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import StatCard from "@/components/dashboard/StatCard.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
@@ -10,18 +19,41 @@ import StatCardSkeleton from "@/components/loading/StatCardSkeleton.vue";
 import ChartSkeleton from "@/components/loading/ChartSkeleton.vue";
 import ContentTableSkeleton from "@/components/loading/ContentTableSkeleton.vue";
 import { useDashboardData } from "@/composables/useDashboardData";
+import { ref, computed } from "vue";
 
 const {
   kpiCards,
   platformHealth,
   followerHistory,
   engagementHistory,
+  selectedDays,
+  setDateRange,
   isLoading,
   error,
   lastUpdated,
   refresh,
   topContent,
 } = useDashboardData();
+
+// Date range options
+const dateRangeOptions = [
+  { label: "Last 7 Days", value: "7" },
+  { label: "Last 14 Days", value: "14" },
+  { label: "Last 30 Days", value: "30" },
+  { label: "Last 90 Days", value: "90" },
+];
+const selectedRange = ref(String(selectedDays.value));
+const isDropdownOpen = ref(false);
+
+const selectedTimeframeLabel = computed(() => {
+  return dateRangeOptions.find((o) => o.value === selectedRange.value)?.label || "Last 30 Days";
+});
+
+function onDateRangeChange(val: string) {
+  selectedRange.value = val;
+  setDateRange(parseInt(val));
+  isDropdownOpen.value = false;
+}
 
 // Map KPI card data to icons
 const kpiIcons = [Users, Heart, FileText, Eye];
@@ -58,6 +90,48 @@ const kpiIcons = [Users, Heart, FileText, Eye];
           </p>
         </div>
         <div class="flex items-center gap-3">
+          <div class="relative">
+            <button
+              @click="isDropdownOpen = !isDropdownOpen"
+              class="flex items-center gap-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-4 py-2 border-3 border-black dark:border-electric font-bold brutal-hover-lift group shadow-brutal-sm"
+            >
+              <Calendar :size="18" class="text-neo-accent dark:text-electric" />
+              {{ selectedTimeframeLabel }}
+              <ChevronDown
+                :size="18"
+                class="transition-transform duration-200"
+                :class="{ 'rotate-180': isDropdownOpen }"
+              />
+            </button>
+
+            <div
+              v-if="isDropdownOpen"
+              class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 border-2 border-black dark:border-electric shadow-brutal z-50 flex flex-col"
+            >
+              <button
+                v-for="tf in dateRangeOptions"
+                :key="tf.value"
+                @click="onDateRangeChange(tf.value)"
+                class="flex items-center justify-between px-4 py-3 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors font-bold text-slate-900 dark:text-white"
+              >
+                {{ tf.label }}
+                <svg
+                  v-if="selectedRange === tf.value"
+                  class="w-4 h-4 text-neo-accent dark:text-electric"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="3"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
           <span
             v-if="lastUpdated"
             class="text-xs text-slate-700 dark:text-slate-900 font-bold hidden sm:inline-block"
@@ -130,7 +204,7 @@ const kpiIcons = [Users, Heart, FileText, Eye];
       <EngagementChart
         v-else
         title="Engagement Over Time"
-        subtitle="Combined likes &amp; comments by post date"
+        subtitle="Daily total likes &amp; engagement rate"
         :historical-data="engagementHistory"
       />
     </div>

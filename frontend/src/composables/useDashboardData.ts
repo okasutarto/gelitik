@@ -136,6 +136,8 @@ export function useDashboardData() {
     topContent,
     followerHistory,
     engagementHistory,
+    selectedDays: computed(() => dashboardStore.selectedDays),
+    setDateRange: dashboardStore.setDateRange,
     heatmapData,
     isLoading,
     error,

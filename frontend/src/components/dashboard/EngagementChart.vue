@@ -27,7 +27,7 @@ const { isDark } = useTheme();
 const metricOptions = [
   { label: "BOTH", value: "both" },
   { label: "LIKES", value: "likes" },
-  { label: "COMMENTS", value: "comments" },
+  { label: "ENG. RATE", value: "comments" },
 ];
 
 const chartData = computed(() => {
@@ -84,7 +84,7 @@ const chartData = computed(() => {
 
   if (selectedMetric.value === "both" || selectedMetric.value === "comments") {
     datasets.push({
-      label: "Comments",
+      label: "Eng. Rate (%)",
       data: commentsData,
       borderColor: isDark.value ? "#00F0FF" : "#06b6d4", // Cyan
       backgroundColor: isDark.value ? "rgba(0, 240, 255, 0.1)" : "rgba(6, 182, 212, 0.1)",

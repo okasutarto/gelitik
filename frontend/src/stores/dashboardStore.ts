@@ -174,55 +174,54 @@ export const useDashboardStore = defineStore("dashboard", () => {
     };
   });
 
-  // Combined engagement history (merging both platforms by date)
+  // Combined engagement history from DB snapshots (totalLikes + engagementRate by date)
   const combinedEngagementHistory = computed(() => {
-    const igData = instagramStore.data as Record<string, unknown> | null;
-    const ttData = tiktokStore.data as Record<string, unknown> | null;
-    const igHistorical = (igData?.insights as Record<string, unknown>)?.historical as { likes?: { date: string; value: number }[]; comments?: { date: string; value: number }[] } | undefined;
-    const ttHistorical = (ttData?.analytics as Record<string, unknown>)?.historical as { likes?: { date: string; value: number }[]; comments?: { date: string; value: number }[] } | undefined;
+    const igKey = followerHistory.value['instagram-graph'] ? 'instagram-graph' : 'instagram';
+    const igEntries = followerHistory.value[igKey] ?? [];
+    const ttEntries = followerHistory.value['tiktok'] ?? [];
 
     const likesMap = new Map<string, number>();
-    const commentsMap = new Map<string, number>();
+    const engagementMap = new Map<string, { sum: number; count: number }>();
 
-    // Add Instagram data
-    for (const entry of igHistorical?.likes ?? []) {
-      likesMap.set(entry.date, (likesMap.get(entry.date) ?? 0) + entry.value);
-    }
-    for (const entry of igHistorical?.comments ?? []) {
-      commentsMap.set(entry.date, (commentsMap.get(entry.date) ?? 0) + entry.value);
+    for (const entry of [...igEntries, ...ttEntries]) {
+      likesMap.set(entry.date, (likesMap.get(entry.date) ?? 0) + (entry.totalLikes ?? 0));
+      const existing = engagementMap.get(entry.date) ?? { sum: 0, count: 0 };
+      engagementMap.set(entry.date, { sum: existing.sum + (entry.engagementRate ?? 0), count: existing.count + 1 });
     }
 
-    // Add TikTok data
-    for (const entry of ttHistorical?.likes ?? []) {
-      likesMap.set(entry.date, (likesMap.get(entry.date) ?? 0) + entry.value);
-    }
-    for (const entry of ttHistorical?.comments ?? []) {
-      commentsMap.set(entry.date, (commentsMap.get(entry.date) ?? 0) + entry.value);
-    }
-
-    const allDates = [...new Set([...likesMap.keys(), ...commentsMap.keys()])].sort();
+    const allDates = [...new Set([...likesMap.keys()])].sort();
 
     return {
       likes: allDates.map(date => ({ date, value: likesMap.get(date) ?? 0 })),
-      comments: allDates.map(date => ({ date, value: commentsMap.get(date) ?? 0 })),
+      comments: allDates.map(date => {
+        const eng = engagementMap.get(date);
+        return { date, value: eng ? parseFloat((eng.sum / eng.count).toFixed(2)) : 0 };
+      }),
     };
   });
 
   // Historical analytics data from DB snapshots
-  const followerHistory = ref<Record<string, { date: string; followers: number; totalViews: number; engagementRate: number }[]>>({});
+  const selectedDays = ref(30);
+  const followerHistory = ref<Record<string, { date: string; followers: number; totalViews: number; totalLikes: number; engagementRate: number }[]>>({});
 
   // Fetch all data
   async function fetchAll() {
     await Promise.all([tiktokStore.fetch(), instagramStore.fetch(), fetchHistory()]);
   }
 
-  async function fetchHistory(days: number = 30) {
+  async function fetchHistory(days?: number) {
     try {
-      const { data } = await api.get('/api/analytics/history', { params: { days } });
+      const d = days ?? selectedDays.value;
+      const { data } = await api.get('/api/analytics/history', { params: { days: d } });
       followerHistory.value = data;
     } catch (err) {
       console.error('[DashboardStore] History fetch error:', err);
     }
+  }
+
+  async function setDateRange(days: number) {
+    selectedDays.value = days;
+    await fetchHistory(days);
   }
 
   async function refreshAll() {
@@ -251,8 +250,10 @@ export const useDashboardStore = defineStore("dashboard", () => {
     kpiDeltas,
     followerHistory,
     combinedEngagementHistory,
+    selectedDays,
     fetchAll,
     fetchHistory,
+    setDateRange,
     refreshAll,
     clearAll,
   };

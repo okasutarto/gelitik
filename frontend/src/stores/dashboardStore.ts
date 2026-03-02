@@ -1,8 +1,9 @@
 import { defineStore } from "pinia";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useTiktokStore } from "./tiktokStore";
 import { useInstagramStore } from "./instagramStore";
 import { formatNumber } from "@/utils/format";
+import api from "@/services/api";
 
 export interface KpiCardData {
   label: string;
@@ -57,9 +58,9 @@ export const useDashboardStore = defineStore("dashboard", () => {
   });
 
   const totalViews = computed(() => {
-    const igImpressions = instagramStore.data?.insights?.impressions ?? 0;
+    const igViews = instagramStore.data?.insights?.views ?? 0;
     const ttViews = tiktokStore.data?.analytics?.totalViews ?? 0;
-    return igImpressions + ttViews;
+    return igViews + ttViews;
   });
 
   // Platform health snapshots
@@ -123,18 +124,33 @@ export const useDashboardStore = defineStore("dashboard", () => {
     totalViews: formatNumber(totalViews.value),
   }));
 
+  // Historical follower data from DB snapshots
+  const followerHistory = ref<Record<string, { date: string; followers: number }[]>>({});
+
   // Fetch all data
   async function fetchAll() {
-    await Promise.all([tiktokStore.fetch(), instagramStore.fetch()]);
+    await Promise.all([tiktokStore.fetch(), instagramStore.fetch(), fetchHistory()]);
+  }
+
+  async function fetchHistory(days: number = 30) {
+    try {
+      const { data } = await api.get('/api/analytics/history', { params: { days } });
+      followerHistory.value = data;
+    } catch (err) {
+      console.error('[DashboardStore] History fetch error:', err);
+    }
   }
 
   async function refreshAll() {
     await Promise.all([tiktokStore.refresh(), instagramStore.refresh()]);
+    // Re-fetch history after refresh to pick up the new snapshot
+    await fetchHistory();
   }
 
   function clearAll() {
     tiktokStore.clear();
     instagramStore.clear();
+    followerHistory.value = {};
   }
 
   return {
@@ -148,7 +164,9 @@ export const useDashboardStore = defineStore("dashboard", () => {
     tiktokHealth,
     topContent,
     kpiSummary,
+    followerHistory,
     fetchAll,
+    fetchHistory,
     refreshAll,
     clearAll,
   };

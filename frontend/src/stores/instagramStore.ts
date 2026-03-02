@@ -8,6 +8,7 @@ export interface InstagramInsights {
   followers: number;
   reach: number;
   impressions: number;
+  views: number;
   likes: number;
   comments: number;
   shares: number;

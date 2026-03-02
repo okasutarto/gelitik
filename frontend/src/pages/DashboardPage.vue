@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { Users, Heart, FileText, Eye, RefreshCw } from "lucide-vue-next";
+import { Users, Heart, FileText, Eye, RefreshCw, Info } from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import StatCard from "@/components/dashboard/StatCard.vue";
 import ContentTable from "@/components/dashboard/ContentTable.vue";
 import PlatformHealthComparison from "@/components/dashboard/PlatformHealthComparison.vue";
-import BestTimeHeatmap from "@/components/dashboard/BestTimeHeatmap.vue";
 import AudienceChart from "@/components/dashboard/AudienceChart.vue";
 import { useDashboardData } from "@/composables/useDashboardData";
 
-const { kpiCards, platformHealth, heatmapData, isLoading, error, lastUpdated, refresh, topContent } =
-  useDashboardData();
+const {
+  kpiCards,
+  platformHealth,
+  followerHistory,
+  isLoading,
+  error,
+  lastUpdated,
+  refresh,
+  topContent,
+} = useDashboardData();
 
 // Map KPI card data to icons
 const kpiIcons = [Users, Heart, FileText, Eye];
@@ -65,8 +72,18 @@ const kpiIcons = [Users, Heart, FileText, Eye];
       </button>
     </div>
 
+    <!-- Data Source Info -->
+    <div v-if="!isLoading" class="flex items-start gap-2 mb-6 px-1">
+      <Info :size="16" class="text-black dark:text-white mt-0.5 shrink-0" />
+      <p class="text-sm text-black dark:text-white leading-relaxed">
+        Instagram metrics reflect the <strong>last 7 days</strong>. TikTok metrics are based on
+        <strong>recent content</strong>. For detailed time-range filtering, visit each platform's
+        analytics page.
+      </p>
+    </div>
+
     <!-- KPI Stat Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       <template v-if="isLoading && kpiCards.length === 0">
         <StatCard v-for="i in 4" :key="i" title="" :value="0" :loading="true" />
       </template>
@@ -80,15 +97,16 @@ const kpiIcons = [Users, Heart, FileText, Eye];
           :subtitle="card.subtitle"
         />
       </template>
+    </div>
 
-      <!-- Audience Chart - Full Width Below -->
-      <div class="col-span-1 md:col-span-2 lg:col-span-4 mt-6">
-        <AudienceChart
-          platform="all"
-          title="Audience Growth"
-          subtitle="Combined performance over last 7 days"
-        />
-      </div>
+    <!-- Audience Chart -->
+    <div class="mb-12">
+      <AudienceChart
+        platform="all"
+        title="Audience Growth"
+        subtitle="Daily follower snapshots"
+        :follower-history="followerHistory"
+      />
     </div>
 
     <!-- Platform Health Comparison -->
@@ -99,11 +117,6 @@ const kpiIcons = [Users, Heart, FileText, Eye];
         :loading="isLoading"
       />
     </div>
-
-    <!-- Best Time Heatmap -->
-    <!-- <div class="mb-12">
-      <BestTimeHeatmap :data="heatmapData" :loading="isLoading" />
-    </div> -->
 
     <!-- Top Performing Content -->
     <ContentTable platform="all" :videos="topContent" />

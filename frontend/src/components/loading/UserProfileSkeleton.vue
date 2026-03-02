@@ -6,9 +6,9 @@
       </div>
       <div class="flex-1 min-w-0 flex flex-col gap-2">
         <div class="flex items-center justify-between">
-          <div class="w-40 h-7 bg-slate-200 dark:bg-slate-700 rounded-md skeleton-pulse" />
+          <div class="w-40 h-4 bg-slate-200 dark:bg-slate-700 rounded-md skeleton-pulse" />
         </div>
-        <div class="w-full h-4 bg-slate-100 dark:bg-slate-800 rounded-md skeleton-pulse" />
+        <div class="w-40 h-7 bg-slate-100 dark:bg-slate-800 rounded-md skeleton-pulse" />
       </div>
     </div>
     <div class="flex items-center gap-4 px-6 pb-4">

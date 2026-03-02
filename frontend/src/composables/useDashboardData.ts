@@ -44,7 +44,7 @@ export function useDashboardData() {
       title: "Total Views",
       value: formatNumber(dashboardStore.totalViews),
       rawValue: dashboardStore.totalViews,
-      subtitle: "Impressions + views",
+      subtitle: "Combined platform views",
     },
   ]);
 
@@ -57,11 +57,8 @@ export function useDashboardData() {
   // Combined top content
   const topContent = computed(() => dashboardStore.topContent);
 
-  // Audience growth placeholder (to be connected when time-series data is available)
-  const audienceGrowth = computed(() => ({
-    instagram: [] as { date: string; value: number }[],
-    tiktok: [] as { date: string; value: number }[],
-  }));
+  // Historical follower data from DB snapshots
+  const followerHistory = computed(() => dashboardStore.followerHistory);
 
   // Heatmap data derived from media post times
   const heatmapData = computed(() => {
@@ -122,7 +119,7 @@ export function useDashboardData() {
     kpiCards,
     platformHealth,
     topContent,
-    audienceGrowth,
+    followerHistory,
     heatmapData,
     isLoading,
     error,

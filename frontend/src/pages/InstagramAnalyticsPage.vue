@@ -227,7 +227,7 @@ onMounted(() => {
     <UserProfile v-if="!loading && userInfo" :user-info="userInfo" />
     <UserProfileSkeleton v-else-if="loading" />
 
-    Filter Actions Row
+    <!-- Filter Actions Row -->
     <div v-if="!loading" class="flex justify-end mt-6 relative">
       <div class="relative">
         <button

@@ -29,7 +29,9 @@ export const useDashboardStore = defineStore("dashboard", () => {
   const tiktokStore = useTiktokStore();
   const instagramStore = useInstagramStore();
 
-  const isLoading = computed(() => tiktokStore.isLoading || instagramStore.isLoading);
+  const isHistoryLoading = ref(false);
+
+  const isLoading = computed(() => tiktokStore.isLoading || instagramStore.isLoading || isHistoryLoading.value);
   const error = computed(() => tiktokStore.error || instagramStore.error);
 
   // Aggregated KPI data
@@ -210,12 +212,15 @@ export const useDashboardStore = defineStore("dashboard", () => {
   }
 
   async function fetchHistory(days?: number) {
+    isHistoryLoading.value = true;
     try {
       const d = days ?? selectedDays.value;
       const { data } = await api.get('/api/analytics/history', { params: { days: d } });
       followerHistory.value = data;
     } catch (err) {
       console.error('[DashboardStore] History fetch error:', err);
+    } finally {
+      isHistoryLoading.value = false;
     }
   }
 

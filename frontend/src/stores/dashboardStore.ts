@@ -102,9 +102,6 @@ export const useDashboardStore = defineStore("dashboard", () => {
       _platform: "tiktok" as const,
     }));
 
-    console.log("[DashboardStore] Instagram media:", igMedia.length);
-    console.log("[DashboardStore] TikTok videos:", ttVideos.length);
-
     return [...igMedia, ...ttVideos]
       .sort((a, b) => {
         // TikTok: view_count, impressions | Instagram: views, reach

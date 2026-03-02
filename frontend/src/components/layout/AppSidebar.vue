@@ -309,7 +309,7 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
       </div>
 
       <!-- Tools Section -->
-      <div class="pt-2">
+      <!-- <div class="pt-2">
         <button
           v-if="!isCollapsed"
           @click="toggleTools"
@@ -357,18 +357,18 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
                 :class="['font-black uppercase text-sm', isActive(item.path) ? 'text-black' : '']"
               >
                 {{ item.name }}
-              </span>
+              </span> -->
 
-              <!-- Badge -->
-              <span
+      <!-- Badge -->
+      <!-- <span
                 v-if="item.badge && !isCollapsed"
                 class="ml-auto bg-black text-white text-xs font-black px-2.5 py-1 rounded-full border-2 border-black"
               >
                 {{ item.badge }}
-              </span>
+              </span> -->
 
-              <!-- Tooltip for collapsed state -->
-              <div
+      <!-- Tooltip for collapsed state -->
+      <!-- <div
                 v-if="isCollapsed"
                 class="absolute left-16 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-brutal-sm"
               >
@@ -377,7 +377,7 @@ const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik";
             </button>
           </template>
         </div>
-      </div>
+      </div> -->
     </nav>
 
     <!-- Bottom Section -->

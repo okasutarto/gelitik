@@ -8,7 +8,7 @@ import BestTimeHeatmap from "@/components/dashboard/BestTimeHeatmap.vue";
 import AudienceChart from "@/components/dashboard/AudienceChart.vue";
 import { useDashboardData } from "@/composables/useDashboardData";
 
-const { kpiCards, platformHealth, heatmapData, isLoading, error, lastUpdated, refresh } =
+const { kpiCards, platformHealth, heatmapData, isLoading, error, lastUpdated, refresh, topContent } =
   useDashboardData();
 
 // Map KPI card data to icons
@@ -101,11 +101,11 @@ const kpiIcons = [Users, Heart, FileText, Eye];
     </div>
 
     <!-- Best Time Heatmap -->
-    <div class="mb-12">
+    <!-- <div class="mb-12">
       <BestTimeHeatmap :data="heatmapData" :loading="isLoading" />
-    </div>
+    </div> -->
 
     <!-- Top Performing Content -->
-    <ContentTable platform="all" />
+    <ContentTable platform="all" :videos="topContent" />
   </DashboardLayout>
 </template>

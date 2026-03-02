@@ -15,9 +15,13 @@ import {
   formatDate,
 } from "@/utils/video";
 
+// Extended Video type that includes _platform from dashboardStore
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type VideoWithPlatform = any;
+
 interface Props {
   platform?: Platform;
-  videos?: Video[];
+  videos?: VideoWithPlatform[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -43,26 +47,34 @@ const filteredContent = computed(() => {
   if (props.videos && props.videos.length > 0) {
     return props.videos.map((video: Video) => {
       const v = video as unknown as Record<string, unknown>;
+      // Extract platform from _platform field (set by dashboardStore) or fall back to props.platform
+      const itemPlatform = (v._platform as Platform) || props.platform;
       return {
-        id: video.id,
+        id: (v.id as string) || video.id || "",
         title: video.title || video.video_description || (v.caption as string) || "Untitled",
         thumbnail:
           video.cover_image_url ||
           (v.thumbnail_url as string) ||
           (v.media_url as string) ||
           "https://images.unsplash.com/photo-1611162616305-c69b3e718c5?w=100&h=100&fit=crop",
-        platform: props.platform as Platform,
+        platform: itemPlatform,
         duration: video.duration || 0,
-        views: video.view_count || (v.impressions as number) || (v.reach as number) || 0,
-        likes: video.like_count || 0,
-        comments: video.comment_count || 0,
-        shares: video.share_count || 0,
+        // Instagram: views, reach | TikTok: view_count, impressions
+        views:
+          video.view_count ||
+          (v.views as number) ||
+          (v.impressions as number) ||
+          (v.reach as number) ||
+          0,
+        likes: video.like_count || (v.likes as number) || 0,
+        comments: video.comment_count || (v.comments as number) || 0,
+        shares: video.share_count || (v.share_count as number) || 0,
         saves: (v.saves as number) || (v.save_count as number) || 0,
         created:
           video.create_time ||
           (v.timestamp ? new Date(v.timestamp as string).getTime() / 1000 : 0) ||
           "",
-        timeAgo: formatTimeAgo(video.create_time),
+        timeAgo: formatTimeAgo(video.create_time || (v.timestamp as string)),
       };
     });
   }
@@ -70,11 +82,16 @@ const filteredContent = computed(() => {
 });
 
 const hasVideoData = computed(() => {
-  return (
-    props.videos &&
-    props.videos.length > 0 &&
-    props.videos.some((v: Video) => (v.view_count || 0) > 0)
-  );
+  if (!props.videos || props.videos.length === 0) return false;
+  return props.videos.some((v: Video) => {
+    const vi = v as unknown as Record<string, unknown>;
+    return (
+      (v.view_count || 0) > 0 ||
+      (vi.views as number) > 0 ||
+      (vi.impressions as number) > 0 ||
+      (vi.reach as number) > 0
+    );
+  });
 });
 
 // Sorting
@@ -86,10 +103,11 @@ type SortKey =
   | "shares"
   | "saves"
   | "comments"
-  | "engagement";
+  | "engagement"
+  | "platform";
 type SortOrder = "asc" | "desc" | null;
-const sortKey = ref<SortKey | null>(null);
-const sortOrder = ref<SortOrder>(null);
+const sortKey = ref<SortKey>("created");
+const sortOrder = ref<SortOrder>("desc");
 
 const toggleSort = (key: SortKey) => {
   if (sortKey.value === key) {
@@ -114,14 +132,18 @@ const sortedContent = computed(() => {
   const order = sortOrder.value === "asc" ? 1 : -1;
 
   return data.sort((a, b) => {
-    let aVal: number, bVal: number;
     if (key === "engagement") {
-      aVal = calculateEngagementRate(a);
-      bVal = calculateEngagementRate(b);
-    } else {
-      aVal = (a[key] as number) || 0;
-      bVal = (b[key] as number) || 0;
+      const aVal = calculateEngagementRate(a);
+      const bVal = calculateEngagementRate(b);
+      return (aVal - bVal) * order;
     }
+    if (key === "platform") {
+      const aVal = a.platform === "instagram" ? 0 : 1;
+      const bVal = b.platform === "instagram" ? 0 : 1;
+      return (aVal - bVal) * order;
+    }
+    const aVal = (a[key] as number) || 0;
+    const bVal = (b[key] as number) || 0;
     return (aVal - bVal) * order;
   });
 });
@@ -163,7 +185,7 @@ watch(
       <h3 class="text-lg font-bold text-slate-900 dark:text-black">Top Performing Content</h3>
     </div>
 
-    <template v-if="filteredContent.length === 0">
+    <template v-if="sortedContent.length === 0">
       <div class="p-12 text-center">
         <p class="text-slate-500 dark:text-slate-400 text-lg">No content yet</p>
         <p
@@ -184,6 +206,17 @@ watch(
           >
             <tr>
               <th class="px-4 py-4">Content</th>
+              <th
+                class="px-4 py-4 text-center cursor-pointer select-none hover:text-white transition-colors"
+                @click="toggleSort('platform')"
+              >
+                <div class="flex items-center justify-center gap-1">
+                  Platform
+                  <ArrowDown v-if="sortKey === 'platform' && sortOrder === 'desc'" :size="14" />
+                  <ArrowUp v-else-if="sortKey === 'platform' && sortOrder === 'asc'" :size="14" />
+                  <ArrowUpDown v-else :size="14" class="opacity-40" />
+                </div>
+              </th>
               <th
                 class="px-4 py-4 text-center cursor-pointer select-none hover:text-white transition-colors"
                 @click="toggleSort('created')"
@@ -297,6 +330,17 @@ watch(
                   </span>
                 </div>
               </td>
+              <td class="px-4 py-4 text-center">
+                <span
+                  :class="[
+                    'text-[10px] font-bold uppercase px-2 py-1',
+                    getPlatformBadge(item.platform).bg,
+                    getPlatformBadge(item.platform).text,
+                  ]"
+                >
+                  {{ item.platform === "instagram" ? "IG" : capitalize(item.platform) }}
+                </span>
+              </td>
               <td class="px-4 py-4 whitespace-nowrap font-semibold text-xs text-center">
                 {{ formatDate(item.created) }}
               </td>
@@ -369,14 +413,14 @@ watch(
 
     <!-- Pagination -->
     <div
-      v-if="filteredContent.length > ITEMS_PER_PAGE"
+      v-if="sortedContent.length > ITEMS_PER_PAGE"
       class="px-6 py-4 flex items-center justify-between border-t-2 border-black dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
     >
       <span class="text-sm font-bold text-slate-500 dark:text-slate-400">
         Showing {{ (currentPage - 1) * ITEMS_PER_PAGE + 1 }}–{{
-          Math.min(currentPage * ITEMS_PER_PAGE, filteredContent.length)
+          Math.min(currentPage * ITEMS_PER_PAGE, sortedContent.length)
         }}
-        of {{ filteredContent.length }}
+        of {{ sortedContent.length }}
       </span>
 
       <div class="flex items-center gap-1">

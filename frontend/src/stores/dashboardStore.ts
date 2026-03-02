@@ -102,13 +102,20 @@ export const useDashboardStore = defineStore("dashboard", () => {
       _platform: "tiktok" as const,
     }));
 
+    console.log("[DashboardStore] Instagram media:", igMedia.length);
+    console.log("[DashboardStore] TikTok videos:", ttVideos.length);
+
     return [...igMedia, ...ttVideos]
       .sort((a, b) => {
-        const aViews = Number(a["view_count"] ?? a["impressions"] ?? 0);
-        const bViews = Number(b["view_count"] ?? b["impressions"] ?? 0);
+        // TikTok: view_count, impressions | Instagram: views, reach
+        const aViews = Number(
+          a["view_count"] ?? a["impressions"] ?? a["views"] ?? a["reach"] ?? 0
+        );
+        const bViews = Number(
+          b["view_count"] ?? b["impressions"] ?? b["views"] ?? b["reach"] ?? 0
+        );
         return bViews - aViews;
-      })
-      .slice(0, 10);
+      });
   });
 
   // Formatted KPI summaries

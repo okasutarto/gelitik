@@ -38,7 +38,7 @@ const generateMockPosts = (): Post[] => {
     id: "3",
     title: "Industry Insights",
     date: addDays(-1),
-    platform: "linkedin",
+    platform: "instagram",
     type: "text",
     status: "published",
   });

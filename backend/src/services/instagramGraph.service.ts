@@ -15,11 +15,15 @@ import NodeCache from 'node-cache';
  * - Facebook Developer App with Instagram Graph API
  * - Instagram Business Account linked to Facebook Page
  */
+
+// Centralized Graph API version
+const GRAPH_API_VERSION = 'v25.0';
+
 export class InstagramGraphService implements PlatformService {
     private readonly appId: string;
     private readonly appSecret: string;
     private readonly redirectUri: string;
-    private readonly graphUrl = 'https://graph.facebook.com/v25.0';
+    private readonly graphUrl = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
     // Graph API requires Facebook OAuth dialog (NOT Instagram's own OAuth)
     private readonly authUrl = 'https://www.facebook.com/dialog/oauth';
     private cache: NodeCache;
@@ -57,7 +61,7 @@ export class InstagramGraphService implements PlatformService {
     async exchangeCode(code: string): Promise<PlatformAuthResult> {
         // 1. Exchange code for short-lived User Access Token (POST required by Meta)
         const tokenResponse = await axios.post(
-            `https://graph.facebook.com/v18.0/oauth/access_token`,
+            `https://graph.facebook.com/${GRAPH_API_VERSION}/oauth/access_token`,
             null,
             {
                 params: {
@@ -204,14 +208,6 @@ export class InstagramGraphService implements PlatformService {
             else if (timeframe === 'last_30_days') days = 30;
             else if (timeframe === 'last_90_days') days = 90;
             const since = until - (days * 24 * 60 * 60);
-
-            // Helper to get the most recent metric value (used for reach with period=week or days_28)
-            const getLatestMetricValue = (responseData: any): number => {
-                const data = responseData?.data?.[0];
-                if (!data) return 0;
-                const values = data.values || [];
-                return values.length > 0 ? values[values.length - 1]?.value || 0 : 0;
-            };
 
             // Helper to sum all values in a period (used for day)
             const sumMetricValues = (responseData: any): number => {
@@ -499,7 +495,7 @@ export class InstagramGraphService implements PlatformService {
                             }
                         }
                     } catch (e) {
-                        // Error parsing insight body for this item
+                        console.error('[InstagramGraph] Error parsing insight body for media item:', e);
                     }
                 }
 

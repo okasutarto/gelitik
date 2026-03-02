@@ -6,7 +6,6 @@
           <div
             class="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg skeleton-pulse shrink-0"
           />
-          <div class="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg shrink-0" />
           <div class="w-48 h-4 bg-slate-100 dark:bg-slate-800 rounded-md skeleton-pulse" />
           <div class="flex-1 flex justify-end gap-10">
             <div class="w-16 h-4 bg-slate-100 dark:bg-slate-800 rounded-md skeleton-pulse" />

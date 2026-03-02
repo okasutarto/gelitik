@@ -77,13 +77,13 @@ const insightClasses = computed(() => {
 
     <!-- Skeleton loader -->
     <template v-if="loading">
-      <div class="animate-pulse space-y-4">
+      <div class="space-y-4">
         <div class="grid grid-cols-2 gap-6">
           <div v-for="i in 2" :key="i" class="space-y-3">
-            <div class="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded pulse"></div>
-            <div class="h-6 w-28 bg-slate-200 dark:bg-slate-700 rounded"></div>
-            <div class="h-6 w-28 bg-slate-200 dark:bg-slate-700 rounded"></div>
-            <div class="h-6 w-28 bg-slate-200 dark:bg-slate-700 rounded"></div>
+            <div class="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded-md skeleton-pulse"></div>
+            <div class="h-6 w-28 bg-slate-200 dark:bg-slate-700 rounded-md skeleton-pulse"></div>
+            <div class="h-6 w-28 bg-slate-200 dark:bg-slate-700 rounded-md skeleton-pulse"></div>
+            <div class="h-6 w-28 bg-slate-200 dark:bg-slate-700 rounded-md skeleton-pulse"></div>
           </div>
         </div>
       </div>

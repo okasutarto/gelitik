@@ -36,15 +36,15 @@ const showTooltip = ref(false);
       <div class="space-y-3">
         <div class="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded mb-3 skeleton-pulse"></div>
         <div class="h-10 w-32 bg-slate-100 dark:bg-slate-800 rounded mb-2 skeleton-pulse"></div>
-        <div class="h-3 w-24 bg-slate-100 dark:bg-slate-800 rounded mb-4 skeleton-pulse"></div>
+        <div class="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded mb-4 skeleton-pulse"></div>
         <div class="h-px w-full bg-slate-100 dark:bg-slate-800 mb-4 skeleton-pulse"></div>
         <div class="flex items-center justify-between">
-          <div class="h-3 w-28 bg-slate-100 dark:bg-slate-800 rounded skeleton-pulse"></div>
+          <div class="h-3 w-24 bg-slate-100 dark:bg-slate-800 rounded skeleton-pulse"></div>
           <div class="h-3 w-12 bg-slate-100 dark:bg-slate-800 rounded skeleton-pulse"></div>
         </div>
         <div class="flex items-center justify-between">
           <div class="h-3 w-24 bg-slate-100 dark:bg-slate-800 rounded skeleton-pulse"></div>
-          <div class="h-3 w-10 bg-slate-100 dark:bg-slate-800 rounded skeleton-pulse"></div>
+          <div class="h-3 w-12 bg-slate-100 dark:bg-slate-800 rounded skeleton-pulse"></div>
         </div>
       </div>
     </template>

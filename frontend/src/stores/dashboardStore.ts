@@ -63,12 +63,12 @@ export const useDashboardStore = defineStore("dashboard", () => {
     return igViews + ttViews;
   });
 
-  // Compute follower growth from history snapshots
-  function getFollowerDelta(platformKey: string) {
+  // Compute growth delta from history snapshots for any numeric metric
+  function getMetricDelta(platformKey: string, metric: 'followers' | 'totalViews' | 'engagementRate') {
     const entries = followerHistory.value[platformKey];
     if (!entries || entries.length < 2) return { growth: 0, percent: 0 };
-    const oldest = entries[0].followers;
-    const newest = entries[entries.length - 1].followers;
+    const oldest = entries[0][metric];
+    const newest = entries[entries.length - 1][metric];
     const growth = newest - oldest;
     const percent = oldest > 0 ? (growth / oldest) * 100 : 0;
     return { growth, percent };
@@ -79,7 +79,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
     if (!instagramStore.data?.insights) return null;
     const insights = instagramStore.data.insights;
     const igKey = followerHistory.value['instagram-graph'] ? 'instagram-graph' : 'instagram';
-    const delta = getFollowerDelta(igKey);
+    const delta = getMetricDelta(igKey, 'followers');
     return {
       platform: "instagram",
       followers: insights.followers,
@@ -93,7 +93,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
   const tiktokHealth = computed<PlatformSnapshot | null>(() => {
     if (!tiktokStore.data?.analytics) return null;
     const analytics = tiktokStore.data.analytics;
-    const delta = getFollowerDelta('tiktok');
+    const delta = getMetricDelta('tiktok', 'followers');
     return {
       platform: "tiktok",
       followers: analytics.followers,
@@ -141,17 +141,36 @@ export const useDashboardStore = defineStore("dashboard", () => {
   // KPI deltas from history (combined across platforms)
   const kpiDeltas = computed(() => {
     const igKey = followerHistory.value['instagram-graph'] ? 'instagram-graph' : 'instagram';
-    const igDelta = getFollowerDelta(igKey);
-    const ttDelta = getFollowerDelta('tiktok');
 
-    const followersDelta = igDelta.growth + ttDelta.growth;
-    const igOldest = (followerHistory.value[igKey]?.[0]?.followers) ?? 0;
-    const ttOldest = (followerHistory.value['tiktok']?.[0]?.followers) ?? 0;
-    const totalOldest = igOldest + ttOldest;
-    const followersPercent = totalOldest > 0 ? (followersDelta / totalOldest) * 100 : 0;
+    // Followers delta
+    const igFDelta = getMetricDelta(igKey, 'followers');
+    const ttFDelta = getMetricDelta('tiktok', 'followers');
+    const followersDelta = igFDelta.growth + ttFDelta.growth;
+    const igOldestF = (followerHistory.value[igKey]?.[0]?.followers) ?? 0;
+    const ttOldestF = (followerHistory.value['tiktok']?.[0]?.followers) ?? 0;
+    const totalOldestF = igOldestF + ttOldestF;
+    const followersPercent = totalOldestF > 0 ? (followersDelta / totalOldestF) * 100 : 0;
+
+    // Views delta
+    const igVDelta = getMetricDelta(igKey, 'totalViews');
+    const ttVDelta = getMetricDelta('tiktok', 'totalViews');
+    const viewsDelta = igVDelta.growth + ttVDelta.growth;
+    const igOldestV = (followerHistory.value[igKey]?.[0]?.totalViews) ?? 0;
+    const ttOldestV = (followerHistory.value['tiktok']?.[0]?.totalViews) ?? 0;
+    const totalOldestV = igOldestV + ttOldestV;
+    const viewsPercent = totalOldestV > 0 ? (viewsDelta / totalOldestV) * 100 : 0;
+
+    // Engagement rate delta (average across platforms)
+    const igEDelta = getMetricDelta(igKey, 'engagementRate');
+    const ttEDelta = getMetricDelta('tiktok', 'engagementRate');
+    const platformCount = (igEDelta.growth !== 0 ? 1 : 0) + (ttEDelta.growth !== 0 ? 1 : 0);
+    const engagementDelta = platformCount > 0 ? (igEDelta.growth + ttEDelta.growth) / platformCount : 0;
+    const engagementPercent = platformCount > 0 ? (igEDelta.percent + ttEDelta.percent) / platformCount : 0;
 
     return {
       followers: { delta: followersDelta, percent: followersPercent },
+      views: { delta: viewsDelta, percent: viewsPercent },
+      engagement: { delta: engagementDelta, percent: engagementPercent },
     };
   });
 
@@ -189,8 +208,8 @@ export const useDashboardStore = defineStore("dashboard", () => {
     };
   });
 
-  // Historical follower data from DB snapshots
-  const followerHistory = ref<Record<string, { date: string; followers: number }[]>>({});
+  // Historical analytics data from DB snapshots
+  const followerHistory = ref<Record<string, { date: string; followers: number; totalViews: number; engagementRate: number }[]>>({});
 
   // Fetch all data
   async function fetchAll() {

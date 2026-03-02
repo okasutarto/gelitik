@@ -6,7 +6,7 @@ import passport from './config/passport';
 import rateLimit from 'express-rate-limit';
 import { authenticateJwt } from './middleware/auth.middleware';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
-import { FRONTEND_URL, PORT as CONFIG_PORT } from './config/env';
+import { FRONTEND_URL, PORT as CONFIG_PORT, SESSION_SECRET } from './config/env';
 import authRoutes from './routes/auth.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import socialAccountsRoutes from './routes/socialAccounts';
@@ -70,7 +70,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {

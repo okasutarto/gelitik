@@ -10,11 +10,11 @@ import {
   ChevronDown,
 } from "lucide-vue-next";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
-import StatCard from "@/components/dashboard/StatCard.vue";
-import ContentTable from "@/components/dashboard/ContentTable.vue";
-import PlatformHealthComparison from "@/components/dashboard/PlatformHealthComparison.vue";
-import AudienceChart from "@/components/dashboard/AudienceChart.vue";
-import EngagementChart from "@/components/dashboard/EngagementChart.vue";
+import StatCard from "@/components/dashboard/cards/StatCard.vue";
+import ContentTable from "@/components/dashboard/content/ContentTable.vue";
+import PlatformHealthComparison from "@/components/dashboard/profile/PlatformHealthComparison.vue";
+import AudienceChart from "@/components/dashboard/charts/AudienceChart.vue";
+import EngagementChart from "@/components/dashboard/charts/EngagementChart.vue";
 import StatCardSkeleton from "@/components/loading/StatCardSkeleton.vue";
 import ChartSkeleton from "@/components/loading/ChartSkeleton.vue";
 import ContentTableSkeleton from "@/components/loading/ContentTableSkeleton.vue";

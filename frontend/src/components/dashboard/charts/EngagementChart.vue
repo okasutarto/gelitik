@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import { Line } from "vue-chartjs";
 import { useTheme } from "@/composables/useTheme";
-import ChartTimeframeControl from "@/components/dashboard/ChartTimeframeControl.vue";
+import ChartTimeframeControl from "./ChartTimeframeControl.vue";
 import "@/composables/useChart"; // Registers Chart.js components
 
 interface HistoricalData {

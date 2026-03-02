@@ -3,6 +3,10 @@ import jwt from 'jsonwebtoken';
 import prisma from '../config/prisma';
 import { JWT_SECRET } from '../config/env';
 
+export const generateToken = (userId: string): string => {
+    return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: '7d' });
+};
+
 export const authenticateJwt = async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
 

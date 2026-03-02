@@ -55,7 +55,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/pages/DashboardPage.vue"),
     meta: {
       title: "Overview - Gelitik",
-      requiresAuth: false, // Bypassed for dev
+      requiresAuth: true,
     },
   },
   {

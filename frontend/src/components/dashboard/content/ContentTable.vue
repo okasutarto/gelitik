@@ -2,7 +2,7 @@
 import { computed, ref, watch } from "vue";
 import type { Platform } from "@/types/platform";
 import type { Video } from "@/types/video";
-import { VideoDetailModal } from "@/components/dashboard";
+import VideoDetailModal from "./VideoDetailModal.vue";
 import { formatNumber } from "@/utils/format";
 import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-vue-next";
 import {
@@ -104,7 +104,8 @@ type SortKey =
   | "saves"
   | "comments"
   | "engagement"
-  | "platform";
+  | "platform"
+  | null;
 type SortOrder = "asc" | "desc" | null;
 const sortKey = ref<SortKey>("created");
 const sortOrder = ref<SortOrder>("desc");

@@ -55,7 +55,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/pages/DashboardPage.vue"),
     meta: {
       title: "Overview - Gelitik",
-      requiresAuth: false, // Bypassed for dev
+      requiresAuth: true,
     },
   },
   {
@@ -90,20 +90,6 @@ const routes: RouteRecordRaw[] = [
     name: "schedule",
     component: () => import("@/pages/SchedulePage.vue"),
     meta: { title: "Schedule - Gelitik", requiresAuth: true },
-  },
-
-  // Future routes (placeholders)
-  {
-    path: "/inbox",
-    name: "inbox",
-    component: () => import("@/pages/DashboardPage.vue"), // Placeholder
-    meta: { title: "Inbox - Gelitik", requiresAuth: true },
-  },
-  {
-    path: "/audience",
-    name: "audience",
-    component: () => import("@/pages/DashboardPage.vue"), // Placeholder
-    meta: { title: "Audience - Gelitik", requiresAuth: true },
   },
   {
     path: "/connections",

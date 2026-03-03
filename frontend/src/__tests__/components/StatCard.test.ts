@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { markRaw } from 'vue'
-import StatCard from '@/components/dashboard/StatCard.vue'
+import StatCard from '@/components/dashboard/cards/StatCard.vue'
 import { h } from 'vue'
 
 describe('StatCard', () => {

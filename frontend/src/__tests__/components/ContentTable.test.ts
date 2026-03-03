@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import ContentTable from '@/components/dashboard/ContentTable.vue'
+import ContentTable from '@/components/dashboard/content/ContentTable.vue'
 
 // Mock the format utility
 vi.mock('@/utils/format', () => ({

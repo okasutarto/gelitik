@@ -15,6 +15,10 @@ function getRequiredEnvVar(name: string): string {
 // Throws on startup if not set to prevent insecure fallback
 export const JWT_SECRET = getRequiredEnvVar('JWT_SECRET');
 
+// SESSION_SECRET - Required for session security
+// Throws on startup if not set to prevent insecure fallback
+export const SESSION_SECRET = getRequiredEnvVar('SESSION_SECRET');
+
 // FRONTEND_URL - Required for redirects
 export const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 

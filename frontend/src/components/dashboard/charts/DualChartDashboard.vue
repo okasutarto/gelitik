@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { TopVideosChart, EngagementDoughnutChart } from "@/components/dashboard";
+import TopVideosChart from "./TopVideosChart.vue";
+import EngagementDoughnutChart from "./EngagementDoughnutChart.vue";
 import type { Video } from "@/types/video";
 
 interface Props {

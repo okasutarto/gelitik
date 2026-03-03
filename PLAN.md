@@ -86,7 +86,129 @@ This document outlines the scope and implementation plan for the Gelitik analyti
 
 ## Out of Scope (For Future Consideration)
 
-- [ ] Exporting reports to PDF or CSV formats.
 - [ ] Real-time WebSocket notifications for completed background jobs.
 - [ ] Integration of additional platforms (e.g., Twitter/X, YouTube).
 - [ ] Post scheduling to social platforms (frontend exists, backend publishing not implemented)
+- [ ] Competitor benchmarking (track rival accounts)
+- [ ] AI-powered content suggestions
+- [ ] Social listening / brand mentions
+- [ ] Comment / inbox management
+
+---
+
+## MVP 2: Launch-Critical Features (Commercial Readiness)
+
+> **Goal:** Close the gaps that would block a paying customer on Day 1.  
+> **Target:** Subscription-based SaaS analytics tool ($9–29/month).  
+> **Priority:** Ship these before any public launch or listing.
+
+### Phase 1: Report Export (PDF / CSV) 📄 ✅ IMPLEMENTED
+
+- **Goal:** Allow users to download and share their analytics with clients or teams.
+- **Tasks:**
+  - [x] **Backend — Export API endpoint** (`/api/reports/export`)
+    - [x] Create `reportExport.service.ts` — aggregate analytics data into exportable format
+    - [x] Create `reports.controller.ts` — handle `GET /api/reports/export?format=pdf|csv&platform=instagram|tiktok|all&days=7|14|30|90`
+    - [x] Create `reports.routes.ts` — wire up auth-protected export routes
+    - [x] CSV generation using `json2csv`
+    - [x] PDF generation using `pdfkit` (server-side)
+    - [x] Include: KPI summary, top content table, engagement trends, demographic breakdown, content format analysis, audience persona
+  - [x] **Frontend — Export button UI**
+    - [x] Add export button to `DashboardPage.vue` header area
+    - [x] Add export button to `InstagramAnalyticsPage.vue` and `TikTokAnalyticsPage.vue`
+    - [x] Format selector dropdown (PDF / CSV)
+    - [x] Loading state while generating report
+    - [x] Trigger browser download on completion
+
+### Phase 2: Story & Reels Analytics 📱
+
+- **Goal:** Surface Instagram Story and Reels-specific metrics that drive ~50% of IG engagement.
+- **Tasks:**
+  - [ ] **Backend — Story insights service**
+    - [ ] Create `instagramStories.service.ts` — fetch Stories via Graph API (`/me/stories` endpoint)
+    - [ ] Pull story-specific metrics: impressions, reach, replies, exits, taps_forward, taps_back
+    - [ ] Extend `instagramInsights.service.ts` — add `story_completion_rate` calculation
+  - [ ] **Backend — Reels enhancement**
+    - [ ] Extend `instagramMedia.service.ts` — filter and enrich Reels data separately
+    - [ ] Add Reels-specific metrics: plays, reel_interactions, initial_plays_vs_replays
+  - [ ] **Frontend — Stories panel**
+    - [ ] Create `StoriesPanel.vue` — show active/expired stories with metrics
+    - [ ] Create `StoryCompletionChart.vue` — visualize drop-off rates across story slides
+  - [ ] **Frontend — Reels section**
+    - [ ] Create `ReelsPerformancePanel.vue` — dedicated Reels metrics view
+    - [ ] Add Reels filter to `ContentTable.vue` (filter by `media_product_type === 'REELS'`)
+    - [ ] Integrate panels into `InstagramAnalyticsPage.vue`
+
+### Phase 3: Hashtag Analytics 🏷️
+
+- **Goal:** Track which hashtags drive reach and engagement — essential for content strategy.
+- **Tasks:**
+  - [ ] **Backend — Hashtag extraction & tracking**
+    - [ ] Create `hashtagAnalytics.service.ts` — parse hashtags from media captions
+    - [ ] Aggregate metrics per hashtag: total reach, avg engagement, usage count
+    - [ ] Create Prisma model `HashtagSnapshot` for historical hashtag performance
+    - [ ] Add hashtag aggregation to daily cron job (`jobs/`)
+  - [ ] **Backend — Hashtag API endpoints**
+    - [ ] `GET /api/analytics/hashtags` — return ranked hashtags with metrics
+    - [ ] `GET /api/analytics/hashtags/:tag` — return detail for specific hashtag
+  - [ ] **Frontend — Hashtag dashboard**
+    - [ ] Create `HashtagRankingPanel.vue` — sortable table of top hashtags by reach/engagement
+    - [ ] Create `HashtagTrendChart.vue` — line chart showing hashtag performance over time
+    - [ ] Integrate into `InstagramAnalyticsPage.vue` and `TikTokAnalyticsPage.vue`
+
+### Phase 4: Payment & Licensing (Stripe / Lemon Squeezy) 💳
+
+- **Goal:** Enable monetization with a simple one-time or subscription payment flow.
+- **Tasks:**
+  - [ ] **Backend — Payment integration**
+    - [ ] Create `payment.service.ts` — Stripe Checkout session creation
+    - [ ] Create `payment.controller.ts` — handle checkout + webhook events
+    - [ ] Create `payment.routes.ts` — `POST /api/payment/checkout`, `POST /api/payment/webhook`
+    - [ ] Prisma model updates: add `license_status`, `license_key`, `payment_date` to User model
+    - [ ] Webhook handler for `checkout.session.completed` event
+    - [ ] License validation middleware — gate premium features behind active license
+  - [ ] **Frontend — Payment UI**
+    - [ ] Create `PricingPage.vue` — display pricing tiers and "Buy Now" CTA
+    - [ ] Create `LicenseStatusBanner.vue` — show trial/active/expired state in sidebar
+    - [ ] Redirect flow: checkout → Stripe → success page → dashboard
+    - [ ] License key display in `SettingsPage.vue`
+  - [ ] **Legal pages**
+    - [ ] Update `TermsOfServicePage.vue` with real refund policy and usage terms
+    - [ ] Update `PrivacyPolicyPage.vue` with real data collection disclosures
+
+### Phase 5: Test Coverage Hardening 🧪
+
+- **Goal:** Achieve sufficient test coverage to ship with confidence.
+- **Existing tests to build on:**
+  - `frontend/src/__tests__/` — 8 test files (StatCard, LoginForm, SignupForm, ContentTable, auth store, dashboard store, api service, format utils)
+  - `backend/src/__tests__/` — 3 test files (auth service, auth routes, analytics routes)
+- **Tasks:**
+  - [ ] **Backend tests**
+    - [ ] Test `reportExport.service.ts` — verify CSV/PDF generation output
+    - [ ] Test `hashtagAnalytics.service.ts` — verify hashtag parsing & aggregation
+    - [ ] Test `payment.controller.ts` — verify webhook handling & license activation
+    - [ ] Test token refresh edge cases (expired tokens, revoked access)
+  - [ ] **Frontend tests**
+    - [ ] Test export button flow — verify API call and download trigger
+    - [ ] Test `HashtagRankingPanel.vue` — verify sorting and rendering
+    - [ ] Test `StoriesPanel.vue` — verify story metrics display
+    - [ ] Test license banner states (trial, active, expired)
+  - [ ] **Integration / E2E (stretch goal)**
+    - [ ] End-to-end login → dashboard → export flow
+    - [ ] Payment flow (Stripe test mode)
+
+---
+
+### MVP 2 Summary
+
+| Phase | Feature                 | Est. Effort     | Priority    |
+| :---- | :---------------------- | :-------------- | :---------- |
+| 1     | Report Export (PDF/CSV) | 2–3 days        | 🔴 Critical |
+| 2     | Story & Reels Analytics | 3–5 days        | 🔴 Critical |
+| 3     | Hashtag Analytics       | 2–3 days        | 🟠 High     |
+| 4     | Payment & Licensing     | 3–5 days        | 🔴 Critical |
+| 5     | Test Coverage           | 2–3 days        | 🟠 High     |
+|       | **Total**               | **~12–19 days** |             |
+
+> **Launch checklist (minimum before selling):** Phases 1, 2, and 4 must be complete.  
+> Phases 3 and 5 are strongly recommended but can follow shortly after initial launch.

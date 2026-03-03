@@ -11,6 +11,7 @@ import authRoutes from './routes/auth.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import socialAccountsRoutes from './routes/socialAccounts';
 import instagramGraphRoutes from './routes/instagramGraph.routes';
+import reportsRoutes from './routes/reports.routes';
 import { startTokenRefreshCron } from './jobs/tokenRefresh';
 import session from 'express-session';
 
@@ -87,6 +88,7 @@ app.use('/auth/instagram-graph', instagramGraphRoutes);
 app.use('/auth', authRateLimiter, authRoutes);
 app.use('/api/analytics', authenticateJwt, analyticsRoutes);
 app.use('/api/accounts', authenticateJwt, socialAccountsRoutes);
+app.use('/api/reports', authenticateJwt, reportsRoutes);
 
 // Start token refresh cron job
 startTokenRefreshCron();

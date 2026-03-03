@@ -102,23 +102,23 @@ This document outlines the scope and implementation plan for the Gelitik analyti
 > **Target:** Self-hosted analytics tool sold as a one-time license ($29–49).  
 > **Priority:** Ship these before any public launch or listing.
 
-### Phase 1: Report Export (PDF / CSV) 📄
+### Phase 1: Report Export (PDF / CSV) 📄 ✅ IMPLEMENTED
 
 - **Goal:** Allow users to download and share their analytics with clients or teams.
 - **Tasks:**
-  - [ ] **Backend — Export API endpoint** (`/api/reports/export`)
-    - [ ] Create `reportExport.service.ts` — aggregate analytics data into exportable format
-    - [ ] Create `reports.controller.ts` — handle `GET /api/reports/export?format=pdf|csv&platform=instagram|tiktok|all&days=7|14|30|90`
-    - [ ] Create `reports.routes.ts` — wire up auth-protected export routes
-    - [ ] CSV generation using `json2csv` or `csv-stringify`
-    - [ ] PDF generation using `pdfkit` or `jspdf` (server-side)
-    - [ ] Include: KPI summary, top content table, engagement chart snapshot, demographic breakdown
-  - [ ] **Frontend — Export button UI**
-    - [ ] Add export button to `DashboardPage.vue` header area
-    - [ ] Add export button to `InstagramAnalyticsPage.vue` and `TikTokAnalyticsPage.vue`
-    - [ ] Format selector dropdown (PDF / CSV)
-    - [ ] Loading state while generating report
-    - [ ] Trigger browser download on completion
+  - [x] **Backend — Export API endpoint** (`/api/reports/export`)
+    - [x] Create `reportExport.service.ts` — aggregate analytics data into exportable format
+    - [x] Create `reports.controller.ts` — handle `GET /api/reports/export?format=pdf|csv&platform=instagram|tiktok|all&days=7|14|30|90`
+    - [x] Create `reports.routes.ts` — wire up auth-protected export routes
+    - [x] CSV generation using `json2csv`
+    - [x] PDF generation using `pdfkit` (server-side)
+    - [x] Include: KPI summary, top content table, engagement trends, demographic breakdown, content format analysis, audience persona
+  - [x] **Frontend — Export button UI**
+    - [x] Add export button to `DashboardPage.vue` header area
+    - [x] Add export button to `InstagramAnalyticsPage.vue` and `TikTokAnalyticsPage.vue`
+    - [x] Format selector dropdown (PDF / CSV)
+    - [x] Loading state while generating report
+    - [x] Trigger browser download on completion
 
 ### Phase 2: Story & Reels Analytics 📱
 

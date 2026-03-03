@@ -125,6 +125,11 @@ const periods = [
                 >
                     <!-- Platform -->
                     <div class="space-y-2">
+                        <label
+                            class="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 block tracking-wider"
+                        >
+                            Platform
+                        </label>
                         <select
                             v-model="platform"
                             :disabled="props.defaultPlatform !== 'all'"

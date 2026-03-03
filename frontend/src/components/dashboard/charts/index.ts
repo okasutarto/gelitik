@@ -5,5 +5,6 @@ export { default as ChartTimeframeControl } from "./ChartTimeframeControl.vue";
 export { default as DualChartDashboard } from "./DualChartDashboard.vue";
 export { default as EngagementChart } from "./EngagementChart.vue";
 export { default as EngagementDoughnutChart } from "./EngagementDoughnutChart.vue";
+export { default as MetricBarChart } from "./MetricBarChart.vue";
 export { default as TopVideosChart } from "./TopVideosChart.vue";
 export { default as VideoPerformanceChart } from "./VideoPerformanceChart.vue";

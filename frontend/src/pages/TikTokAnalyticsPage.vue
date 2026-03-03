@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { onMounted, computed, ref } from 'vue'
-import { Play, Share2, Clock, Eye, Download } from 'lucide-vue-next'
+import { Play, Share2, Download, Heart, MessageCircle, Activity } from 'lucide-vue-next'
+import { Line } from 'vue-chartjs'
+import { useDashboardStore } from '@/stores/dashboardStore'
+import { useTheme } from '@/composables/useTheme'
+import '@/composables/useChart'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import ExportReportModal from '@/components/dashboard/reports/ExportReportModal.vue'
 import PageHeader from '@/components/layout/PageHeader.vue'
@@ -22,6 +26,8 @@ import type { Video } from '@/types/video'
 const router = useRouter()
 const toast = useToast()
 const { loading, accountData, fetchAnalytics } = usePlatformAnalytics('tiktok')
+const dashboardStore = useDashboardStore()
+const { isDark } = useTheme()
 
 const isExportModalOpen = ref(false)
 
@@ -63,6 +69,22 @@ const tiktokStats = computed(() => {
             subtitle: ''
         },
         {
+            title: 'Total Likes',
+            value: formatNumber(totalLikes),
+            change: '',
+            changeType: 'up' as const,
+            icon: Heart,
+            subtitle: ''
+        },
+        {
+            title: 'Comments',
+            value: formatNumber(totalComments),
+            change: '',
+            changeType: 'up' as const,
+            icon: MessageCircle,
+            subtitle: ''
+        },
+        {
             title: 'Shares',
             value: formatNumber(totalShares),
             change: '',
@@ -71,23 +93,74 @@ const tiktokStats = computed(() => {
             subtitle: ''
         },
         {
-            title: 'Total Likes',
-            value: formatNumber(totalLikes),
-            change: '',
-            changeType: 'up' as const,
-            icon: Eye,
-            subtitle: ''
-        },
-        {
             title: 'Engagement Rate',
             value: engagementRate.toFixed(2) + '%',
             change: '',
             changeType: 'up' as const,
-            icon: Clock,
+            icon: Activity,
             subtitle: ''
         }
     ]
 })
+
+// Follower Growth Chart Data
+const followerHistory = computed(() => dashboardStore.followerHistory.tiktok || [])
+
+const followerChartData = computed(() => {
+    const history = followerHistory.value
+    const labels = history.map(h => {
+        const d = new Date(h.date)
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    })
+    const data = history.map(h => h.followers)
+
+    return {
+        labels,
+        datasets: [{
+            label: 'Followers',
+            data,
+            borderColor: isDark.value ? '#FF0099' : '#db2777',
+            backgroundColor: isDark.value ? 'rgba(255, 0, 153, 0.1)' : 'rgba(219, 39, 119, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: isDark.value ? '#FF0099' : '#fff',
+            pointBorderColor: isDark.value ? '#fff' : '#db2777',
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6
+        }]
+    }
+})
+
+const followerChartOptions = computed(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: { display: false }
+    },
+    scales: {
+        x: {
+            grid: { display: false },
+            ticks: { color: isDark.value ? '#E0E0E0' : '#94a3b8', font: { size: 11 } }
+        },
+        y: {
+            grid: { color: isDark.value ? 'rgba(255,255,255,0.1)' : '#f1f5f9' },
+            ticks: {
+                color: isDark.value ? '#E0E0E0' : '#94a3b8',
+                font: { size: 11 },
+                callback: (value: number | string) => {
+                    const num = Number(value)
+                    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
+                    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
+                    return value
+                }
+            },
+            beginAtZero: false
+        }
+    }
+}))
+
+const hasFollowerData = computed(() => followerHistory.value.length > 0)
 
 onMounted(() => {
     // Check for connection success message from OAuth callback
@@ -97,7 +170,10 @@ onMounted(() => {
         toast.success('TikTok account connected successfully! You can now view your analytics.')
     }
 
-    fetchAnalytics().catch((err: unknown) => {
+    Promise.all([
+        fetchAnalytics(),
+        dashboardStore.fetchHistory(30)
+    ]).catch((err: unknown) => {
         const axiosErr = err as AxiosError
         if (axiosErr.response?.status === 404) {
             toast.error('TikTok account not connected. Please connect your account first.')
@@ -132,9 +208,9 @@ onMounted(() => {
         </div>
 
         <!-- Stat Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-8">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 my-8">
             <template v-if="loading">
-                <StatCardSkeleton :count="4" />
+                <StatCardSkeleton :count="5" />
             </template>
             <template v-else>
                 <StatCard
@@ -170,7 +246,10 @@ onMounted(() => {
                 >
                     TikTok follower trend
                 </p>
-                <div class="flex items-center justify-center py-12 text-center">
+                <div v-if="hasFollowerData" class="h-64">
+                    <Line :data="followerChartData" :options="followerChartOptions" />
+                </div>
+                <div v-else class="flex items-center justify-center py-12 text-center">
                     <div>
                         <div
                             class="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center"

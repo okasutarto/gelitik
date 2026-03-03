@@ -104,7 +104,8 @@ type SortKey =
   | "saves"
   | "comments"
   | "engagement"
-  | "platform";
+  | "platform"
+  | null;
 type SortOrder = "asc" | "desc" | null;
 const sortKey = ref<SortKey>("created");
 const sortOrder = ref<SortOrder>("desc");

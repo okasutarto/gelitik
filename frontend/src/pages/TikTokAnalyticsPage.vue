@@ -24,12 +24,6 @@ const toast = useToast()
 const { loading, accountData, fetchAnalytics } = usePlatformAnalytics('tiktok')
 
 const isExportModalOpen = ref(false)
-const handleExport = (config: any) => {
-    console.log('Export requested (Frontend Phase 1 Mock):', config)
-    alert(
-        `Export Feature (Phase 1 UI)\nPlatform: ${config.platform}\nFormat: ${config.format.toUpperCase()}\nRange: Last ${config.range} Days`
-    )
-}
 
 const userData = computed(() => {
     const info = accountData.value?.data?.userInfo as any
@@ -214,7 +208,6 @@ onMounted(() => {
             :is-open="isExportModalOpen"
             default-platform="tiktok"
             @close="isExportModalOpen = false"
-            @export="handleExport"
         />
     </DashboardLayout>
 </template>

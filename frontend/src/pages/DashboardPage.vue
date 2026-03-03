@@ -48,14 +48,6 @@ const selectedRange = ref(String(selectedDays.value))
 const isDropdownOpen = ref(false)
 const isExportModalOpen = ref(false)
 
-const handleExport = (config: any) => {
-    console.log('Export requested (Frontend Phase 1 Mock):', config)
-    // Phase 2 will implement actual API call here
-    alert(
-        `Export Feature (Phase 1 UI)\nPlatform: ${config.platform}\nFormat: ${config.format.toUpperCase()}\nRange: Last ${config.range} Days`
-    )
-}
-
 const selectedTimeframeLabel = computed(() => {
     return dateRangeOptions.find((o) => o.value === selectedRange.value)?.label || 'Last 30 Days'
 })
@@ -246,10 +238,6 @@ const kpiIcons = [Users, Heart, FileText, Eye]
         <ContentTable v-else platform="all" :videos="topContent" />
 
         <!-- Export Modal -->
-        <ExportReportModal
-            :is-open="isExportModalOpen"
-            @close="isExportModalOpen = false"
-            @export="handleExport"
-        />
+        <ExportReportModal :is-open="isExportModalOpen" @close="isExportModalOpen = false" />
     </DashboardLayout>
 </template>

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { X, FileText, Download, CheckCircle2 } from 'lucide-vue-next'
-import AppButton from '@/components/ui/AppButton.vue'
+import { FileText, Download, CheckCircle2, X } from 'lucide-vue-next'
+import api from '@/services/api'
+import { useToast } from '@/composables/useToast'
 
 interface Props {
     isOpen: boolean
@@ -21,21 +22,62 @@ const emit = defineEmits<{
 
 const format = ref<'pdf' | 'csv'>('pdf')
 const platform = ref(props.defaultPlatform)
-const dateRange = ref(props.defaultRange)
-const isGenerating = ref(false)
+const range = ref(props.defaultRange)
+const isExporting = ref(false)
+const toast = useToast()
 
-const handleExport = () => {
-    isGenerating.value = true
-    // Simulate generation visually
-    setTimeout(() => {
-        isGenerating.value = false
+const handleExport = async () => {
+    if (!format.value || !platform.value || !range.value) return
+
+    isExporting.value = true
+
+    try {
+        const response = await api.get('/api/reports/export', {
+            params: {
+                format: format.value,
+                platform: platform.value,
+                days: range.value
+            },
+            responseType: 'blob'
+        })
+
+        // Create a download link for the blob
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+        link.href = url
+
+        // Extract filename from Content-Disposition header if possible
+        const contentDisposition = response.headers['content-disposition']
+        let filename = `gelitik-report-${platform.value}-${range.value}days.${format.value}`
+        if (contentDisposition) {
+            const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+            const matches = filenameRegex.exec(contentDisposition)
+            if (matches != null && matches[1]) {
+                filename = matches[1].replace(/['"]/g, '')
+            }
+        }
+
+        link.setAttribute('download', filename)
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        window.URL.revokeObjectURL(url)
+
+        toast.success('Report downloaded successfully')
         emit('export', {
             format: format.value,
             platform: platform.value,
-            range: dateRange.value
+            range: range.value
         })
+
+        // Optionally close modal
         emit('close')
-    }, 1500)
+    } catch (error: any) {
+        console.error('Export failed:', error)
+        toast.error('Failed to generate report. Please try again.')
+    } finally {
+        isExporting.value = false
+    }
 }
 
 const periods = [
@@ -161,7 +203,7 @@ const periods = [
                             Date Range
                         </label>
                         <select
-                            v-model="dateRange"
+                            v-model="range"
                             class="w-full h-12 px-4 bg-white dark:bg-slate-900 border-neo-3 border-black dark:border-slate-500 text-slate-900 dark:text-white font-bold focus:border-neo-accent dark:focus:border-electric outline-none appearance-none cursor-pointer"
                         >
                             <option v-for="p in periods" :key="p.value" :value="p.value">
@@ -208,10 +250,10 @@ const periods = [
             <div class="p-6 border-t-4 border-black dark:border-electric flex justify-end">
                 <button
                     @click="handleExport"
-                    :disabled="isGenerating"
+                    :disabled="isExporting"
                     class="w-full relative flex items-center justify-center gap-3 bg-hotpink text-black font-black uppercase tracking-widest py-4 px-6 border-neo-3 border-black shadow-neo-hard-md hover:-translate-y-1 hover:shadow-neo-hard-lg transition-all disabled:opacity-75 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-neo-hard-md"
                 >
-                    <template v-if="!isGenerating">
+                    <template v-if="!isExporting">
                         <Download :size="24" class="stroke-[3]" />
                         <span>Generate &amp; Download</span>
                     </template>

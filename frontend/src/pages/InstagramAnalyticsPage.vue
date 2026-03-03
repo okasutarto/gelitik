@@ -44,13 +44,6 @@ const isGraphApi = computed(() => platform.value === 'instagram-graph')
 const isDropdownOpen = ref(false)
 const isExportModalOpen = ref(false)
 const selectedTimeframe = ref('this_week')
-
-const handleExport = (config: any) => {
-    console.log('Export requested (Frontend Phase 1 Mock):', config)
-    alert(
-        `Export Feature (Phase 1 UI)\nPlatform: ${config.platform}\nFormat: ${config.format.toUpperCase()}\nRange: Last ${config.range} Days`
-    )
-}
 const timeframes = [
     { label: 'Last 7 days', value: 'this_week' },
     { label: 'Last 14 days', value: 'last_14_days' },
@@ -371,7 +364,6 @@ onMounted(() => {
             :is-open="isExportModalOpen"
             default-platform="instagram"
             @close="isExportModalOpen = false"
-            @export="handleExport"
         />
     </DashboardLayout>
 </template>

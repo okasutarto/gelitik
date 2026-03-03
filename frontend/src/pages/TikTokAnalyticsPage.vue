@@ -178,28 +178,24 @@ const engagementTotals = computed(() => {
 })
 
 // Historical Data for EngagementChart (from follower history)
+// Note: This shows follower growth trend as a proxy for engagement trend
+// Real engagement data would need to be fetched from TikTok API history
 const engagementHistory = computed(() => {
     const history = followerHistory.value
-    // Transform follower history to engagement format
-    // We'll use followers as a proxy for engagement over time
+    if (!hasFollowerData.value) {
+        return { likes: [], comments: [], views: [] }
+    }
+
+    // Use followers as the primary metric (likes proxy)
     const likes = history.map(h => ({
         date: h.date,
         value: h.followers
     }))
-    const comments = history.map(h => ({
-        date: h.date,
-        value: Math.floor(h.followers * 0.05) // Estimated engagement ~5% of followers
-    }))
-    const views = history.map(h => ({
-        date: h.date,
-        value: Math.floor(h.followers * 0.3) // Estimated reach ~30% of followers
-    }))
+    // Placeholder: comments and views would need real API data
+    const comments: { date: string; value: number }[] = []
+    const views: { date: string; value: number }[] = []
 
-    return {
-        likes: hasFollowerData.value ? likes : [],
-        comments: hasFollowerData.value ? comments : [],
-        views: hasFollowerData.value ? views : []
-    }
+    return { likes, comments, views }
 })
 
 onMounted(() => {
@@ -284,10 +280,10 @@ onMounted(() => {
                 :shares="engagementTotals.shares"
             />
 
-            <!-- Reach vs Action (Area/Line Chart) -->
+            <!-- Follower Growth Trend (Line Chart) -->
             <EngagementChart
-                title="Reach vs Action"
-                subtitle="Views, Likes, Engagement over time"
+                title="Follower Growth Trend"
+                subtitle="Followers over time"
                 :historical-data="engagementHistory"
             />
         </div>

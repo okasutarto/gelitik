@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { Doughnut } from "vue-chartjs";
+import { Heart, MessageCircle, Share2 } from "lucide-vue-next";
 import { useTheme } from "@/composables/useTheme";
 import { formatNumber } from "@/utils/format";
 import type { Video } from "@/types/video";
@@ -132,11 +133,7 @@ const chartOptions = computed<ChartOptions<"doughnut">>(() => ({
         <div
           class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#3b82f6] dark:bg-slate-700"
         >
-          <svg class="w-6 h-6" fill="white" viewBox="0 0 24 24">
-            <path
-              d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"
-            />
-          </svg>
+          <Heart class="w-6 h-6 text-white" :stroke-width="2.5" />
         </div>
         <p class="text-lg font-mono font-bold text-slate-900 dark:text-white mt-2">
           {{ formatNumber(engagementData.likes) }}
@@ -149,11 +146,7 @@ const chartOptions = computed<ChartOptions<"doughnut">>(() => ({
         <div
           class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#8b5cf6] dark:bg-slate-700"
         >
-          <svg class="w-6 h-6" fill="white" viewBox="0 0 24 24">
-            <path
-              d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8.9h.5a8.48 8.48 0 018 8v.5z"
-            />
-          </svg>
+          <MessageCircle class="w-6 h-6 text-white" :stroke-width="2.5" />
         </div>
         <p class="text-lg font-mono font-bold text-slate-900 dark:text-white mt-2">
           {{ formatNumber(engagementData.comments) }}
@@ -166,11 +159,7 @@ const chartOptions = computed<ChartOptions<"doughnut">>(() => ({
         <div
           class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#06b6d4] dark:bg-slate-700"
         >
-          <svg class="w-6 h-6" fill="white" viewBox="0 0 24 24">
-            <path
-              d="M21.707 20.293l-4-4a7 7 0 10-9.9-9.9 7 7 0 000 9.9 7 7 0 009.9 0l4 4a1 1 0 001.414-1.414zM6 11a5 5 0 115-5 5 5 0 01-5 5z"
-            />
-          </svg>
+          <Share2 class="w-6 h-6 text-white" :stroke-width="2.5" />
         </div>
         <p class="text-lg font-mono font-bold text-slate-900 dark:text-white mt-2">
           {{ formatNumber(engagementData.shares) }}

@@ -8,6 +8,7 @@ import "@/composables/useChart"; // Registers Chart.js components
 interface HistoricalData {
   likes?: { date: string; value: number }[];
   comments?: { date: string; value: number }[];
+  views?: { date: string; value: number }[];
 }
 
 interface Props {
@@ -25,14 +26,16 @@ const selectedMetric = ref("both");
 const { isDark } = useTheme();
 
 const metricOptions = [
-  { label: "BOTH", value: "both" },
+  { label: "ALL", value: "both" },
+  { label: "VIEWS", value: "views" },
   { label: "LIKES", value: "likes" },
-  { label: "ENG. RATE", value: "comments" },
+  { label: "ENGAGEMENT", value: "comments" },
 ];
 
 const chartData = computed(() => {
   const historyLikes = props.historicalData?.likes || [];
   const historyComments = props.historicalData?.comments || [];
+  const historyViews = props.historicalData?.views || [];
 
   // Sort chronologically just in case API returns out of order
   const sortedLikes = [...historyLikes].sort(
@@ -40,6 +43,10 @@ const chartData = computed(() => {
   );
 
   const sortedComments = [...historyComments].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  const sortedViews = [...historyViews].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
@@ -54,6 +61,11 @@ const chartData = computed(() => {
       const d = new Date(item.date);
       return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     });
+  } else if (sortedViews.length > 0) {
+    displayLabels = sortedViews.map((item) => {
+      const d = new Date(item.date);
+      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    });
   } else {
     // Fallback labels
     displayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -63,9 +75,29 @@ const chartData = computed(() => {
     sortedLikes.length > 0 ? sortedLikes.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0];
   const commentsData =
     sortedComments.length > 0 ? sortedComments.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0];
+  const viewsData =
+    sortedViews.length > 0 ? sortedViews.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0];
 
   const datasets = [];
 
+  // Views (Reach)
+  if (selectedMetric.value === "both" || selectedMetric.value === "views") {
+    datasets.push({
+      label: "Views",
+      data: viewsData,
+      borderColor: isDark.value ? "#FF0099" : "#ec4899", // Pink
+      backgroundColor: isDark.value ? "rgba(255, 0, 153, 0.1)" : "rgba(236, 72, 153, 0.1)",
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: isDark.value ? "#FF0099" : "#fff",
+      pointBorderColor: isDark.value ? "#fff" : "#ec4899",
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+    });
+  }
+
+  // Likes
   if (selectedMetric.value === "both" || selectedMetric.value === "likes") {
     datasets.push({
       label: "Likes",
@@ -82,9 +114,10 @@ const chartData = computed(() => {
     });
   }
 
+  // Engagement (comments)
   if (selectedMetric.value === "both" || selectedMetric.value === "comments") {
     datasets.push({
-      label: "Eng. Rate (%)",
+      label: "Engagement",
       data: commentsData,
       borderColor: isDark.value ? "#00F0FF" : "#06b6d4", // Cyan
       backgroundColor: isDark.value ? "rgba(0, 240, 255, 0.1)" : "rgba(6, 182, 212, 0.1)",

@@ -49,7 +49,8 @@
       "Bash(npx vite build)",
       "Bash(npm install json2csv pdfkit)",
       "Bash(npm install:*)",
-      "WebFetch(domain:minimax-algeng-chat-tts-us.oss-us-east-1.aliyuncs.com)"
+      "WebFetch(domain:minimax-algeng-chat-tts-us.oss-us-east-1.aliyuncs.com)",
+      "mcp__plugin_supabase_supabase__list_projects"
     ]
   }
 }

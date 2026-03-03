@@ -99,7 +99,7 @@ This document outlines the scope and implementation plan for the Gelitik analyti
 ## MVP 2: Launch-Critical Features (Commercial Readiness)
 
 > **Goal:** Close the gaps that would block a paying customer on Day 1.  
-> **Target:** Self-hosted analytics tool sold as a one-time license ($29–49).  
+> **Target:** Subscription-based SaaS analytics tool ($9–29/month).  
 > **Priority:** Ship these before any public launch or listing.
 
 ### Phase 1: Report Export (PDF / CSV) 📄 ✅ IMPLEMENTED

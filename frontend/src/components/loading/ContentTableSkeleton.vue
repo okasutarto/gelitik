@@ -2,7 +2,7 @@
   <div class="brutal-card rounded-none overflow-hidden">
     <div class="hidden md:block">
       <div class="divide-y divide-y-2 divide-black">
-        <div v-for="i in 4" :key="i" class="px-4 py-4 flex items-center gap-3">
+        <div v-for="i in 5" :key="i" class="px-4 py-4 flex items-center gap-3">
           <div
             class="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg skeleton-pulse shrink-0"
           />

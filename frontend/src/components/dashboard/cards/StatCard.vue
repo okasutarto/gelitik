@@ -1,79 +1,80 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
-import { formatNumber } from "@/utils/format";
-import type { Component } from "vue";
+import { ref, onMounted, watch } from 'vue'
+import { formatNumber } from '@/utils/format'
+import type { Component } from 'vue'
 
 interface Props {
-  title: string;
-  value: string | number;
-  trend?: number;
-  icon?: Component;
-  trendText?: string;
-  subtitle?: string;
+  title: string
+  value: string | number
+  trend?: number
+  icon?: Component
+  trendText?: string
+  subtitle?: string
+  subMetric?: string
   // Delta support
-  delta?: number;
-  deltaPercent?: number;
-  deltaLabel?: string;
-  loading?: boolean;
+  delta?: number
+  deltaPercent?: number
+  deltaLabel?: string
+  loading?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   trend: 0,
-  loading: false,
-});
+  loading: false
+})
 
 // Count-up animation
-const displayValue = ref<string | number>(props.value);
-const hasAnimated = ref(false);
+const displayValue = ref<string | number>(props.value)
+const hasAnimated = ref(false)
 
 function animateValue(target: number, duration = 800) {
-  const start = 0;
-  const startTime = performance.now();
+  const start = 0
+  const startTime = performance.now()
 
   function step(currentTime: number) {
-    const elapsed = currentTime - startTime;
-    const progress = Math.min(elapsed / duration, 1);
+    const elapsed = currentTime - startTime
+    const progress = Math.min(elapsed / duration, 1)
     // Ease-out cubic
-    const eased = 1 - Math.pow(1 - progress, 3);
-    const current = Math.round(start + (target - start) * eased);
-    displayValue.value = formatNumber(current);
+    const eased = 1 - Math.pow(1 - progress, 3)
+    const current = Math.round(start + (target - start) * eased)
+    displayValue.value = formatNumber(current)
 
     if (progress < 1) {
-      requestAnimationFrame(step);
+      requestAnimationFrame(step)
     } else {
-      displayValue.value = formatNumber(target);
+      displayValue.value = formatNumber(target)
     }
   }
 
-  requestAnimationFrame(step);
+  requestAnimationFrame(step)
 }
 
 onMounted(() => {
-  if (typeof props.value === "number" && !props.loading) {
-    animateValue(props.value);
-    hasAnimated.value = true;
+  if (typeof props.value === 'number' && !props.loading) {
+    animateValue(props.value)
+    hasAnimated.value = true
   }
-});
+})
 
 watch(
   () => props.value,
   (newVal) => {
-    if (typeof newVal === "number" && hasAnimated.value) {
-      displayValue.value = formatNumber(newVal);
-    } else if (typeof newVal === "number" && !hasAnimated.value && !props.loading) {
-      animateValue(newVal);
-      hasAnimated.value = true;
+    if (typeof newVal === 'number' && hasAnimated.value) {
+      displayValue.value = formatNumber(newVal)
+    } else if (typeof newVal === 'number' && !hasAnimated.value && !props.loading) {
+      animateValue(newVal)
+      hasAnimated.value = true
     } else {
-      displayValue.value = newVal;
+      displayValue.value = newVal
     }
   }
-);
+)
 
 const formattedDelta = (val: number) => {
-  const abs = Math.abs(val);
-  const sign = val >= 0 ? "+" : "-";
-  return `${sign}${formatNumber(abs)}`;
-};
+  const abs = Math.abs(val)
+  const sign = val >= 0 ? '+' : '-'
+  return `${sign}${formatNumber(abs)}`
+}
 </script>
 
 <template>
@@ -95,7 +96,7 @@ const formattedDelta = (val: number) => {
             {{ title }}
           </p>
           <h3 class="text-3xl font-black text-slate-900 dark:text-white">
-            {{ typeof value === "number" ? displayValue : value }}
+            {{ typeof value === 'number' ? displayValue : value }}
           </h3>
         </div>
         <div
@@ -106,32 +107,43 @@ const formattedDelta = (val: number) => {
       </div>
 
       <!-- Delta indicator -->
-      <div
-        v-if="delta !== undefined || deltaPercent !== undefined"
-        class="flex items-center gap-2 mb-1"
-      >
-        <span
-          v-if="delta !== undefined"
-          class="text-sm font-bold"
-          :class="
-            delta >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
-          "
-        >
-          {{ delta >= 0 ? "▲" : "▼" }} {{ formattedDelta(delta) }}
-        </span>
-        <span
-          v-if="deltaPercent !== undefined"
-          class="text-xs font-semibold px-1.5 py-0.5 rounded"
-          :class="
-            deltaPercent >= 0
-              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-          "
-        >
-          {{ deltaPercent >= 0 ? "+" : "" }}{{ deltaPercent.toFixed(1) }}%
-        </span>
-        <span v-if="deltaLabel" class="text-xs text-slate-400 dark:text-slate-500">
-          {{ deltaLabel }}
+      <div v-if="delta !== undefined || deltaPercent !== undefined" class="mb-1">
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span
+            v-if="delta !== undefined"
+            class="text-xs font-bold"
+            :class="
+              delta >= 0
+                ? 'text-emerald-600 dark:text-emerald-400'
+                : 'text-red-600 dark:text-red-400'
+            "
+          >
+            {{ delta >= 0 ? '▲' : '▼' }} {{ formattedDelta(delta) }}
+          </span>
+          <span
+            v-if="deltaPercent !== undefined"
+            class="text-xs font-semibold px-1 py-0.5 rounded"
+            :class="
+              deltaPercent >= 0
+                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+            "
+          >
+            {{ deltaPercent >= 0 ? '+' : '' }}{{ deltaPercent.toFixed(1) }}%
+          </span>
+          <span
+            v-if="deltaLabel"
+            class="text-[10px] text-slate-400 dark:text-slate-500 leading-tight"
+          >
+            {{ deltaLabel }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Sub-metric -->
+      <div v-if="subMetric" class="mt-1">
+        <span class="text-xs font-semibold text-slate-400 dark:text-slate-500">
+          {{ subMetric }}
         </span>
       </div>
 

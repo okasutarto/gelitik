@@ -183,10 +183,12 @@ export const useDashboardStore = defineStore("dashboard", () => {
     const ttEntries = followerHistory.value['tiktok'] ?? [];
 
     const likesMap = new Map<string, number>();
+    const viewsMap = new Map<string, number>();
     const engagementMap = new Map<string, { sum: number; count: number }>();
 
     for (const entry of [...igEntries, ...ttEntries]) {
       likesMap.set(entry.date, (likesMap.get(entry.date) ?? 0) + (entry.totalLikes ?? 0));
+      viewsMap.set(entry.date, (viewsMap.get(entry.date) ?? 0) + (entry.totalViews ?? 0));
       const existing = engagementMap.get(entry.date) ?? { sum: 0, count: 0 };
       engagementMap.set(entry.date, { sum: existing.sum + (entry.engagementRate ?? 0), count: existing.count + 1 });
     }
@@ -195,6 +197,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
 
     return {
       likes: allDates.map(date => ({ date, value: likesMap.get(date) ?? 0 })),
+      views: allDates.map(date => ({ date, value: viewsMap.get(date) ?? 0 })),
       comments: allDates.map(date => {
         const eng = engagementMap.get(date);
         return { date, value: eng ? parseFloat((eng.sum / eng.count).toFixed(2)) : 0 };
@@ -204,7 +207,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
 
   // Historical analytics data from DB snapshots
   const selectedDays = ref(30);
-  const followerHistory = ref<Record<string, { date: string; followers: number; totalViews: number; totalLikes: number; engagementRate: number }[]>>({});
+  const followerHistory = ref<Record<string, { date: string; followers: number; totalViews: number; totalLikes: number; totalComments: number; totalShares: number; engagementRate: number }[]>>({});
 
   // Fetch all data
   async function fetchAll() {

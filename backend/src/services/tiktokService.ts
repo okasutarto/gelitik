@@ -129,26 +129,26 @@ export class TikTokService implements PlatformService {
     return this.getUserInfo(accessToken);
   }
 
-  async getVideos(accessToken: string, cursor?: string, maxCount: number = 50): Promise<{
+  async getVideos(accessToken: string, cursor?: number, maxCount: number = 20): Promise<{
     videos: TikTokVideo[];
     has_more: boolean;
-    cursor?: string;
+    cursor?: number;
   }> {
     try {
-      const params: any = {
-        max_count: maxCount,
-        fields: 'id,title,video_description,create_time,like_count,comment_count,share_count,view_count,cover_image_url,embed_link,duration,height,width'
+      const body: Record<string, unknown> = {
+        max_count: Math.min(maxCount, 20),
       };
 
       if (cursor) {
-        params.cursor = cursor;
+        body.cursor = cursor;
       }
 
+      const fields = 'id,title,video_description,create_time,like_count,comment_count,share_count,view_count,cover_image_url,embed_link,duration,height,width';
+
       const response = await axios.post(
-        `${this.baseUrl}/video/list/`,
-        {},
+        `${this.baseUrl}/video/list/?fields=${fields}`,
+        body,
         {
-          params,
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json'
@@ -166,6 +166,25 @@ export class TikTokService implements PlatformService {
       console.error('[TikTok] Get videos error detail:', error.response?.data || error.message);
       throw new Error('Failed to fetch videos');
     }
+  }
+
+  async getAllVideos(accessToken: string): Promise<TikTokVideo[]> {
+    const allVideos: TikTokVideo[] = [];
+    let cursor: number | undefined = undefined;
+    let hasMore = true;
+
+    while (hasMore) {
+      const result = await this.getVideos(accessToken, cursor, 20);
+      allVideos.push(...result.videos);
+      hasMore = result.has_more;
+      cursor = result.cursor;
+
+      // Safety limit to avoid infinite loops
+      if (allVideos.length > 500) break;
+    }
+
+    console.log(`[TikTok] Fetched ${allVideos.length} total videos across ${Math.ceil(allVideos.length / 20)} pages`);
+    return allVideos;
   }
 
   async calculateAnalytics(userInfo: TikTokUserInfo, videos: TikTokVideo[]): Promise<PlatformAnalytics> {
@@ -244,9 +263,9 @@ export class TikTokService implements PlatformService {
   }
 
   async getAnalytics(accessToken: string, accountId: string, startDate: Date, endDate: Date): Promise<any> {
-    const videosData = await this.getVideos(accessToken, undefined, 50);
+    const allVideos = await this.getAllVideos(accessToken);
     const userInfo = await this.getUserInfo(accessToken);
-    const analytics = await this.calculateAnalytics(userInfo, videosData.videos);
+    const analytics = await this.calculateAnalytics(userInfo, allVideos);
 
     // Compute historical engagement (likes and comments) directly from videos, bounded by date
     const dailyEngagement = new Map<string, { likes: number, comments: number }>();
@@ -259,7 +278,7 @@ export class TikTokService implements PlatformService {
         dailyEngagement.set(dateKey, { likes: 0, comments: 0 });
     }
 
-    videosData.videos.forEach((video: any) => {
+    allVideos.forEach((video: any) => {
         if (video.create_time) {
             // TikTok create_time is a Unix timestamp in seconds
             const dateKey = new Date(video.create_time * 1000).toISOString().split('T')[0];
@@ -281,7 +300,7 @@ export class TikTokService implements PlatformService {
     };
 
     return {
-      videos: videosData.videos,
+      videos: allVideos,
       analytics,
       userInfo
     };

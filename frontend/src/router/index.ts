@@ -81,7 +81,7 @@ const routes: RouteRecordRaw[] = [
     name: "tiktok-analytics",
     component: () => import("@/pages/TikTokAnalyticsPage.vue"),
     meta: {
-      title: "TikTok Analytics - Gelitik",
+      title: "TikTok Insights - Gelitik",
       requiresAuth: true,
     },
   },

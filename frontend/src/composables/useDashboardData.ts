@@ -31,7 +31,7 @@ export function useDashboardData() {
         subtitle: "Combined followers",
         delta: deltas.followers.delta,
         deltaPercent: deltas.followers.percent,
-        deltaLabel: "vs. earliest snapshot",
+        deltaLabel: "vs. first record",
       },
       {
         title: "Engagement Rate",
@@ -40,7 +40,7 @@ export function useDashboardData() {
         subtitle: "Avg. across platforms",
         delta: parseFloat(deltas.engagement.delta.toFixed(2)),
         deltaPercent: deltas.engagement.percent,
-        deltaLabel: "vs. earliest snapshot",
+        deltaLabel: "vs. first record",
       },
       {
         title: "Total Views",
@@ -49,7 +49,7 @@ export function useDashboardData() {
         subtitle: "Combined platform views",
         delta: deltas.views.delta,
         deltaPercent: deltas.views.percent,
-        deltaLabel: "vs. earliest snapshot",
+        deltaLabel: "vs. first record",
       },
       {
         title: "Total Posts",

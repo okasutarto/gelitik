@@ -207,7 +207,7 @@ The Gelitik backend exposes several RESTful endpoints for authentication and ana
 | `GET`    | `/api/accounts/status`           | Gets a brief connection status list (used for sidebar UI dots).                        | None (Requires JWT)       |
 | `GET`    | `/api/analytics/history`         | Retrieves daily aggregated DB snapshots for follower growth & engagement filtering.    | `?days=number` (optional) |
 | `GET`    | `/api/analytics/instagram-graph` | Fetches the latest live Instagram Business analytics (audience, engagement, media).    | None (Requires JWT)       |
-| `GET`    | `/api/analytics/tiktok`          | Fetches the latest live TikTok Analytics (video metrics, profile views, followers).    | None (Requires JWT)       |
+| `GET`    | `/api/analytics/tiktok`          | Fetches the latest live TikTok Insights (video metrics, profile views, followers).     | None (Requires JWT)       |
 | `POST`   | `/api/auth/logout`               | Clears the session and invalidates the current JWT token.                              | None                      |
 
 ## <a id="project-structure"></a>Project Structure

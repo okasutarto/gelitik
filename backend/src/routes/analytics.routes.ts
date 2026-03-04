@@ -81,7 +81,7 @@ router.get('/history', async (req, res) => {
             }
         });
 
-        const history: Record<string, { date: string; followers: number; totalViews: number; totalLikes: number; engagementRate: number }[]> = {};
+        const history: Record<string, { date: string; followers: number; totalViews: number; totalLikes: number; totalComments: number; totalShares: number; engagementRate: number }[]> = {};
 
         for (const account of accounts) {
             const platform = account.platform;
@@ -90,6 +90,8 @@ router.get('/history', async (req, res) => {
                 followers: a.followers,
                 totalViews: a.totalViews,
                 totalLikes: a.totalLikes,
+                totalComments: a.totalComments,
+                totalShares: a.totalShares,
                 engagementRate: a.engagementRate
             }));
         }

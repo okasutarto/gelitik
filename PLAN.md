@@ -65,7 +65,7 @@ This document outlines the scope and implementation plan for the Gelitik analyti
 
 - **Goal:** Detailed analytics per platform.
 - **Completed Tasks:**
-  - [x] TikTok Analytics Page (`TikTokAnalyticsPage.vue`)
+  - [x] TikTok Insights Page (`TikTokAnalyticsPage.vue`)
   - [x] Instagram Analytics Page (`InstagramAnalyticsPage.vue`)
   - [x] User profile display with stats
   - [x] Video performance charts

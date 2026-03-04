@@ -6,8 +6,6 @@ import NotificationDropdown from './NotificationDropdown.vue'
 
 const { isDark, toggleTheme } = useTheme()
 const { store: notificationsStore } = useNotifications()
-
-const userAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik'
 </script>
 
 <template>

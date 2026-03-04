@@ -183,7 +183,6 @@ export class TikTokService implements PlatformService {
       if (allVideos.length > 500) break;
     }
 
-    console.log(`[TikTok] Fetched ${allVideos.length} total videos across ${Math.ceil(allVideos.length / 20)} pages`);
     return allVideos;
   }
 

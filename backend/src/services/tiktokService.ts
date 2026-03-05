@@ -187,7 +187,8 @@ export class TikTokService implements PlatformService {
   }
 
   async calculateAnalytics(userInfo: TikTokUserInfo, videos: TikTokVideo[]): Promise<PlatformAnalytics> {
-    const totalLikes = videos.reduce((sum: number, video) => sum + video.like_count, 0) + userInfo.likes_count;
+    // Note: userInfo.likes_count is the total likes across all videos (not separate from video like_count)
+    const totalLikes = userInfo.likes_count;
     const totalComments = videos.reduce((sum: number, video) => sum + video.comment_count, 0);
     const totalShares = videos.reduce((sum: number, video) => sum + video.share_count, 0);
     const totalViews = videos.reduce((sum: number, video) => sum + video.view_count, 0);

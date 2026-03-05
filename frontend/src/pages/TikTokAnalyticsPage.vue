@@ -78,8 +78,8 @@ const tiktokStats = computed(() => {
   const vids = videos.value
   const vidCount = vids.length
   const totalViews = vids.reduce((sum, v) => sum + (v.view_count || 0), 0)
-  const totalLikes =
-    vids.reduce((sum, v) => sum + (v.like_count || 0), 0) + (userData.value?.likes_count || 0)
+  // Use profile likes_count - it's already the total (includes all video likes)
+  const totalLikes = userData.value?.likes_count || 0
   const totalShares = vids.reduce((sum, v) => sum + (v.share_count || 0), 0)
   const totalComments = vids.reduce((sum, v) => sum + (v.comment_count || 0), 0)
   const totalEngagement = totalLikes + totalComments + totalShares
@@ -110,7 +110,7 @@ const tiktokStats = computed(() => {
       title: 'Video Views',
       value: formatNumber(totalViews),
       icon: Play,
-      subtitle: 'Total across all videos',
+      subtitle: 'Total across all contents',
       subMetric: avgLabel(totalViews),
       delta: viewsDelta?.delta,
       deltaPercent: viewsDelta?.percent,
@@ -120,7 +120,7 @@ const tiktokStats = computed(() => {
       title: 'Total Likes',
       value: formatNumber(totalLikes),
       icon: Heart,
-      subtitle: 'Profile + video likes',
+      subtitle: 'Total content likes',
       subMetric: avgLabel(totalLikes),
       delta: likesDelta?.delta,
       deltaPercent: likesDelta?.percent,

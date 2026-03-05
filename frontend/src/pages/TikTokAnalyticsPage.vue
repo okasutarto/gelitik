@@ -41,7 +41,7 @@ const lastUpdated = ref<Date | null>(null)
 async function handleRefresh() {
   await Promise.all([
     fetchAnalytics(),
-    dashboardStore.fetchHistory(parseTimeframeValue(selectedTimeframe.value))
+    dashboardStore.fetchHistory(parseTimeframeValue(selectedTimeframe.value), 'tiktok')
   ])
   lastUpdated.value = new Date()
 }
@@ -216,7 +216,7 @@ onMounted(() => {
 
   Promise.all([
     fetchAnalytics(),
-    dashboardStore.fetchHistory(parseTimeframeValue(selectedTimeframe.value))
+    dashboardStore.fetchHistory(parseTimeframeValue(selectedTimeframe.value), 'tiktok')
   ])
     .then(() => {
       lastUpdated.value = new Date()

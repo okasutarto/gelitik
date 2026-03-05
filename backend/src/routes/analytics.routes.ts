@@ -146,6 +146,9 @@ router.get('/overview', async (req, res) => {
 /**
  * GET /api/analytics/history
  * Returns daily analytics snapshots for all connected accounts, grouped by platform
+ * Query params:
+ *   - days: number of days to look back (default: 30)
+ *   - platform: filter by platform (optional) - 'instagram', 'instagram-graph', 'tiktok'
  */
 router.get('/history', async (req, res) => {
     const userId = (req.user as any)?.id;
@@ -153,12 +156,26 @@ router.get('/history', async (req, res) => {
 
     try {
         const days = parseInt(req.query.days as string) || 30;
+        const platformFilter = req.query.platform as string | undefined;
+
+        // Validate platform if provided
+        const validPlatforms = ['instagram', 'instagram-graph', 'tiktok'];
+        if (platformFilter && !validPlatforms.includes(platformFilter)) {
+            return res.status(400).json({ error: `Invalid platform. Must be one of: ${validPlatforms.join(', ')}` });
+        }
+
         const since = new Date();
         since.setDate(since.getDate() - days);
         since.setHours(0, 0, 0, 0);
 
+        // Build where clause for accounts
+        const accountWhere: any = { userId, isActive: true };
+        if (platformFilter) {
+            accountWhere.platform = platformFilter;
+        }
+
         const accounts = await prisma.socialAccount.findMany({
-            where: { userId, isActive: true },
+            where: accountWhere,
             include: {
                 analytics: {
                     where: { date: { gte: since } },
@@ -166,6 +183,34 @@ router.get('/history', async (req, res) => {
                 }
             }
         });
+
+        // If platform specified, return object with that platform as key (for frontend compatibility)
+        // Otherwise return object with all platforms as keys
+        if (platformFilter) {
+            const platformData: { date: string; followers: number; totalViews: number; totalLikes: number; totalComments: number; totalShares: number; totalSaves: number; engagementRate: number }[] = [];
+
+            // Collect all analytics entries from all accounts of this platform
+            for (const account of accounts) {
+                for (const a of account.analytics) {
+                    platformData.push({
+                        date: a.date.toISOString().split('T')[0],
+                        followers: a.followers,
+                        totalViews: a.totalViews,
+                        totalLikes: a.totalLikes,
+                        totalComments: a.totalComments,
+                        totalShares: a.totalShares,
+                        totalSaves: a.totalSaves,
+                        engagementRate: a.engagementRate
+                    });
+                }
+            }
+
+            // Sort by date ascending
+            platformData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+            // Return as object with platform as key for frontend compatibility
+            return res.json({ [platformFilter]: platformData });
+        }
 
         const history: Record<string, { date: string; followers: number; totalViews: number; totalLikes: number; totalComments: number; totalShares: number; engagementRate: number }[]> = {};
 

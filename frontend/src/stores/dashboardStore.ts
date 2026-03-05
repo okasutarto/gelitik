@@ -78,17 +78,28 @@ export const useDashboardStore = defineStore("dashboard", () => {
 
   // Platform health snapshots (with real follower growth from history)
   const instagramHealth = computed<PlatformSnapshot | null>(() => {
-    if (!instagramStore.data?.insights) return null;
-    const insights = instagramStore.data.insights;
+    // Check both insights and profile data
+    const insights = instagramStore.data?.insights;
+    const profile = instagramStore.data?.profile;
+
+    if (!insights && !profile) return null;
+
     const igKey = followerHistory.value['instagram-graph'] ? 'instagram-graph' : 'instagram';
     const delta = getMetricDelta(igKey, 'followers');
+
+    // Prefer insights.followers, fallback to profile.followers_count
+    const followers = insights?.followers ?? profile?.followers_count ?? 0;
+    const reach = insights?.reach ?? 0;
+    const totalInteractions = insights?.totalInteractions ?? 0;
+    const mediaCount = insights?.mediaCount ?? profile?.media_count ?? 0;
+
     return {
       platform: "instagram",
-      followers: insights.followers,
+      followers,
       followerGrowth: delta.growth,
       followerGrowthPercent: delta.percent,
-      engagementRate: insights.reach > 0 ? (insights.totalInteractions / insights.reach) * 100 : 0,
-      postsThisWeek: 0,
+      engagementRate: reach > 0 ? (totalInteractions / reach) * 100 : 0,
+      postsThisWeek: mediaCount,
     };
   });
 
@@ -110,7 +121,9 @@ export const useDashboardStore = defineStore("dashboard", () => {
   const topContent = computed(() => {
     type PlatformContent = Record<string, unknown> & { _platform: "instagram" | "tiktok" };
 
-    const igMedia: PlatformContent[] = (instagramStore.data?.media ?? []).map((m) => ({
+    // Instagram media can be at data.media or data.insights.media (Graph API)
+    const igMediaRaw = instagramStore.data?.media ?? instagramStore.data?.insights?.media ?? [];
+    const igMedia: PlatformContent[] = (Array.isArray(igMediaRaw) ? igMediaRaw : []).map((m) => ({
       ...m,
       _platform: "instagram" as const,
     }));
@@ -214,11 +227,15 @@ export const useDashboardStore = defineStore("dashboard", () => {
     await Promise.all([tiktokStore.fetch(), instagramStore.fetch(), fetchHistory()]);
   }
 
-  async function fetchHistory(days?: number) {
+  async function fetchHistory(days?: number, platform?: string) {
     isHistoryLoading.value = true;
     try {
       const d = days ?? selectedDays.value;
-      const { data } = await api.get('/api/analytics/history', { params: { days: d } });
+      const params: Record<string, number | string> = { days: d };
+      if (platform) {
+        params.platform = platform;
+      }
+      const { data } = await api.get('/api/analytics/history', { params });
       followerHistory.value = data;
     } catch (err) {
       console.error('[DashboardStore] History fetch error:', err);

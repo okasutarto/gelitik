@@ -164,7 +164,7 @@ const lastUpdated = ref<Date | null>(null)
 const fetchData = () => {
   Promise.all([
     fetchAnalytics(selectedTimeframe.value),
-    dashboardStore.fetchHistory(parseTimeframeValue(selectedTimeframe.value))
+    dashboardStore.fetchHistory(parseTimeframeValue(selectedTimeframe.value), platform.value)
   ])
     .then(() => {
       lastUpdated.value = new Date()

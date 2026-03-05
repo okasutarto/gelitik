@@ -26,7 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
   platform: 'instagram'
 })
 
-const selectedMetric = ref('all')
+const selectedMetric = ref('engagement')
 const { isDark } = useTheme()
 
 const allMetricOptions = [

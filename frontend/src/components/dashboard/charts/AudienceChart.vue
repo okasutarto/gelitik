@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { Line } from 'vue-chartjs'
 import { useTheme } from '@/composables/useTheme'
 import type { Platform } from '@/types/platform'
-import ChartTimeframeControl from './ChartTimeframeControl.vue'
 import '@/composables/useChart' // Registers Chart.js components
 
 interface HistoricalData {
@@ -29,13 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
   subtitle: 'Performance over selected period'
 })
 
-const selectedMetric = ref('followers')
 const { isDark } = useTheme()
-
-const metricOptions = [
-  { label: 'FOLLOWERS', value: 'followers' },
-  { label: 'REACH', value: 'reach' }
-]
 
 const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -112,46 +105,6 @@ const chartData = computed(() => {
     return {
       labels: [],
       datasets: []
-    }
-  } else if (props.platform === 'instagram') {
-    const isFollowers = selectedMetric.value === 'followers'
-    const historySource = isFollowers
-      ? props.historicalData?.followers
-      : props.historicalData?.reach
-
-    let displayLabels = labels
-    let displayData: number[] = []
-
-    if (historySource && historySource.length > 0) {
-      // Sort chronologically just in case API returns out of order
-      const sorted = [...historySource].sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-      )
-
-      displayLabels = sorted.map((item) => {
-        const d = new Date(item.date)
-        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      })
-      displayData = sorted.map((item) => item.value)
-    }
-
-    return {
-      labels: displayLabels,
-      datasets: [
-        {
-          label: isFollowers ? 'Followers' : 'Reach',
-          data: displayData,
-          borderColor: isDark.value ? '#FF0099' : '#9333ea',
-          backgroundColor: isDark.value ? 'rgba(255, 0, 153, 0.1)' : 'rgba(147, 51, 234, 0.1)',
-          fill: true,
-          tension: 0.4,
-          pointBackgroundColor: isDark.value ? '#FF0099' : '#fff',
-          pointBorderColor: isDark.value ? '#fff' : '#9333ea',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 6
-        }
-      ]
     }
   } else {
     // TikTok or other single-platform views
@@ -276,13 +229,6 @@ const chartOptions = computed(() => ({
           <p class="text-sm font-bold opacity-60 uppercase dark:text-slate-400">
             {{ subtitle }}
           </p>
-        </div>
-        <div class="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-0">
-          <ChartTimeframeControl
-            v-if="platform === 'instagram'"
-            v-model="selectedMetric"
-            :options="metricOptions"
-          />
         </div>
       </div>
 

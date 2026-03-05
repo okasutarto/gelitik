@@ -9,6 +9,7 @@ interface HistoricalData {
   likes?: { date: string; value: number }[]
   comments?: { date: string; value: number }[]
   shares?: { date: string; value: number }[]
+  saves?: { date: string; value: number }[]
   views?: { date: string; value: number }[]
   engagementRate?: { date: string; value: number }[]
 }
@@ -32,9 +33,9 @@ const { isDark } = useTheme()
 const allMetricOptions = [
   { label: 'ENGAGEMENT', value: 'engagement' },
   { label: 'LIKES', value: 'likes' },
-  { label: 'COMMENTS', value: 'comments' },
   { label: 'SHARES', value: 'shares' },
-  { label: 'SAVES', value: 'saves' }
+  { label: 'SAVES', value: 'saves' },
+  { label: 'COMMENTS', value: 'comments' }
 ]
 
 // Filter options based on platform - SAVES only for Instagram
@@ -50,10 +51,15 @@ const chartData = computed(() => {
   const historyLikes = props.historicalData?.likes || []
   const historyComments = props.historicalData?.comments || []
   const historyShares = props.historicalData?.shares || []
+  const historySaves = props.historicalData?.saves || []
   const historyViews = props.historicalData?.views || []
 
   // Sort chronologically just in case API returns out of order
   const sortedLikes = [...historyLikes].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  )
+
+  const sortedSaves = [...historySaves].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   )
 
@@ -90,6 +96,11 @@ const chartData = computed(() => {
       const d = new Date(item.date)
       return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     })
+  } else if (sortedSaves.length > 0) {
+    displayLabels = sortedSaves.map((item) => {
+      const d = new Date(item.date)
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    })
   } else if (sortedViews.length > 0) {
     displayLabels = sortedViews.map((item) => {
       const d = new Date(item.date)
@@ -105,6 +116,7 @@ const chartData = computed(() => {
     sortedComments.length > 0 ? sortedComments.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0]
   const sharesData =
     sortedShares.length > 0 ? sortedShares.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0]
+  const savesData = sortedSaves.length > 0 ? sortedSaves.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0]
 
   // Use engagementRate from database
   const engagementData =
@@ -186,7 +198,7 @@ const chartData = computed(() => {
   if (selectedMetric.value === 'saves') {
     datasets.push({
       label: 'Saves',
-      data: engagementData,
+      data: savesData,
       borderColor: isDark.value ? '#10B981' : '#059669', // Emerald green
       backgroundColor: isDark.value ? 'rgba(16, 185, 129, 0.1)' : 'rgba(5, 150, 105, 0.1)',
       fill: true,
@@ -274,7 +286,7 @@ const chartOptions = computed(() => ({
         <h3 class="text-lg font-black uppercase hidden lg:block dark:text-white">
           {{ title }}
         </h3>
-        <p class="text-sm font-bold opacity-60 uppercase dark:text-slate-400">
+        <p class="text-xs font-bold opacity-60 uppercase dark:text-slate-400">
           {{ subtitle }}
         </p>
       </div>

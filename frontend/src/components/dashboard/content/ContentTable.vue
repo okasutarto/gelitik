@@ -275,6 +275,7 @@ watch(
                 </div>
               </th>
               <th
+                v-if="platform !== 'tiktok'"
                 class="px-4 py-4 text-center cursor-pointer select-none hover:text-white transition-colors"
                 @click="toggleSort('saves')"
               >
@@ -360,7 +361,7 @@ watch(
               <td class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.shares || 0) }}
               </td>
-              <td class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
+              <td v-if="platform !== 'tiktok'" class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">
                 {{ formatNumber(item.saves || 0) }}
               </td>
               <td class="px-4 py-4 font-mono font-semibold whitespace-nowrap text-center">

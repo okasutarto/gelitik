@@ -1,17 +1,15 @@
 <script setup lang="ts">
 import { onMounted, computed, ref } from 'vue'
-import { Play, Share2, Download, Heart, MessageCircle, Activity, Users } from 'lucide-vue-next'
+import { Play, Share2, Heart, MessageCircle, Activity, Users } from 'lucide-vue-next'
 
 import { useDashboardStore } from '@/stores/dashboardStore'
+import DateRangeFilter from '@/components/dashboard/DateRangeFilter.vue'
 
-import DashboardLayout from '@/layouts/DashboardLayout.vue'
+import PlatformAnalyticsLayout from '@/components/layout/PlatformAnalyticsLayout.vue'
 import ExportReportModal from '@/components/dashboard/reports/ExportReportModal.vue'
-import PageHeader from '@/components/layout/PageHeader.vue'
 import StatCard from '@/components/dashboard/cards/StatCard.vue'
-import UserProfile from '@/components/dashboard/profile/UserProfile.vue'
 import ContentTable from '@/components/dashboard/content/ContentTable.vue'
 import StatCardSkeleton from '@/components/loading/StatCardSkeleton.vue'
-import UserProfileSkeleton from '@/components/loading/UserProfileSkeleton.vue'
 import ChartSkeleton from '@/components/loading/ChartSkeleton.vue'
 import AudienceChart from '@/components/dashboard/charts/AudienceChart.vue'
 import ContentTableSkeleton from '@/components/loading/ContentTableSkeleton.vue'
@@ -31,10 +29,20 @@ const { loading, accountData, fetchAnalytics } = usePlatformAnalytics('tiktok')
 const dashboardStore = useDashboardStore()
 
 const isExportModalOpen = ref(false)
+const selectedTimeframe = ref('7d')
+
+// Parse timeframe value (e.g., '7d' -> 7)
+const parseTimeframeValue = (value: string): number => {
+  return parseInt(value.replace('d', ''), 10) || 7
+}
+
 const lastUpdated = ref<Date | null>(null)
 
 async function handleRefresh() {
-  await Promise.all([fetchAnalytics(), dashboardStore.fetchHistory(30)])
+  await Promise.all([
+    fetchAnalytics(),
+    dashboardStore.fetchHistory(parseTimeframeValue(selectedTimeframe.value))
+  ])
   lastUpdated.value = new Date()
 }
 
@@ -79,7 +87,6 @@ const tiktokStats = computed(() => {
   const vids = videos.value
   const vidCount = vids.length
   const totalViews = vids.reduce((sum, v) => sum + (v.view_count || 0), 0)
-  // Use profile likes_count - it's already the total (includes all video likes)
   const totalLikes = userData.value?.likes_count || 0
   const totalShares = vids.reduce((sum, v) => sum + (v.share_count || 0), 0)
   const totalComments = vids.reduce((sum, v) => sum + (v.comment_count || 0), 0)
@@ -100,7 +107,7 @@ const tiktokStats = computed(() => {
   return [
     {
       title: 'Followers',
-      value: formatNumber(userData.value?.followers_count || 0),
+      value: userData.value?.followers_count || 0,
       icon: Users,
       subtitle: 'Total followers',
       delta: followersDelta?.delta,
@@ -109,7 +116,7 @@ const tiktokStats = computed(() => {
     },
     {
       title: 'Video Views',
-      value: formatNumber(totalViews),
+      value: totalViews,
       icon: Play,
       subtitle: 'Total across all contents',
       subMetric: avgLabel(totalViews),
@@ -119,7 +126,7 @@ const tiktokStats = computed(() => {
     },
     {
       title: 'Total Likes',
-      value: formatNumber(totalLikes),
+      value: totalLikes,
       icon: Heart,
       subtitle: 'Total content likes',
       subMetric: avgLabel(totalLikes),
@@ -129,7 +136,7 @@ const tiktokStats = computed(() => {
     },
     {
       title: 'Comments',
-      value: formatNumber(totalComments),
+      value: totalComments,
       icon: MessageCircle,
       subtitle: 'Total comments received',
       subMetric: avgLabel(totalComments),
@@ -139,7 +146,7 @@ const tiktokStats = computed(() => {
     },
     {
       title: 'Shares',
-      value: formatNumber(totalShares),
+      value: totalShares,
       icon: Share2,
       subtitle: 'Total video shares',
       subMetric: avgLabel(totalShares),
@@ -149,7 +156,8 @@ const tiktokStats = computed(() => {
     },
     {
       title: 'Engagement Rate',
-      value: engagementRate.toFixed(2) + '%',
+      value: engagementRate,
+      suffix: '%',
       icon: Activity,
       subtitle: 'Interactions / views',
       delta: engagementDelta ? parseFloat(engagementDelta.delta.toFixed(2)) : undefined,
@@ -206,7 +214,10 @@ onMounted(() => {
     toast.success('TikTok account connected successfully! You can now view your analytics.')
   }
 
-  Promise.all([fetchAnalytics(), dashboardStore.fetchHistory(30)])
+  Promise.all([
+    fetchAnalytics(),
+    dashboardStore.fetchHistory(parseTimeframeValue(selectedTimeframe.value))
+  ])
     .then(() => {
       lastUpdated.value = new Date()
     })
@@ -221,30 +232,30 @@ onMounted(() => {
 </script>
 
 <template>
-  <DashboardLayout>
-    <!-- Page Header -->
-    <PageHeader
-      title="TikTok Insights"
-      subtitle="Analyze your TikTok trends and reach."
-      :last-updated="lastUpdated"
-      :loading="loading"
-      @refresh="handleRefresh"
-    />
-
-    <!-- User Profile -->
-    <UserProfile v-if="!loading && userData" :user-info="userData" />
-    <UserProfileSkeleton v-else-if="loading" />
-
-    <!-- Action Row -->
-    <div v-if="!loading" class="flex justify-end mt-6 mb-2 relative">
+  <PlatformAnalyticsLayout
+    title="TikTok Insights"
+    subtitle="Analyze your TikTok trends and reach."
+    :loading="loading"
+    :last-updated="lastUpdated"
+    :user-info="userData"
+    @refresh="handleRefresh"
+  >
+    <!-- Action Row Slot -->
+    <template #actions>
       <button
+        type="button"
         @click="isExportModalOpen = true"
         class="flex items-center gap-2 bg-neo-accent dark:bg-hotpink text-black px-4 py-2 border-3 border-black dark:border-electric font-black brutal-hover-lift group shadow-brutal-sm uppercase tracking-wider text-sm"
       >
-        <Download :size="18" class="stroke-[3]" />
-        Export
+        <span class="font-black">Export</span>
       </button>
-    </div>
+
+      <DateRangeFilter
+        v-model="selectedTimeframe"
+        :loading="loading"
+        @update:model-value="handleRefresh"
+      />
+    </template>
 
     <!-- Stat Cards Grid -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 my-8">
@@ -263,6 +274,7 @@ onMounted(() => {
           :delta="stat.delta"
           :delta-percent="stat.deltaPercent"
           :delta-label="stat.deltaLabel"
+          :suffix="stat.suffix"
         />
       </template>
     </div>
@@ -270,10 +282,7 @@ onMounted(() => {
     <!-- Views Chart -->
     <div class="mb-8">
       <ChartSkeleton v-if="loading" />
-      <ViewsChart
-        v-else
-        :historical-data="viewsHistory"
-      />
+      <ViewsChart v-else :historical-data="viewsHistory" />
     </div>
 
     <!-- Charts Row: Audience & Engagement -->
@@ -307,5 +316,5 @@ onMounted(() => {
       default-platform="tiktok"
       @close="isExportModalOpen = false"
     />
-  </DashboardLayout>
+  </PlatformAnalyticsLayout>
 </template>

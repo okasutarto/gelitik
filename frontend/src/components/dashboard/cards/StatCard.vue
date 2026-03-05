@@ -11,6 +11,7 @@ interface Props {
   trendText?: string
   subtitle?: string
   subMetric?: string
+  suffix?: string
   // Delta support
   delta?: number
   deltaPercent?: number
@@ -96,7 +97,7 @@ const formattedDelta = (val: number) => {
             {{ title }}
           </p>
           <h3 class="text-3xl font-black text-slate-900 dark:text-white">
-            {{ typeof value === 'number' ? displayValue : value }}
+            {{ typeof value === 'number' ? displayValue : value }}<span v-if="suffix" class="text-2xl">{{ suffix }}</span>
           </h3>
         </div>
         <div

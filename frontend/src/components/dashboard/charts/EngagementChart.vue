@@ -1,141 +1,194 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { Line } from "vue-chartjs";
-import { useTheme } from "@/composables/useTheme";
-import ChartTimeframeControl from "./ChartTimeframeControl.vue";
-import "@/composables/useChart"; // Registers Chart.js components
+import { computed, ref } from 'vue'
+import { Line } from 'vue-chartjs'
+import { useTheme } from '@/composables/useTheme'
+import ChartTimeframeControl from './ChartTimeframeControl.vue'
+import '@/composables/useChart' // Registers Chart.js components
 
 interface HistoricalData {
-  likes?: { date: string; value: number }[];
-  comments?: { date: string; value: number }[];
-  views?: { date: string; value: number }[];
+  likes?: { date: string; value: number }[]
+  comments?: { date: string; value: number }[]
+  shares?: { date: string; value: number }[]
+  views?: { date: string; value: number }[]
+  engagementRate?: { date: string; value: number }[]
 }
 
 interface Props {
-  title?: string;
-  subtitle?: string;
-  historicalData?: HistoricalData;
+  title?: string
+  subtitle?: string
+  historicalData?: HistoricalData
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: "Engagement Over Time",
-  subtitle: "Daily likes and comments",
-});
+  title: 'Engagement Over Time',
+  subtitle: 'Daily likes and comments'
+})
 
-const selectedMetric = ref("both");
-const { isDark } = useTheme();
+const selectedMetric = ref('both')
+const { isDark } = useTheme()
 
 const metricOptions = [
-  { label: "ALL", value: "both" },
-  { label: "VIEWS", value: "views" },
-  { label: "LIKES", value: "likes" },
-  { label: "ENGAGEMENT", value: "comments" },
-];
+  { label: 'VIEWS', value: 'views' },
+  { label: 'ENGAGEMENT', value: 'engagement' }
+]
 
 const chartData = computed(() => {
-  const historyLikes = props.historicalData?.likes || [];
-  const historyComments = props.historicalData?.comments || [];
-  const historyViews = props.historicalData?.views || [];
+  const historyLikes = props.historicalData?.likes || []
+  const historyComments = props.historicalData?.comments || []
+  const historyShares = props.historicalData?.shares || []
+  const historyViews = props.historicalData?.views || []
 
   // Sort chronologically just in case API returns out of order
   const sortedLikes = [...historyLikes].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  )
 
   const sortedComments = [...historyComments].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  )
+
+  const sortedShares = [...historyShares].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  )
 
   const sortedViews = [...historyViews].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  )
 
-  let displayLabels: string[] = [];
+  const historyEngagementRate = props.historicalData?.engagementRate || []
+  const sortedEngagementRate = [...historyEngagementRate].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  )
+
+  let displayLabels: string[] = []
   if (sortedLikes.length > 0) {
     displayLabels = sortedLikes.map((item) => {
-      const d = new Date(item.date);
-      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    });
+      const d = new Date(item.date)
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    })
   } else if (sortedComments.length > 0) {
     displayLabels = sortedComments.map((item) => {
-      const d = new Date(item.date);
-      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    });
+      const d = new Date(item.date)
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    })
+  } else if (sortedShares.length > 0) {
+    displayLabels = sortedShares.map((item) => {
+      const d = new Date(item.date)
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    })
   } else if (sortedViews.length > 0) {
     displayLabels = sortedViews.map((item) => {
-      const d = new Date(item.date);
-      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    });
+      const d = new Date(item.date)
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    })
   } else {
     // Fallback labels
-    displayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    displayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   }
 
-  const likesData =
-    sortedLikes.length > 0 ? sortedLikes.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0];
+  const likesData = sortedLikes.length > 0 ? sortedLikes.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0]
   const commentsData =
-    sortedComments.length > 0 ? sortedComments.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0];
-  const viewsData =
-    sortedViews.length > 0 ? sortedViews.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0];
+    sortedComments.length > 0 ? sortedComments.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0]
+  const sharesData =
+    sortedShares.length > 0 ? sortedShares.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0]
+  const viewsData = sortedViews.length > 0 ? sortedViews.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0]
 
-  const datasets = [];
+  // Use engagementRate from database
+  const engagementData = sortedEngagementRate.length > 0 ? sortedEngagementRate.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0]
 
-  // Views (Reach)
-  if (selectedMetric.value === "both" || selectedMetric.value === "views") {
+  const datasets = []
+
+  // Views (Reach) - shown in ALL
+  if (selectedMetric.value === 'both') {
     datasets.push({
-      label: "Views",
+      label: 'Views',
       data: viewsData,
-      borderColor: isDark.value ? "#FF0099" : "#ec4899", // Pink
-      backgroundColor: isDark.value ? "rgba(255, 0, 153, 0.1)" : "rgba(236, 72, 153, 0.1)",
+      borderColor: isDark.value ? '#FF0099' : '#ec4899', // Pink
+      backgroundColor: isDark.value ? 'rgba(255, 0, 153, 0.1)' : 'rgba(236, 72, 153, 0.1)',
       fill: true,
       tension: 0.4,
-      pointBackgroundColor: isDark.value ? "#FF0099" : "#fff",
-      pointBorderColor: isDark.value ? "#fff" : "#ec4899",
+      pointBackgroundColor: isDark.value ? '#FF0099' : '#fff',
+      pointBorderColor: isDark.value ? '#fff' : '#ec4899',
       pointBorderWidth: 2,
       pointRadius: 4,
-      pointHoverRadius: 6,
-    });
+      pointHoverRadius: 6
+    })
   }
 
+  // Engagement metrics (likes, comments, shares)
   // Likes
-  if (selectedMetric.value === "both" || selectedMetric.value === "likes") {
+  if (selectedMetric.value === 'both' || selectedMetric.value === 'likes') {
     datasets.push({
-      label: "Likes",
+      label: 'Likes',
       data: likesData,
-      borderColor: isDark.value ? "#FFCC00" : "#eab308", // Yellow
-      backgroundColor: isDark.value ? "rgba(255, 204, 0, 0.1)" : "rgba(234, 179, 8, 0.1)",
+      borderColor: isDark.value ? '#FFCC00' : '#eab308', // Yellow
+      backgroundColor: isDark.value ? 'rgba(255, 204, 0, 0.1)' : 'rgba(234, 179, 8, 0.1)',
       fill: true,
       tension: 0.4,
-      pointBackgroundColor: isDark.value ? "#FFCC00" : "#fff",
-      pointBorderColor: isDark.value ? "#fff" : "#eab308",
+      pointBackgroundColor: isDark.value ? '#FFCC00' : '#fff',
+      pointBorderColor: isDark.value ? '#fff' : '#eab308',
       pointBorderWidth: 2,
       pointRadius: 4,
-      pointHoverRadius: 6,
-    });
+      pointHoverRadius: 6
+    })
   }
 
-  // Engagement (comments)
-  if (selectedMetric.value === "both" || selectedMetric.value === "comments") {
+  // Comments
+  if (selectedMetric.value === 'both' || selectedMetric.value === 'comments') {
     datasets.push({
-      label: "Engagement",
+      label: 'Comments',
       data: commentsData,
-      borderColor: isDark.value ? "#00F0FF" : "#06b6d4", // Cyan
-      backgroundColor: isDark.value ? "rgba(0, 240, 255, 0.1)" : "rgba(6, 182, 212, 0.1)",
+      borderColor: isDark.value ? '#00F0FF' : '#06b6d4', // Cyan
+      backgroundColor: isDark.value ? 'rgba(0, 240, 255, 0.1)' : 'rgba(6, 182, 212, 0.1)',
       fill: true,
       tension: 0.4,
-      pointBackgroundColor: isDark.value ? "#00F0FF" : "#fff",
-      pointBorderColor: isDark.value ? "#fff" : "#06b6d4",
+      pointBackgroundColor: isDark.value ? '#00F0FF' : '#fff',
+      pointBorderColor: isDark.value ? '#fff' : '#06b6d4',
       pointBorderWidth: 2,
       pointRadius: 4,
-      pointHoverRadius: 6,
-    });
+      pointHoverRadius: 6
+    })
+  }
+
+  // Shares
+  if (selectedMetric.value === 'both' || selectedMetric.value === 'shares') {
+    datasets.push({
+      label: 'Shares',
+      data: sharesData,
+      borderColor: isDark.value ? '#A855F7' : '#9333ea', // Purple
+      backgroundColor: isDark.value ? 'rgba(168, 85, 247, 0.1)' : 'rgba(147, 51, 234, 0.1)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: isDark.value ? '#A855F7' : '#fff',
+      pointBorderColor: isDark.value ? '#fff' : '#9333ea',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6
+    })
+  }
+
+  // Engagement (likes + comments + shares combined)
+  if (selectedMetric.value === 'engagement') {
+    datasets.push({
+      label: 'Engagement',
+      data: engagementData,
+      borderColor: isDark.value ? '#10B981' : '#059669', // Emerald green
+      backgroundColor: isDark.value ? 'rgba(16, 185, 129, 0.1)' : 'rgba(5, 150, 105, 0.1)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: isDark.value ? '#10B981' : '#fff',
+      pointBorderColor: isDark.value ? '#fff' : '#059669',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6
+    })
   }
 
   return {
     labels: displayLabels,
-    datasets,
-  };
-});
+    datasets
+  }
+})
 
 const chartOptions = computed(() => ({
   responsive: true,
@@ -143,59 +196,59 @@ const chartOptions = computed(() => ({
   plugins: {
     legend: {
       display: true,
-      position: "top" as const,
-      align: "end" as const,
+      position: 'top' as const,
+      align: 'end' as const,
       labels: {
         usePointStyle: true,
-        pointStyle: "circle",
+        pointStyle: 'circle',
         padding: 20,
-        color: isDark.value ? "#E0E0E0" : "#1e293b",
+        color: isDark.value ? '#E0E0E0' : '#1e293b',
         font: {
           size: 12,
-          weight: "bold" as const,
-        },
-      },
+          weight: 'bold' as const
+        }
+      }
     },
     tooltip: {
-      backgroundColor: isDark.value ? "rgba(10, 10, 26, 0.95)" : "#1e293b",
-      titleFont: { size: 13, weight: "bold" as const },
-      titleColor: isDark.value ? "#00F0FF" : "#fff",
+      backgroundColor: isDark.value ? 'rgba(10, 10, 26, 0.95)' : '#1e293b',
+      titleFont: { size: 13, weight: 'bold' as const },
+      titleColor: isDark.value ? '#00F0FF' : '#fff',
       bodyFont: { size: 12 },
-      bodyColor: isDark.value ? "#E0E0E0" : "#fff",
+      bodyColor: isDark.value ? '#E0E0E0' : '#fff',
       padding: 12,
       cornerRadius: 8,
       displayColors: true,
-      borderColor: isDark.value ? "#00F0FF" : "transparent",
-      borderWidth: isDark.value ? 1 : 0,
-    },
+      borderColor: isDark.value ? '#00F0FF' : 'transparent',
+      borderWidth: isDark.value ? 1 : 0
+    }
   },
   scales: {
     x: {
       grid: {
-        display: false,
+        display: false
       },
       ticks: {
-        color: isDark.value ? "#E0E0E0" : "#94a3b8",
-        font: { size: 12 },
-      },
+        color: isDark.value ? '#E0E0E0' : '#94a3b8',
+        font: { size: 12 }
+      }
     },
     y: {
       grid: {
-        color: isDark.value ? "rgba(255, 255, 255, 0.1)" : "#f1f5f9",
+        color: isDark.value ? 'rgba(255, 255, 255, 0.1)' : '#f1f5f9'
       },
       ticks: {
-        color: isDark.value ? "#E0E0E0" : "#94a3b8",
+        color: isDark.value ? '#E0E0E0' : '#94a3b8',
         font: { size: 12 },
         callback: function (value: string | number) {
-          const numValue = Number(value);
-          if (numValue >= 1000) return `${numValue / 1000}k`;
-          return value;
-        },
+          const numValue = Number(value)
+          if (numValue >= 1000) return `${numValue / 1000}k`
+          return value
+        }
       },
-      beginAtZero: true,
-    },
-  },
-}));
+      beginAtZero: true
+    }
+  }
+}))
 </script>
 
 <template>

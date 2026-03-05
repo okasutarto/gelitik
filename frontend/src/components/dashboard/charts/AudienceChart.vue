@@ -9,6 +9,7 @@ import '@/composables/useChart' // Registers Chart.js components
 interface HistoricalData {
     reach?: { date: string; value: number }[]
     followers?: { date: string; value: number }[]
+    views?: { date: string; value: number }[]
 }
 
 interface FollowerHistoryEntry {
@@ -34,6 +35,7 @@ const { isDark } = useTheme()
 
 const metricOptions = [
     { label: 'FOLLOWERS', value: 'followers' },
+    { label: 'VIEWS', value: 'views' },
     { label: 'REACH', value: 'reach' }
 ]
 

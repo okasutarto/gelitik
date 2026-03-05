@@ -23,6 +23,7 @@ import type { AxiosError } from 'axios'
 import type { Video } from '@/types/video'
 
 import EngagementChart from '@/components/dashboard/charts/EngagementChart.vue'
+import ViewsChart from '@/components/dashboard/charts/ViewsChart.vue'
 
 const router = useRouter()
 const toast = useToast()
@@ -174,14 +175,27 @@ const tiktokAudienceData = computed(() => {
 const engagementHistory = computed(() => {
   const history = followerHistory.value
   if (!history || history.length === 0) {
-    return { likes: [], comments: [], views: [] }
+    return { likes: [], comments: [], shares: [], views: [], engagementRate: [] }
   }
 
   const likes = history.map((h) => ({ date: h.date, value: h.totalLikes ?? 0 }))
   const comments = history.map((h) => ({ date: h.date, value: h.totalComments ?? 0 }))
+  const shares = history.map((h) => ({ date: h.date, value: h.totalShares ?? 0 }))
   const views = history.map((h) => ({ date: h.date, value: h.totalViews ?? 0 }))
+  const engagementRate = history.map((h) => ({ date: h.date, value: h.engagementRate ?? 0 }))
 
-  return { likes, comments, views }
+  return { likes, comments, shares, views, engagementRate }
+})
+
+// Historical Data for Views Chart
+const viewsHistory = computed(() => {
+  const history = followerHistory.value
+  if (!history || history.length === 0) {
+    return { views: [] }
+  }
+
+  const views = history.map((h) => ({ date: h.date, value: h.totalViews ?? 0 }))
+  return { views }
 })
 
 onMounted(() => {
@@ -253,7 +267,16 @@ onMounted(() => {
       </template>
     </div>
 
-    <!-- Charts Row: Engagement Distribution & Reach vs Action -->
+    <!-- Views Chart -->
+    <div class="mb-8">
+      <ChartSkeleton v-if="loading" />
+      <ViewsChart
+        v-else
+        :historical-data="viewsHistory"
+      />
+    </div>
+
+    <!-- Charts Row: Audience & Engagement -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       <!-- Follower Growth Chart -->
       <ChartSkeleton v-if="loading" />
@@ -269,7 +292,7 @@ onMounted(() => {
       <EngagementChart
         v-else
         title="Engagement Over Time"
-        subtitle="Daily total likes &amp; engagement rate"
+        subtitle="Daily likes, comments &amp; shares"
         :historical-data="engagementHistory"
       />
     </div>

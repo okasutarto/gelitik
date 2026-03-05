@@ -195,7 +195,7 @@ const userInfo = computed(() => {
       avatar_url: data.profile.profile_picture_url,
       bio: data.profile.biography || '',
       is_verified: false,
-      followers_count: data.insights?.followers || 0,
+      followers_count: data.profile.followers_count || data.insights?.followers || 0,
       following_count: data.profile.follows_count || data.insights?.following || 0,
       likes_count: data.insights?.totalInteractions || 0,
       videos_count: data.insights?.mediaCount || data.profile?.media_count || 0

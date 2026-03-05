@@ -7,7 +7,8 @@
  * @param num - The number to format
  * @returns Formatted string (e.g., 1.5K, 2.3M, 1.2B)
  */
-export function formatNumber(num: number): string {
+export function formatNumber(num: number | undefined | null): string {
+  if (num === undefined || num === null || isNaN(num)) return "0";
   if (num === 0) return "0";
 
   if (num >= 1_000_000_000) {

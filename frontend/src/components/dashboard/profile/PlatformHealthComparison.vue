@@ -130,7 +130,7 @@ const insightClasses = computed(() => {
                   Engagement
                 </p>
                 <p class="text-2xl font-black text-slate-900 dark:text-white">
-                  {{ instagram.engagementRate.toFixed(2) }}%
+                  {{ (instagram.engagementRate ?? 0).toFixed(2) }}%
                 </p>
               </div>
               <div>

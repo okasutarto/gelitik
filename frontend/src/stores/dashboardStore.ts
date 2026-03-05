@@ -87,18 +87,31 @@ export const useDashboardStore = defineStore("dashboard", () => {
     const igKey = followerHistory.value['instagram-graph'] ? 'instagram-graph' : 'instagram';
     const delta = getMetricDelta(igKey, 'followers');
 
-    // Prefer insights.followers, fallback to profile.followers_count
-    const followers = insights?.followers ?? profile?.followers_count ?? 0;
-    const reach = insights?.reach ?? 0;
-    const totalInteractions = insights?.totalInteractions ?? 0;
+    // Prefer profile.followers_count (more reliable), fallback to insights.followers
+    const followers = profile?.followers_count ?? insights?.followers ?? 0;
+    // Get accountActivity for fallback calculations
+    const accountActivity = (insights as Record<string, unknown>)?.accountActivity as Record<string, number> | undefined;
+    const totalInteractions = accountActivity?.profileViews ?? 0;
     const mediaCount = insights?.mediaCount ?? profile?.media_count ?? 0;
+
+    // Get actual engagement rate from history (latest record)
+    const igHistory = followerHistory.value[igKey];
+    let engagementRate = 0;
+    if (igHistory && igHistory.length > 0) {
+      const latest = igHistory[igHistory.length - 1];
+      engagementRate = latest.engagementRate ?? 0;
+    }
+    // Fallback: engagement per follower if history doesn't have it
+    if (engagementRate === 0 && followers > 0) {
+      engagementRate = (totalInteractions / followers) * 100;
+    }
 
     return {
       platform: "instagram",
       followers,
       followerGrowth: delta.growth,
       followerGrowthPercent: delta.percent,
-      engagementRate: reach > 0 ? (totalInteractions / reach) * 100 : 0,
+      engagementRate: isNaN(engagementRate) ? 0 : engagementRate,
       postsThisWeek: mediaCount,
     };
   });
@@ -106,14 +119,28 @@ export const useDashboardStore = defineStore("dashboard", () => {
   const tiktokHealth = computed<PlatformSnapshot | null>(() => {
     if (!tiktokStore.data?.analytics) return null;
     const analytics = tiktokStore.data.analytics;
+    const userInfo = tiktokStore.data.userInfo;
     const delta = getMetricDelta('tiktok', 'followers');
+
+    // Get actual engagement rate from history (latest record) - same pattern as Instagram
+    const ttHistory = followerHistory.value['tiktok'];
+    let engagementRate = 0;
+    if (ttHistory && ttHistory.length > 0) {
+      const latest = ttHistory[ttHistory.length - 1];
+      engagementRate = latest.engagementRate ?? 0;
+    }
+    // Fallback: use backend-calculated rate if history doesn't have it
+    if (engagementRate === 0) {
+      engagementRate = analytics.engagementRate ?? 0;
+    }
+
     return {
       platform: "tiktok",
       followers: analytics.followers,
       followerGrowth: delta.growth,
       followerGrowthPercent: delta.percent,
-      engagementRate: analytics.engagementRate,
-      postsThisWeek: 0,
+      engagementRate: isNaN(engagementRate) ? 0 : engagementRate,
+      postsThisWeek: userInfo?.video_count ?? 0,
     };
   });
 

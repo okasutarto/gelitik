@@ -1,8 +1,10 @@
 import { Router } from 'express';
+import axios from 'axios';
 import prisma from '../config/prisma';
 import { InstagramService } from '../services/instagram.service';
 import { InstagramGraphService } from '../services/instagramGraph.service';
 import { InstagramMediaService } from '../services/instagramMedia.service';
+import { InstagramInsightsService } from '../services/instagramInsights.service';
 import { TikTokService } from '../services/tiktokService';
 import { tokenManager } from '../services/tokenManager';
 
@@ -10,10 +12,92 @@ const router = Router();
 const instagramService = new InstagramService();
 const instagramGraphService = new InstagramGraphService();
 const instagramMediaService = new InstagramMediaService();
+const instagramInsightsService = new InstagramInsightsService();
 const tiktokService = new TikTokService();
 
 // Valid platform values
 const VALID_PLATFORMS = ['instagram', 'instagram-graph', 'tiktok'];
+
+// Constants (shared with InstagramInsightsService)
+const DEFAULT_DAYS_30 = 30;
+
+// Helper: Parse timeframe to date range
+function parseTimeframe(timeframe: string): { startDate: Date; endDate: Date; days: number } {
+    const endDate = new Date();
+    endDate.setHours(23, 59, 59, 999);
+    const startDate = new Date();
+
+    let days = 7;
+    if (timeframe === '7d') days = 7;
+    else if (timeframe === '14d') days = 14;
+    else if (timeframe === '30d') days = 30;
+
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+
+    return { startDate, endDate, days };
+}
+
+/**
+ * Get account activity from live Meta API (last 30 days only - NOT stored in DB)
+ * Note: Some metrics may not be available for all account types
+ */
+async function getAccountActivity(accessToken: string, igAccountId: string) {
+    if (!igAccountId) {
+        console.warn('[Analytics] getAccountActivity: missing igAccountId');
+        return null;
+    }
+
+    try {
+        const until = Math.floor(Date.now() / 1000);
+        const since = until - (DEFAULT_DAYS_30 * 24 * 60 * 60); // Last 30 days
+
+        // Fetch reach (most commonly available)
+        let reach = 0;
+        try {
+            const reachRes = await axios.get(`https://graph.facebook.com/v25.0/${igAccountId}/insights`, {
+                params: { metric: 'reach', period: 'day', since, until, access_token: accessToken }
+            });
+
+            const data = reachRes.data?.data?.[0];
+            reach = data?.total_value?.value !== undefined
+                ? data.total_value.value
+                : (data?.values?.[data.values.length - 1]?.value || 0);
+        } catch (e) {
+            console.warn('[Analytics] Failed to fetch reach:', e);
+        }
+
+        // Try to get other metrics - if they fail, just use 0
+        let profileViews = 0;
+        let websiteClicks = 0;
+
+        try {
+            const [pvRes, wcRes] = await Promise.all([
+                axios.get(`https://graph.facebook.com/v25.0/${igAccountId}/insights`, {
+                    params: { metric: 'profile_views', metric_type: 'total_value', period: 'day', since, until, access_token: accessToken }
+                }),
+                axios.get(`https://graph.facebook.com/v25.0/${igAccountId}/insights`, {
+                    params: { metric: 'website_clicks', metric_type: 'total_value', period: 'day', since, until, access_token: accessToken }
+                })
+            ]);
+            profileViews = pvRes.data?.data?.[0]?.total_value?.value || 0;
+            websiteClicks = wcRes.data?.data?.[0]?.total_value?.value || 0;
+        } catch (e) {
+            // Metrics not available for this account type - that's ok
+            console.warn('[Analytics] Some account activity metrics not available:', e);
+        }
+
+        return {
+            reach,
+            profileViews,
+            websiteClicks,
+            period: 'Last 30 Days'
+        };
+    } catch (error) {
+        console.error('[Analytics] getAccountActivity error:', error);
+        return null;
+    }
+}
 
 // Middleware to validate platform parameter
 const validatePlatform = (req: any, res: any, next: any) => {
@@ -94,6 +178,7 @@ router.get('/history', async (req, res) => {
                 totalLikes: a.totalLikes,
                 totalComments: a.totalComments,
                 totalShares: a.totalShares,
+                totalSaves: a.totalSaves,
                 engagementRate: a.engagementRate
             }));
         }
@@ -127,29 +212,71 @@ router.get('/:platform', validatePlatform, async (req, res) => {
             return res.status(401).json({ error: 'Access token not available. Please reconnect your account.' });
         }
 
-        // Determine startDate based on timeframe
-        const timeframe = (req.query.timeframe as string) || 'this_week';
-        const endDate = new Date();
-        const startDate = new Date();
-        if (timeframe === 'this_week') startDate.setDate(endDate.getDate() - 7);
-        else if (timeframe === 'last_14_days') startDate.setDate(endDate.getDate() - 14);
-        else if (timeframe === 'last_30_days') startDate.setDate(endDate.getDate() - 30);
-        else if (timeframe === 'last_90_days') startDate.setDate(endDate.getDate() - 90);
+        // For instagram-graph, we don't use timeframe - it always fetches live data
+        // For instagram (Basic API) and tiktok, timeframe determines the date range
+        let startDate: Date | undefined;
+        let endDate: Date | undefined;
+
+        if (platform !== 'instagram-graph') {
+            // Support both old format (this_week, last_14_days) and new format (7d, 14d, 30d)
+            let timeframe = (req.query.timeframe as string) || '7d';
+
+            // Map old format to new format for backward compatibility
+            if (timeframe === 'this_week') timeframe = '7d';
+            else if (timeframe === 'last_14_days') timeframe = '14d';
+            else if (timeframe === 'last_30_days') timeframe = '30d';
+            else if (timeframe === 'last_90_days') timeframe = '30d'; // DB only stores up to 30 days
+
+            const parsed = parseTimeframe(timeframe);
+            startDate = parsed.startDate;
+            endDate = parsed.endDate;
+        }
 
         let data;
         if (platform === 'instagram') {
-            // Use Basic Display API
-            data = await instagramService.getAnalytics(accessToken, account.accountId, startDate, endDate);
+            // Use Basic Display API - startDate/endDate are always defined here
+            data = await instagramService.getAnalytics(accessToken, account.accountId, startDate!, endDate!);
         } else if (platform === 'instagram-graph') {
-            // Use Graph API for full insights
-            const analyticsData = await instagramGraphService.getAnalytics(accessToken, account.accountId, startDate, endDate, timeframe);
+            // Get Instagram Business account ID first
+            const igAccount = await instagramGraphService.getInstagramAccount(accessToken);
+
+            if (!igAccount?.id) {
+                return res.status(400).json({ error: 'Unable to get Instagram account. Please reconnect your account.' });
+            }
+
+            const igAccountId = igAccount.id;
+
+            // Fetch data from multiple sources in parallel
+            const [mediaData, accountActivity, profile, insights] = await Promise.all([
+                // 1. Live Meta API for media (for ContentTable)
+                instagramMediaService.getMedia(accessToken, igAccountId, 50),
+                // 2. Live Meta API - simpler call for account activity only (3 calls vs 8)
+                getAccountActivity(accessToken, igAccountId),
+                // 3. Get profile from live API
+                instagramGraphService.getProfile(accessToken, igAccount),
+                // 4. Get insights for demographics (cached after first call)
+                instagramInsightsService.getInsights(accessToken, igAccountId, 'last_30_days')
+            ]);
+
             data = {
-                profile: analyticsData.profile,
-                insights: analyticsData.insights,
-                media: analyticsData.media
+                profile,
+                insights: {
+                    // Account Activity from live API (Last 30 Days) - simpler call
+                    accountActivity: accountActivity || {
+                        reach: 0,
+                        profileViews: 0,
+                        websiteClicks: 0,
+                        period: 'Last 30 Days'
+                    },
+                    // Demographics from live API (Current Audience)
+                    demographics: insights.demographics,
+                    // Media for ContentTable
+                    media: mediaData.data || []
+                }
             };
         } else if (platform === 'tiktok') {
-            const videosData = await tiktokService.getAnalytics(accessToken, account.accountId, startDate, endDate);
+            // TikTok API - startDate/endDate are always defined here
+            const videosData = await tiktokService.getAnalytics(accessToken, account.accountId, startDate!, endDate!);
             data = {
                 userInfo: videosData.userInfo,
                 videos: videosData.videos,

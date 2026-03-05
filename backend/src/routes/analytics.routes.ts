@@ -2,12 +2,14 @@ import { Router } from 'express';
 import prisma from '../config/prisma';
 import { InstagramService } from '../services/instagram.service';
 import { InstagramGraphService } from '../services/instagramGraph.service';
+import { InstagramMediaService } from '../services/instagramMedia.service';
 import { TikTokService } from '../services/tiktokService';
 import { tokenManager } from '../services/tokenManager';
 
 const router = Router();
 const instagramService = new InstagramService();
 const instagramGraphService = new InstagramGraphService();
+const instagramMediaService = new InstagramMediaService();
 const tiktokService = new TikTokService();
 
 // Valid platform values
@@ -169,6 +171,7 @@ router.get('/:platform', validatePlatform, async (req, res) => {
         };
 
         // Record daily analytics snapshot (one per account per day)
+        // Always use lifetime/cumulative data for snapshot storage (like TikTok)
         try {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -178,23 +181,53 @@ router.get('/:platform', validatePlatform, async (req, res) => {
             let snapshotLikes = 0;
             let snapshotComments = 0;
             let snapshotShares = 0;
+            let snapshotSaves = 0;
             let snapshotViews = 0;
             let snapshotEngagement = 0;
 
             if (platform === 'tiktok' && data?.analytics) {
+                // TikTok already has cumulative values from userInfo
                 snapshotFollowers = data.analytics.followers || 0;
                 snapshotFollowing = data.analytics.following || 0;
                 snapshotLikes = data.analytics.totalLikes || 0;
                 snapshotComments = data.analytics.totalComments || 0;
                 snapshotShares = data.analytics.totalShares || 0;
+                snapshotSaves = 0; // TikTok doesn't have saves
                 snapshotViews = data.analytics.totalViews || 0;
                 snapshotEngagement = data.analytics.engagementRate || 0;
-            } else if ((platform === 'instagram-graph' || platform === 'instagram') && data?.insights) {
+            } else if (platform === 'instagram-graph') {
+                // Fetch ALL media and sum metrics (like TikTok)
+                const mediaData = await instagramMediaService.getMedia(accessToken, account.accountId, 50);
+                const allMedia = mediaData?.data || [];
+
+                // Sum all metrics from all posts (cumulative, like TikTok)
+                const mediaTotals = allMedia.reduce((acc, media) => {
+                    acc.likes += media.like_count || 0;
+                    acc.comments += media.comments_count || 0;
+                    acc.shares += media.share_count || 0;
+                    acc.saves += media.save_count || 0;
+                    acc.views += media.views || 0;
+                    return acc;
+                }, { likes: 0, comments: 0, shares: 0, saves: 0, views: 0 });
+
+                const profile = data?.profile || {};
+                snapshotFollowers = profile.followers_count || 0;
+                snapshotFollowing = profile.follows_count || 0;
+                snapshotLikes = mediaTotals.likes;
+                snapshotComments = mediaTotals.comments;
+                snapshotShares = mediaTotals.shares;
+                snapshotSaves = mediaTotals.saves;
+                snapshotViews = mediaTotals.views;
+                const totalEngagement = snapshotLikes + snapshotComments + snapshotShares + snapshotSaves;
+                snapshotEngagement = snapshotViews > 0 ? (totalEngagement / snapshotViews) * 100 : 0;
+            } else if (platform === 'instagram' && data?.insights) {
+                // Basic Display API - use current values (already cumulative from total_value)
                 snapshotFollowers = data.insights.followers || data.profile?.followers_count || 0;
                 snapshotFollowing = data.insights.following || data.profile?.follows_count || 0;
                 snapshotLikes = data.insights.likes || 0;
                 snapshotComments = data.insights.comments || 0;
                 snapshotShares = data.insights.shares || 0;
+                snapshotSaves = data.insights.saves || 0;
                 snapshotViews = data.insights.views || data.insights.reach || 0;
                 snapshotEngagement = data.insights.reach > 0
                     ? (data.insights.totalInteractions / data.insights.reach) * 100 : 0;
@@ -213,6 +246,7 @@ router.get('/:platform', validatePlatform, async (req, res) => {
                     totalLikes: snapshotLikes,
                     totalComments: snapshotComments,
                     totalShares: snapshotShares,
+                    totalSaves: snapshotSaves,
                     totalViews: snapshotViews,
                     engagementRate: snapshotEngagement
                 },
@@ -224,6 +258,7 @@ router.get('/:platform', validatePlatform, async (req, res) => {
                     totalLikes: snapshotLikes,
                     totalComments: snapshotComments,
                     totalShares: snapshotShares,
+                    totalSaves: snapshotSaves,
                     totalViews: snapshotViews,
                     engagementRate: snapshotEngagement
                 }

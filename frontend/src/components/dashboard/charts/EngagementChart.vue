@@ -17,20 +17,34 @@ interface Props {
   title?: string
   subtitle?: string
   historicalData?: HistoricalData
+  platform?: 'instagram' | 'tiktok' | 'instagram-graph'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: 'Engagement Over Time',
-  subtitle: 'Daily likes and comments'
+  subtitle: 'Daily likes and comments',
+  platform: 'instagram'
 })
 
-const selectedMetric = ref('both')
+const selectedMetric = ref('all')
 const { isDark } = useTheme()
 
-const metricOptions = [
-  { label: 'VIEWS', value: 'views' },
-  { label: 'ENGAGEMENT', value: 'engagement' }
+const allMetricOptions = [
+  { label: 'ENGAGEMENT', value: 'engagement' },
+  { label: 'LIKES', value: 'likes' },
+  { label: 'COMMENTS', value: 'comments' },
+  { label: 'SHARES', value: 'shares' },
+  { label: 'SAVES', value: 'saves' }
 ]
+
+// Filter options based on platform - SAVES only for Instagram
+const metricOptions = computed(() => {
+  if (props.platform === 'instagram' || props.platform === 'instagram-graph') {
+    return allMetricOptions
+  }
+  // TikTok doesn't have saves
+  return allMetricOptions.filter((opt) => opt.value !== 'saves')
+})
 
 const chartData = computed(() => {
   const historyLikes = props.historicalData?.likes || []
@@ -91,33 +105,18 @@ const chartData = computed(() => {
     sortedComments.length > 0 ? sortedComments.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0]
   const sharesData =
     sortedShares.length > 0 ? sortedShares.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0]
-  const viewsData = sortedViews.length > 0 ? sortedViews.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0]
 
   // Use engagementRate from database
-  const engagementData = sortedEngagementRate.length > 0 ? sortedEngagementRate.map((i) => i.value) : [0, 0, 0, 0, 0, 0, 0]
+  const engagementData =
+    sortedEngagementRate.length > 0
+      ? sortedEngagementRate.map((i) => i.value)
+      : [0, 0, 0, 0, 0, 0, 0]
 
   const datasets = []
 
-  // Views (Reach) - shown in ALL
-  if (selectedMetric.value === 'both') {
-    datasets.push({
-      label: 'Views',
-      data: viewsData,
-      borderColor: isDark.value ? '#FF0099' : '#ec4899', // Pink
-      backgroundColor: isDark.value ? 'rgba(255, 0, 153, 0.1)' : 'rgba(236, 72, 153, 0.1)',
-      fill: true,
-      tension: 0.4,
-      pointBackgroundColor: isDark.value ? '#FF0099' : '#fff',
-      pointBorderColor: isDark.value ? '#fff' : '#ec4899',
-      pointBorderWidth: 2,
-      pointRadius: 4,
-      pointHoverRadius: 6
-    })
-  }
-
   // Engagement metrics (likes, comments, shares)
   // Likes
-  if (selectedMetric.value === 'both' || selectedMetric.value === 'likes') {
+  if (selectedMetric.value === 'likes') {
     datasets.push({
       label: 'Likes',
       data: likesData,
@@ -134,7 +133,7 @@ const chartData = computed(() => {
   }
 
   // Comments
-  if (selectedMetric.value === 'both' || selectedMetric.value === 'comments') {
+  if (selectedMetric.value === 'comments') {
     datasets.push({
       label: 'Comments',
       data: commentsData,
@@ -171,6 +170,22 @@ const chartData = computed(() => {
   if (selectedMetric.value === 'engagement') {
     datasets.push({
       label: 'Engagement',
+      data: engagementData,
+      borderColor: isDark.value ? '#10B981' : '#059669', // Emerald green
+      backgroundColor: isDark.value ? 'rgba(16, 185, 129, 0.1)' : 'rgba(5, 150, 105, 0.1)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: isDark.value ? '#10B981' : '#fff',
+      pointBorderColor: isDark.value ? '#fff' : '#059669',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6
+    })
+  }
+
+  if (selectedMetric.value === 'saves') {
+    datasets.push({
+      label: 'Saves',
       data: engagementData,
       borderColor: isDark.value ? '#10B981' : '#059669', // Emerald green
       backgroundColor: isDark.value ? 'rgba(16, 185, 129, 0.1)' : 'rgba(5, 150, 105, 0.1)',

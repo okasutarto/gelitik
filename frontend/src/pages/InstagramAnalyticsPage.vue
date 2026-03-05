@@ -14,11 +14,13 @@ import AgeRangePanel from '@/components/dashboard/demographics/AgeRangePanel.vue
 import ContentFormatBreakdown from '@/components/dashboard/content/ContentFormatBreakdown.vue'
 import AudienceChart from '@/components/dashboard/charts/AudienceChart.vue'
 import EngagementChart from '@/components/dashboard/charts/EngagementChart.vue'
+import ViewsChart from '@/components/dashboard/charts/ViewsChart.vue'
 
 import UserProfileSkeleton from '@/components/loading/UserProfileSkeleton.vue'
 import ChartSkeleton from '@/components/loading/ChartSkeleton.vue'
 import ContentTableSkeleton from '@/components/loading/ContentTableSkeleton.vue'
 import { usePlatformAnalytics } from '@/composables/usePlatformAnalytics'
+import { useDashboardStore } from '@/stores/dashboardStore'
 import { useRouter } from 'vue-router'
 
 import { useToast } from '@/composables/useToast'
@@ -27,6 +29,7 @@ import type { AxiosError } from 'axios'
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const dashboardStore = useDashboardStore()
 
 // Determine platform from route path - supports both instagram and instagram-graph
 const platform = computed(() => {
@@ -47,8 +50,7 @@ const selectedTimeframe = ref('this_week')
 const timeframes = [
   { label: 'Last 7 days', value: 'this_week' },
   { label: 'Last 14 days', value: 'last_14_days' },
-  { label: 'Last 30 days', value: 'last_30_days' },
-  { label: 'Last 90 days', value: 'last_90_days' }
+  { label: 'Last 30 days', value: 'last_30_days' }
 ]
 
 const selectedTimeframeLabel = computed(() => {
@@ -58,7 +60,7 @@ const selectedTimeframeLabel = computed(() => {
 const lastUpdated = ref<Date | null>(null)
 
 const fetchData = () => {
-  fetchAnalytics(selectedTimeframe.value)
+  Promise.all([fetchAnalytics(selectedTimeframe.value), dashboardStore.fetchHistory(30)])
     .then(() => {
       lastUpdated.value = new Date()
     })
@@ -221,6 +223,52 @@ const contentFormats = computed(() => {
   }))
 })
 
+// Get Instagram history from database (for charts)
+const instagramHistory = computed(() => {
+  const history =
+    dashboardStore.followerHistory['instagram-graph'] ||
+    dashboardStore.followerHistory['instagram'] ||
+    []
+  return history
+})
+
+// Historical Data for Views Chart (from Analytics DB snapshots)
+const viewsHistory = computed(() => {
+  const history = instagramHistory.value as any[]
+  if (!history || history.length === 0) {
+    return { views: [] }
+  }
+  const views = history.map((h: any) => ({ date: h.date, value: h.totalViews ?? 0 }))
+  return { views }
+})
+
+// Historical Data for EngagementChart (from Analytics DB snapshots)
+const engagementHistory = computed(() => {
+  const history = instagramHistory.value as any[]
+  if (!history || history.length === 0) {
+    return { likes: [], comments: [], shares: [], saves: [], views: [], engagementRate: [] }
+  }
+
+  const likes = history.map((h: any) => ({ date: h.date, value: h.totalLikes ?? 0 }))
+  const comments = history.map((h: any) => ({ date: h.date, value: h.totalComments ?? 0 }))
+  const shares = history.map((h: any) => ({ date: h.date, value: h.totalShares ?? 0 }))
+  const saves = history.map((h: any) => ({ date: h.date, value: h.totalSaves ?? 0 }))
+  const views = history.map((h: any) => ({ date: h.date, value: h.totalViews ?? 0 }))
+
+  const engagementRate = history.map((h: any) => ({ date: h.date, value: h.engagementRate ?? 0 }))
+
+  return { likes, comments, shares, saves, views, engagementRate }
+})
+
+// Historical Data for AudienceChart (from Analytics DB snapshots)
+const instagramAudienceData = computed(() => {
+  const history = instagramHistory.value as any[]
+  if (!history || history.length === 0) return undefined
+  return {
+    followers: history.map((h: any) => ({ date: h.date, value: h.followers }))
+  }
+})
+
 onMounted(() => {
   fetchData()
 })
@@ -316,6 +364,17 @@ onMounted(() => {
     </div>
 
     <!-- Charts Row -->
+    <!-- Views Chart -->
+    <div class="mb-8">
+      <ChartSkeleton v-if="loading" />
+      <ViewsChart
+        v-else
+        title="Views Over Time"
+        subtitle="Daily content views"
+        :historical-data="viewsHistory"
+      />
+    </div>
+
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
       <!-- Audience Growth Chart -->
       <div>
@@ -325,7 +384,7 @@ onMounted(() => {
             platform="instagram"
             title="Follower Net Growth"
             subtitle="Instagram specific growth metrics"
-            :historical-data="(accountData?.data as any)?.insights?.historical"
+            :historical-data="instagramAudienceData"
           />
         </template>
       </div>
@@ -337,7 +396,8 @@ onMounted(() => {
           <EngagementChart
             title="Engagement Over Time"
             subtitle="Likes vs Comments"
-            :historical-data="(accountData?.data as any)?.insights?.historical"
+            :historical-data="engagementHistory"
+            :platform="platform"
           />
         </template>
       </div>

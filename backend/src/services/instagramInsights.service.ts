@@ -25,6 +25,7 @@ export interface InstagramInsights {
     historical: {
         reach: { date: string; value: number }[];
         followers: { date: string; value: number }[];
+        views: { date: string; value: number }[];
         likes: { date: string; value: number }[];
         comments: { date: string; value: number }[];
     };
@@ -77,6 +78,7 @@ export class InstagramInsightsService {
             let reach = 0, views = 0;
             let historicalReach: { date: string; value: number }[] = [];
             let historicalFollowers: { date: string; value: number }[] = [];
+            let historicalViews: { date: string; value: number }[] = [];
             let totalInteractions = 0, likes = 0, comments = 0, shares = 0, saves = 0;
             let profileViews = 0, profileLinkTaps = 0, accountsEngaged = 0;
 
@@ -90,6 +92,7 @@ export class InstagramInsightsService {
                 profileRes,
                 reachRes,
                 viewsRes,
+                viewsHistoricalRes,
                 followersRes,
                 engagementRes,
                 ageGenderRes,
@@ -103,6 +106,10 @@ export class InstagramInsightsService {
                 }),
                 axios.get(`${this.graphUrl}/${igAccountId}/insights`, {
                     params: { metric: 'views', period: 'day', metric_type: 'total_value', since, until, access_token: accessToken }
+                }),
+                // Historical views for chart (daily data, without total_value)
+                axios.get(`${this.graphUrl}/${igAccountId}/insights`, {
+                    params: { metric: 'views', period: 'day', since, until, access_token: accessToken }
                 }),
                 axios.get(`${this.graphUrl}/${igAccountId}/insights`, {
                     params: { metric: 'follower_count', period: 'day', since, until, access_token: accessToken }
@@ -143,6 +150,15 @@ export class InstagramInsightsService {
                 views = this.parseMetricValue(viewsRes.value.data);
             } else {
                 views = reach;
+            }
+
+            // Process Historical Views (for chart)
+            if (viewsHistoricalRes.status === 'fulfilled') {
+                const viewsData = viewsHistoricalRes.value.data?.data?.[0]?.values || [];
+                historicalViews = viewsData.map((v: any) => ({
+                    date: v.end_time?.split('T')[0] || '',
+                    value: v.value || 0
+                }));
             }
 
             // Process Followers
@@ -231,6 +247,7 @@ export class InstagramInsightsService {
                 historical: {
                     reach: historicalReach,
                     followers: historicalFollowers,
+                    views: historicalViews,
                     likes: [],
                     comments: []
                 }
@@ -252,7 +269,7 @@ export class InstagramInsightsService {
                 profileLinkTaps: 0,
                 accountsEngaged: 0,
                 demographics: { gender: [], age: [], cities: [] },
-                historical: { reach: [], followers: [], likes: [], comments: [] }
+                historical: { reach: [], followers: [], views: [], likes: [], comments: [] }
             };
         }
     }

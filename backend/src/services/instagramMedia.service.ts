@@ -25,70 +25,97 @@ export class InstagramMediaService {
     private readonly graphUrl = GRAPH_API_BASE;
 
     async getMedia(accessToken: string, igAccountId: string, limit: number = 50): Promise<{ data: MediaItem[] }> {
-        const response = await axios.get(`${this.graphUrl}/${igAccountId}/media`, {
-            params: {
-                fields: 'id,caption,media_type,media_product_type,media_url,thumbnail_url,permalink,timestamp,like_count,comments_count',
-                access_token: accessToken,
-                limit
-            }
-        });
+        // Fetch ALL media posts with pagination (like TikTok)
+        const allMedia: MediaItem[] = [];
+        let cursor: string | undefined = undefined;
+        let hasMore = true;
 
-        const mediaItems: MediaItem[] = response.data.data || [];
-        if (mediaItems.length === 0) return { data: [] };
-
-        // Batch request for insights
-        const batchRequests = mediaItems.map((media: any) => ({
-            method: 'GET',
-            relative_url: `v25.0/${media.id}/insights?metric=reach,saved,shares,views`
-        }));
-
-        try {
-            const batchResponse = await axios.post(`https://graph.facebook.com`, {
-                access_token: accessToken,
-                batch: JSON.stringify(batchRequests)
-            });
-
-            const batchResults = batchResponse.data || [];
-
-            mediaItems.forEach((media: any, index: number) => {
-                const result = batchResults[index];
-                media.views = 0; media.reach = 0; media.save_count = 0; media.share_count = 0; media.video_views = 0;
-
-                if (result && result.code === 200) {
-                    try {
-                        const body = JSON.parse(result.body);
-                        const insightsData = body.data || [];
-
-                        for (const metric of insightsData) {
-                            const value = metric.values?.[0]?.value ?? metric.total_value?.value ?? 0;
-                            switch (metric.name) {
-                                case 'views': media.views = value; break;
-                                case 'reach': media.reach = value; break;
-                                case 'saved': media.save_count = value; break;
-                                case 'shares': media.share_count = value; break;
-                            }
-                        }
-                    } catch (e) {
-                        console.error('[InstagramGraph] Error parsing insight body for media item:', e);
-                    }
-                }
-
-                const isReel = media.media_product_type === 'REELS';
-                if (!isReel) {
-                    media.video_views = media.views || media.reach || 0;
-                } else if (!media.video_views) {
-                    media.video_views = media.views || media.reach || 0;
-                }
-
-                if (media.comments_count !== undefined && media.comment_count === undefined) {
-                    media.comment_count = media.comments_count;
+        while (hasMore) {
+            const response: any = await axios.get(`${this.graphUrl}/${igAccountId}/media`, {
+                params: {
+                    fields: 'id,caption,media_type,media_product_type,media_url,thumbnail_url,permalink,timestamp,like_count,comments_count',
+                    access_token: accessToken,
+                    limit,
+                    after: cursor
                 }
             });
-        } catch (e: any) {
-            console.error('[InstagramGraph] media batch insights error:', e.response?.data?.error?.message || e.message);
+
+            const mediaItems: MediaItem[] = response.data.data || [];
+            allMedia.push(...mediaItems);
+
+            // Check for pagination
+            const paging: any = response.data.paging || {};
+            hasMore = paging.cursors?.after ? true : false;
+            cursor = paging.cursors?.after;
+
+            // Safety limit to avoid infinite loops
+            if (allMedia.length > 1000) break;
         }
 
-        return { data: mediaItems };
+        if (allMedia.length === 0) return { data: [] };
+
+        // Batch request for insights (max 50 per batch)
+        const batchSize = 50;
+        const mediaWithInsights: MediaItem[] = [];
+
+        for (let i = 0; i < allMedia.length; i += batchSize) {
+            const batch = allMedia.slice(i, i + batchSize);
+            const batchRequests = batch.map((media: any) => ({
+                method: 'GET',
+                relative_url: `v25.0/${media.id}/insights?metric=reach,saved,shares,views`
+            }));
+
+            try {
+                const batchResponse = await axios.post(`https://graph.facebook.com`, {
+                    access_token: accessToken,
+                    batch: JSON.stringify(batchRequests)
+                });
+
+                const batchResults = batchResponse.data || [];
+
+                batch.forEach((media: any, index: number) => {
+                    const result = batchResults[index];
+                    media.views = 0; media.reach = 0; media.save_count = 0; media.share_count = 0; media.video_views = 0;
+
+                    if (result && result.code === 200) {
+                        try {
+                            const body = JSON.parse(result.body);
+                            const insightsData = body.data || [];
+
+                            for (const metric of insightsData) {
+                                const value = metric.values?.[0]?.value ?? metric.total_value?.value ?? 0;
+                                switch (metric.name) {
+                                    case 'views': media.views = value; break;
+                                    case 'reach': media.reach = value; break;
+                                    case 'saved': media.save_count = value; break;
+                                    case 'shares': media.share_count = value; break;
+                                }
+                            }
+                        } catch (e) {
+                            console.error('[InstagramGraph] Error parsing insight body for media item:', e);
+                        }
+                    }
+
+                    const isReel = media.media_product_type === 'REELS';
+                    if (!isReel) {
+                        media.video_views = media.views || media.reach || 0;
+                    } else if (!media.video_views) {
+                        media.video_views = media.views || media.reach || 0;
+                    }
+
+                    if (media.comments_count !== undefined && media.comment_count === undefined) {
+                        media.comment_count = media.comments_count;
+                    }
+
+                    mediaWithInsights.push(media);
+                });
+            } catch (e: any) {
+                console.error('[InstagramGraph] media batch insights error:', e.response?.data?.error?.message || e.message);
+                mediaWithInsights.push(...batch);
+            }
+        }
+
+        return { data: mediaWithInsights };
     }
 
     async getMediaInsights(accessToken: string, mediaId: string): Promise<any> {

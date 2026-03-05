@@ -294,6 +294,7 @@ onMounted(() => {
         title="Engagement Over Time"
         subtitle="Daily likes, comments &amp; shares"
         :historical-data="engagementHistory"
+        platform="tiktok"
       />
     </div>
 

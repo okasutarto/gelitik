@@ -353,3 +353,9 @@ GOOGLE_CLIENT_SECRET=
 3. Update `codeAudit.md` if new technical debt is introduced or resolved
 4. Run `npx prisma generate` after schema changes
 5. Test both frontend and backend after changes
+
+## Path Convention
+
+Always use double-quoted paths for directories with spaces, never backslash-escape spaces.
+✅ cd "D:/Personal Project/gelitik"
+❌ cd D:/Personal\ Project/gelitik

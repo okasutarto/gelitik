@@ -156,7 +156,7 @@ const tiktokStats = computed(() => {
     },
     {
       title: 'Engagement Rate',
-      value: engagementRate,
+      value: engagementRate.toFixed(2),
       suffix: '%',
       icon: Activity,
       subtitle: 'Interactions / views',

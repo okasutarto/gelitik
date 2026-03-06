@@ -71,6 +71,12 @@ export const useDashboardStore = defineStore("dashboard", () => {
     return igPosts + ttPosts;
   });
 
+  const totalLikes = computed(() => {
+    const igLikes = instagramHealth.value?.likes ?? 0;
+    const ttLikes = tiktokHealth.value?.likes ?? 0;
+    return igLikes + ttLikes;
+  });
+
   const totalViews = computed(() => {
     const igViews = instagramHealth.value?.views ?? 0;
     const ttViews = tiktokHealth.value?.views ?? 0;
@@ -227,6 +233,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
     totalEngagementRate: totalEngagementRate.value.toFixed(2) + "%",
     totalPosts: formatNumber(totalPosts.value),
     totalViews: formatNumber(totalViews.value),
+    totalLikes: formatNumber(totalLikes.value),
   }));
 
   // KPI deltas from history (combined across platforms)
@@ -251,6 +258,15 @@ export const useDashboardStore = defineStore("dashboard", () => {
     const totalOldestV = igOldestV + ttOldestV;
     const viewsPercent = totalOldestV > 0 ? (viewsDelta / totalOldestV) * 100 : 0;
 
+    // Likes Delta
+    const igLDelta = getMetricDelta(igKey, 'totalLikes');
+    const ttLDelta = getMetricDelta('tiktok', 'totalLikes');
+    const likesDelta = igLDelta.growth + ttLDelta.growth;
+    const igOldestL = (followerHistory.value[igKey]?.[0]?.totalLikes) ?? 0;
+    const ttOldestL = (followerHistory.value['tiktok']?.[0]?.totalLikes) ?? 0;
+    const totalOldestL = igOldestL + ttOldestL;
+    const likesPercent = totalOldestL > 0 ? (likesDelta / totalOldestL) * 100 : 0;
+
     // Engagement rate delta (average across platforms)
     const igEDelta = getMetricDelta(igKey, 'engagementRate');
     const ttEDelta = getMetricDelta('tiktok', 'engagementRate');
@@ -262,6 +278,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
       followers: { delta: followersDelta, percent: followersPercent },
       views: { delta: viewsDelta, percent: viewsPercent },
       engagement: { delta: engagementDelta, percent: engagementPercent },
+      likes: {delta: likesDelta, percent: likesPercent}
     };
   });
 
@@ -344,6 +361,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
     totalEngagementRate,
     totalPosts,
     totalViews,
+    totalLikes,
     instagramHealth,
     tiktokHealth,
     topContent,

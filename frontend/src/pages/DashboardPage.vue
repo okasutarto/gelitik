@@ -178,9 +178,9 @@ const instagramPosts = computed(() => platformHealth.value.instagram?.postsThisW
     </div>
 
     <!-- SECTION 2: Unified KPI Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
       <template v-if="isLoading">
-        <StatCardSkeleton :count="4" />
+        <StatCardSkeleton :count="5" />
       </template>
       <template v-else>
         <StatCard
@@ -217,15 +217,6 @@ const instagramPosts = computed(() => platformHealth.value.instagram?.postsThisW
           :historical-data="engagementHistory"
         />
       </template>
-    </div>
-
-    <!-- SECTION 4: Platform Comparison -->
-    <div class="mb-8">
-      <PlatformHealthComparison
-        :instagram="platformHealth.instagram"
-        :tiktok="platformHealth.tiktok"
-        :loading="isLoading"
-      />
     </div>
 
     <!-- Top Performing Content -->

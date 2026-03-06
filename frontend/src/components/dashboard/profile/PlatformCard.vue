@@ -61,7 +61,7 @@ const config = computed(() => platformConfig[props.platform])
     <div class="flex items-center justify-between mb-6">
       <div class="flex items-center gap-3">
         <div
-          class="w-12 h-12 border-3 border-black dark:border-white flex items-center justify-center bg-white dark:bg-slate-800 shadow-brutal-sm"
+          class="w-12 h-12 border-3 border-black dark:border-electric flex items-center justify-center bg-white dark:bg-slate-800 shadow-brutal-sm"
         >
           <span class="font-black text-lg uppercase" :class="config.textColor">
             {{ platform === 'tiktok' ? 'TT' : 'IG' }}
@@ -99,7 +99,7 @@ const config = computed(() => platformConfig[props.platform])
           <p class="text-2xl font-black text-slate-900 dark:text-white">
             {{ formatNumber(data.followers) }}
           </p>
-          <div v-if="data.followerGrowth !== 0" class="flex items-center gap-1 mt-1">
+          <div class="flex items-center gap-1 mt-1">
             <TrendingUp
               :size="12"
               :class="data.followerGrowthPercent > 0 ? 'text-emerald-500' : 'text-red-500'"
@@ -136,7 +136,7 @@ const config = computed(() => platformConfig[props.platform])
           <p class="text-2xl font-black text-slate-900 dark:text-white">
             {{ formatNumber(totalViews) }}
           </p>
-          <div v-if="data.viewsGrowth !== 0" class="flex items-center gap-1 mt-1">
+          <div class="flex items-center gap-1 mt-1">
             <TrendingUp
               :size="12"
               :class="data.viewsGrowthPercent > 0 ? 'text-emerald-500' : 'text-red-500'"
@@ -162,7 +162,7 @@ const config = computed(() => platformConfig[props.platform])
           <p class="text-2xl font-black text-slate-900 dark:text-white">
             {{ data.engagementRate.toFixed(2) }}%
           </p>
-          <div v-if="data.engagementRateGrowth !== 0" class="flex items-center gap-1 mt-1">
+          <div class="flex items-center gap-1 mt-1">
             <TrendingUp
               :size="12"
               :class="data.engagementRateGrowthPercent > 0 ? 'text-emerald-500' : 'text-red-500'"

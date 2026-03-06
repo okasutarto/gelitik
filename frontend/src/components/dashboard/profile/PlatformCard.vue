@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { TrendingUp, Users, Eye, Video, CheckCircle, XCircle, Loader2 } from 'lucide-vue-next'
+import { TrendingUp, CheckCircle, XCircle, Loader2 } from 'lucide-vue-next'
 import { formatNumber } from '@/utils/format'
+import { PlatformCardSkeleton } from '@/components/loading'
 import type { PlatformSnapshot } from '@/stores/dashboardStore'
 
 interface Props {
@@ -43,7 +44,12 @@ const config = computed(() => platformConfig[props.platform])
 </script>
 
 <template>
+  <!-- Loading Overlay -->
+  <div v-if="loading">
+    <PlatformCardSkeleton :count="1" />
+  </div>
   <div
+    v-else
     class="brutal-card p-6 brutal-hover-lift relative overflow-hidden"
     :class="[
       `${config.bgGradient}`,
@@ -51,14 +57,6 @@ const config = computed(() => platformConfig[props.platform])
       loading ? 'border-slate-300 dark:border-slate-600' : config.borderColor
     ]"
   >
-    <!-- Loading Overlay -->
-    <div
-      v-if="loading"
-      class="absolute inset-0 bg-white/80 dark:bg-slate-900/80 flex items-center justify-center z-10"
-    >
-      <Loader2 class="animate-spin text-slate-400" :size="32" />
-    </div>
-
     <!-- Platform Header -->
     <div class="flex items-center justify-between mb-6">
       <div class="flex items-center gap-3">
@@ -90,74 +88,204 @@ const config = computed(() => platformConfig[props.platform])
     </div>
 
     <!-- Metrics Grid -->
-    <div v-if="data" class="grid grid-cols-2 gap-4">
-      <!-- Followers -->
-      <div
-        class="p-4 bg-white dark:bg-slate-800 border-2 border-black dark:border-white shadow-brutal-sm"
-      >
-        <div class="flex items-center gap-2 mb-2">
-          <Users :size="16" class="text-slate-400" />
-          <span class="text-xs font-bold uppercase text-slate-500">Followers</span>
+    <div v-if="data" class="space-y-4">
+      <!-- Row 1: Primary Metrics -->
+      <div class="grid grid-cols-4 gap-4">
+        <!-- Followers -->
+        <div class="">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs font-bold uppercase text-slate-500">Followers</span>
+          </div>
+          <p class="text-2xl font-black text-slate-900 dark:text-white">
+            {{ formatNumber(data.followers) }}
+          </p>
+          <div v-if="data.followerGrowth !== 0" class="flex items-center gap-1 mt-1">
+            <TrendingUp
+              :size="12"
+              :class="data.followerGrowthPercent > 0 ? 'text-emerald-500' : 'text-red-500'"
+            />
+            <span
+              class="text-xs font-bold"
+              :class="
+                data.followerGrowthPercent > 0
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-red-600 dark:text-red-400'
+              "
+            >
+              {{ data.followerGrowthPercent > 0 ? '+' : ''
+              }}{{ data.followerGrowthPercent.toFixed(1) }}%
+            </span>
+          </div>
         </div>
-        <p class="text-2xl font-black text-slate-900 dark:text-white">
-          {{ formatNumber(data.followers) }}
-        </p>
-        <div v-if="data.followerGrowthPercent !== 0" class="flex items-center gap-1 mt-1">
-          <TrendingUp
-            :size="12"
-            :class="data.followerGrowthPercent > 0 ? 'text-emerald-500' : 'text-red-500'"
-          />
-          <span
-            class="text-xs font-bold"
-            :class="
-              data.followerGrowthPercent > 0
-                ? 'text-emerald-600 dark:text-emerald-400'
-                : 'text-red-600 dark:text-red-400'
-            "
-          >
-            {{ data.followerGrowthPercent > 0 ? '+' : ''
-            }}{{ data.followerGrowthPercent.toFixed(1) }}%
-          </span>
-        </div>
-      </div>
 
-      <!-- Engagement Rate -->
-      <div
-        class="p-4 bg-white dark:bg-slate-800 border-2 border-black dark:border-white shadow-brutal-sm"
-      >
-        <div class="flex items-center gap-2 mb-2">
-          <TrendingUp :size="16" class="text-slate-400" />
-          <span class="text-xs font-bold uppercase text-slate-500">Engagement</span>
+        <!-- Posts -->
+        <div class="">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs font-bold uppercase text-slate-500">Posts</span>
+          </div>
+          <p class="text-2xl font-black text-slate-900 dark:text-white">
+            {{ formatNumber(posts) }}
+          </p>
         </div>
-        <p class="text-2xl font-black text-slate-900 dark:text-white">
-          {{ data.engagementRate.toFixed(2) }}%
-        </p>
-      </div>
 
-      <!-- Total Views -->
-      <div
-        class="p-4 bg-white dark:bg-slate-800 border-2 border-black dark:border-white shadow-brutal-sm"
-      >
-        <div class="flex items-center gap-2 mb-2">
-          <Eye :size="16" class="text-slate-400" />
-          <span class="text-xs font-bold uppercase text-slate-500">Total Views</span>
+        <!-- Total Views -->
+        <div class="">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs font-bold uppercase text-slate-500">Total Views</span>
+          </div>
+          <p class="text-2xl font-black text-slate-900 dark:text-white">
+            {{ formatNumber(totalViews) }}
+          </p>
+          <div v-if="data.viewsGrowth !== 0" class="flex items-center gap-1 mt-1">
+            <TrendingUp
+              :size="12"
+              :class="data.viewsGrowthPercent > 0 ? 'text-emerald-500' : 'text-red-500'"
+            />
+            <span
+              class="text-xs font-bold"
+              :class="
+                data.viewsGrowthPercent > 0
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-red-600 dark:text-red-400'
+              "
+            >
+              {{ data.viewsGrowthPercent > 0 ? '+' : '' }}{{ data.viewsGrowthPercent.toFixed(1) }}%
+            </span>
+          </div>
         </div>
-        <p class="text-2xl font-black text-slate-900 dark:text-white">
-          {{ formatNumber(totalViews) }}
-        </p>
-      </div>
 
-      <!-- Posts -->
-      <div
-        class="p-4 bg-white dark:bg-slate-800 border-2 border-black dark:border-white shadow-brutal-sm"
-      >
-        <div class="flex items-center gap-2 mb-2">
-          <Video :size="16" class="text-slate-400" />
-          <span class="text-xs font-bold uppercase text-slate-500">Posts</span>
+        <!-- Engagement Rate -->
+        <div class="">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs font-bold uppercase text-slate-500">Engagement</span>
+          </div>
+          <p class="text-2xl font-black text-slate-900 dark:text-white">
+            {{ data.engagementRate.toFixed(2) }}%
+          </p>
+          <div v-if="data.engagementRateGrowth !== 0" class="flex items-center gap-1 mt-1">
+            <TrendingUp
+              :size="12"
+              :class="data.engagementRateGrowthPercent > 0 ? 'text-emerald-500' : 'text-red-500'"
+            />
+            <span
+              class="text-xs font-bold"
+              :class="
+                data.engagementRateGrowthPercent > 0
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-red-600 dark:text-red-400'
+              "
+            >
+              {{ data.engagementRateGrowthPercent > 0 ? '+' : ''
+              }}{{ data.engagementRateGrowthPercent.toFixed(1) }}%
+            </span>
+          </div>
         </div>
-        <p class="text-2xl font-black text-slate-900 dark:text-white">
-          {{ formatNumber(posts) }}
-        </p>
+
+        <!-- Likes -->
+        <div class="">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-bold uppercase text-slate-500">Likes</span>
+          </div>
+          <p class="text-xl font-black text-slate-900 dark:text-white">
+            {{ formatNumber(data.likes) }}
+          </p>
+          <div v-if="data.likesGrowth !== 0" class="flex items-center gap-1 mt-1">
+            <TrendingUp
+              :size="12"
+              :class="data.likesGrowthPercent > 0 ? 'text-emerald-500' : 'text-red-500'"
+            />
+            <span
+              class="text-xs font-bold"
+              :class="
+                data.likesGrowthPercent > 0
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-red-600 dark:text-red-400'
+              "
+            >
+              {{ data.likesGrowthPercent > 0 ? '+' : '' }}{{ data.likesGrowthPercent.toFixed(1) }}%
+            </span>
+          </div>
+        </div>
+
+        <!-- Comments -->
+        <div class="">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-bold uppercase text-slate-500">Comments</span>
+          </div>
+          <p class="text-xl font-black text-slate-900 dark:text-white">
+            {{ formatNumber(data.comments) }}
+          </p>
+          <div class="flex items-center gap-1 mt-1">
+            <TrendingUp
+              :size="12"
+              :class="data.commentsGrowthPercent > 0 ? 'text-emerald-500' : 'text-red-500'"
+            />
+            <span
+              class="text-xs font-bold"
+              :class="
+                data.commentsGrowthPercent > 0
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-red-600 dark:text-red-400'
+              "
+            >
+              {{ data.commentsGrowthPercent > 0 ? '+' : ''
+              }}{{ data.commentsGrowthPercent.toFixed(1) }}%
+            </span>
+          </div>
+        </div>
+
+        <!-- Shares -->
+        <div class="">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-bold uppercase text-slate-500">Shares</span>
+          </div>
+          <p class="text-xl font-black text-slate-900 dark:text-white">
+            {{ formatNumber(data.shares) }}
+          </p>
+          <div class="flex items-center gap-1 mt-1">
+            <TrendingUp
+              :size="12"
+              :class="data.sharesGrowthPercent > 0 ? 'text-emerald-500' : 'text-red-500'"
+            />
+            <span
+              class="text-xs font-bold"
+              :class="
+                data.sharesGrowthPercent > 0
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-red-600 dark:text-red-400'
+              "
+            >
+              {{ data.sharesGrowthPercent > 0 ? '+' : ''
+              }}{{ data.sharesGrowthPercent.toFixed(1) }}%
+            </span>
+          </div>
+        </div>
+
+        <!-- Saves -->
+        <div class="">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-bold uppercase text-slate-500">Saves</span>
+          </div>
+          <p class="text-xl font-black text-slate-900 dark:text-white">
+            {{ platform === 'tiktok' ? 'N/A' : formatNumber(data.saves) }}
+          </p>
+          <div v-if="platform === 'instagram'" class="flex items-center gap-1 mt-1">
+            <TrendingUp
+              :size="12"
+              :class="data.savesGrowthPercent > 0 ? 'text-emerald-500' : 'text-red-500'"
+            />
+            <span
+              class="text-xs font-bold"
+              :class="
+                data.savesGrowthPercent > 0
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-red-600 dark:text-red-400'
+              "
+            >
+              {{ data.savesGrowthPercent > 0 ? '+' : '' }}{{ data.savesGrowthPercent.toFixed(1) }}%
+            </span>
+          </div>
+        </div>
       </div>
     </div>
 

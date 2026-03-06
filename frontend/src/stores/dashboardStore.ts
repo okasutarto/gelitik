@@ -22,7 +22,24 @@ export interface PlatformSnapshot {
   followerGrowth: number;
   followerGrowthPercent: number;
   engagementRate: number;
+  engagementRateGrowth: number;
+  engagementRateGrowthPercent: number;
   postsThisWeek: number;
+  views: number;
+  viewsGrowth: number;
+  viewsGrowthPercent: number;
+  likes: number;
+  likesGrowth: number;
+  likesGrowthPercent: number;
+  comments: number;
+  commentsGrowth: number;
+  commentsGrowthPercent: number;
+  shares: number;
+  sharesGrowth: number;
+  sharesGrowthPercent: number;
+  saves: number;
+  savesGrowth: number;
+  savesGrowthPercent: number;
 }
 
 export const useDashboardStore = defineStore("dashboard", () => {
@@ -34,39 +51,37 @@ export const useDashboardStore = defineStore("dashboard", () => {
   const isLoading = computed(() => tiktokStore.isLoading || instagramStore.isLoading || isHistoryLoading.value);
   const error = computed(() => tiktokStore.error || instagramStore.error);
 
-  // Aggregated KPI data
+  // Aggregated KPI data - using platformHealth for clean data access
   const totalFollowers = computed(() => {
-    const ig = instagramStore.data?.insights?.followers ?? 0;
-    const tt = tiktokStore.data?.analytics?.followers ?? 0;
+    const ig = instagramHealth.value?.followers ?? 0;
+    const tt = tiktokHealth.value?.followers ?? 0;
     return ig + tt;
   });
 
   const totalEngagementRate = computed(() => {
-    const igRate = instagramStore.data?.insights
-      ? instagramStore.data.insights.totalInteractions > 0 && instagramStore.data.insights.reach > 0
-        ? (instagramStore.data.insights.totalInteractions / instagramStore.data.insights.reach) *
-          100
-        : 0
-      : 0;
-    const ttRate = tiktokStore.data?.analytics?.engagementRate ?? 0;
+    const igRate = instagramHealth.value?.engagementRate ?? 0;
+    const ttRate = tiktokHealth.value?.engagementRate ?? 0;
     const count = (igRate > 0 ? 1 : 0) + (ttRate > 0 ? 1 : 0);
     return count > 0 ? (igRate + ttRate) / count : 0;
   });
 
   const totalPosts = computed(() => {
-    const igPosts = instagramStore.data?.insights?.mediaCount ?? 0;
-    const ttPosts = tiktokStore.data?.userInfo?.video_count ?? 0;
+    const igPosts = instagramHealth.value?.postsThisWeek ?? 0;
+    const ttPosts = tiktokHealth.value?.postsThisWeek ?? 0;
     return igPosts + ttPosts;
   });
 
   const totalViews = computed(() => {
-    const igViews = instagramStore.data?.insights?.views ?? 0;
-    const ttViews = tiktokStore.data?.analytics?.totalViews ?? 0;
+    const igViews = instagramHealth.value?.views ?? 0;
+    const ttViews = tiktokHealth.value?.views ?? 0;
     return igViews + ttViews;
   });
 
   // Compute growth delta from history snapshots for any numeric metric
-  function getMetricDelta(platformKey: string, metric: 'followers' | 'totalViews' | 'engagementRate') {
+  function getMetricDelta(
+    platformKey: string,
+    metric: 'followers' | 'totalViews' | 'totalLikes' | 'totalComments' | 'totalShares' | 'totalSaves' | 'engagementRate'
+  ) {
     const entries = followerHistory.value[platformKey];
     if (!entries || entries.length < 2) return { growth: 0, percent: 0 };
     const oldest = entries[0][metric];
@@ -76,71 +91,105 @@ export const useDashboardStore = defineStore("dashboard", () => {
     return { growth, percent };
   }
 
-  // Platform health snapshots (with real follower growth from history)
+  // Platform health snapshots - using history endpoint data for consistency
   const instagramHealth = computed<PlatformSnapshot | null>(() => {
-    // Check both insights and profile data
-    const insights = instagramStore.data?.insights;
-    const profile = instagramStore.data?.profile;
-
-    if (!insights && !profile) return null;
-
     const igKey = followerHistory.value['instagram-graph'] ? 'instagram-graph' : 'instagram';
-    const delta = getMetricDelta(igKey, 'followers');
-
-    // Prefer profile.followers_count (more reliable), fallback to insights.followers
-    const followers = profile?.followers_count ?? insights?.followers ?? 0;
-    // Get accountActivity for fallback calculations
-    const accountActivity = (insights as Record<string, unknown>)?.accountActivity as Record<string, number> | undefined;
-    const totalInteractions = accountActivity?.profileViews ?? 0;
-    const mediaCount = insights?.mediaCount ?? profile?.media_count ?? 0;
-
-    // Get actual engagement rate from history (latest record)
     const igHistory = followerHistory.value[igKey];
-    let engagementRate = 0;
-    if (igHistory && igHistory.length > 0) {
-      const latest = igHistory[igHistory.length - 1];
-      engagementRate = latest.engagementRate ?? 0;
+
+    // Need at least some data - either from history or from store
+    if (!igHistory || igHistory.length === 0) {
+      if (!instagramStore.data) return null;
     }
-    // Fallback: engagement per follower if history doesn't have it
-    if (engagementRate === 0 && followers > 0) {
-      engagementRate = (totalInteractions / followers) * 100;
-    }
+
+    // Calculate deltas for all metrics
+    const followersDelta = getMetricDelta(igKey, 'followers');
+    const viewsDelta = getMetricDelta(igKey, 'totalViews');
+    const likesDelta = getMetricDelta(igKey, 'totalLikes');
+    const commentsDelta = getMetricDelta(igKey, 'totalComments');
+    const sharesDelta = getMetricDelta(igKey, 'totalShares');
+    const savesDelta = getMetricDelta(igKey, 'totalSaves');
+    const engagementDelta = getMetricDelta(igKey, 'engagementRate');
+
+    // Use latest history data (from /api/analytics/history endpoint)
+    const latest = igHistory && igHistory.length > 0 ? igHistory[igHistory.length - 1] : null;
+
+    // Get posts from store if history doesn't have data
+    const profile = instagramStore.data?.profile;
+    const insights = instagramStore.data?.insights;
+    const mediaCount = insights?.mediaCount ?? profile?.media_count ?? 0;
 
     return {
       platform: "instagram",
-      followers,
-      followerGrowth: delta.growth,
-      followerGrowthPercent: delta.percent,
-      engagementRate: isNaN(engagementRate) ? 0 : engagementRate,
+      followers: latest?.followers ?? profile?.followers_count ?? insights?.followers ?? 0,
+      followerGrowth: followersDelta.growth,
+      followerGrowthPercent: followersDelta.percent,
+      engagementRate: latest?.engagementRate ?? 0,
+      engagementRateGrowth: engagementDelta.growth,
+      engagementRateGrowthPercent: engagementDelta.percent,
       postsThisWeek: mediaCount,
+      views: latest?.totalViews ?? 0,
+      viewsGrowth: viewsDelta.growth,
+      viewsGrowthPercent: viewsDelta.percent,
+      likes: latest?.totalLikes ?? 0,
+      likesGrowth: likesDelta.growth,
+      likesGrowthPercent: likesDelta.percent,
+      comments: latest?.totalComments ?? 0,
+      commentsGrowth: commentsDelta.growth,
+      commentsGrowthPercent: commentsDelta.percent,
+      shares: latest?.totalShares ?? 0,
+      sharesGrowth: sharesDelta.growth,
+      sharesGrowthPercent: sharesDelta.percent,
+      saves: latest?.totalSaves ?? 0,
+      savesGrowth: savesDelta.growth,
+      savesGrowthPercent: savesDelta.percent,
     };
   });
 
   const tiktokHealth = computed<PlatformSnapshot | null>(() => {
-    if (!tiktokStore.data?.analytics) return null;
-    const analytics = tiktokStore.data.analytics;
-    const userInfo = tiktokStore.data.userInfo;
-    const delta = getMetricDelta('tiktok', 'followers');
-
-    // Get actual engagement rate from history (latest record) - same pattern as Instagram
+    // Need at least some data - either from history or from store
     const ttHistory = followerHistory.value['tiktok'];
-    let engagementRate = 0;
-    if (ttHistory && ttHistory.length > 0) {
-      const latest = ttHistory[ttHistory.length - 1];
-      engagementRate = latest.engagementRate ?? 0;
+    if ((!ttHistory || ttHistory.length === 0) && !tiktokStore.data) {
+      return null;
     }
-    // Fallback: use backend-calculated rate if history doesn't have it
-    if (engagementRate === 0) {
-      engagementRate = analytics.engagementRate ?? 0;
-    }
+
+    const analytics = tiktokStore.data?.analytics;
+    const userInfo = tiktokStore.data?.userInfo;
+
+    // Calculate deltas for all metrics
+    const followersDelta = getMetricDelta('tiktok', 'followers');
+    const viewsDelta = getMetricDelta('tiktok', 'totalViews');
+    const likesDelta = getMetricDelta('tiktok', 'totalLikes');
+    const commentsDelta = getMetricDelta('tiktok', 'totalComments');
+    const sharesDelta = getMetricDelta('tiktok', 'totalShares');
+    const engagementDelta = getMetricDelta('tiktok', 'engagementRate');
+
+    // Use latest history data (from /api/analytics/history endpoint)
+    const latest = ttHistory && ttHistory.length > 0 ? ttHistory[ttHistory.length - 1] : null;
 
     return {
       platform: "tiktok",
-      followers: analytics.followers,
-      followerGrowth: delta.growth,
-      followerGrowthPercent: delta.percent,
-      engagementRate: isNaN(engagementRate) ? 0 : engagementRate,
+      followers: latest?.followers ?? analytics?.followers ?? 0,
+      followerGrowth: followersDelta.growth,
+      followerGrowthPercent: followersDelta.percent,
+      engagementRate: latest?.engagementRate ?? analytics?.engagementRate ?? 0,
+      engagementRateGrowth: engagementDelta.growth,
+      engagementRateGrowthPercent: engagementDelta.percent,
       postsThisWeek: userInfo?.video_count ?? 0,
+      views: latest?.totalViews ?? analytics?.totalViews ?? 0,
+      viewsGrowth: viewsDelta.growth,
+      viewsGrowthPercent: viewsDelta.percent,
+      likes: latest?.totalLikes ?? analytics?.totalLikes ?? 0,
+      likesGrowth: likesDelta.growth,
+      likesGrowthPercent: likesDelta.percent,
+      comments: latest?.totalComments ?? analytics?.totalComments ?? 0,
+      commentsGrowth: commentsDelta.growth,
+      commentsGrowthPercent: commentsDelta.percent,
+      shares: latest?.totalShares ?? analytics?.totalShares ?? 0,
+      sharesGrowth: sharesDelta.growth,
+      sharesGrowthPercent: sharesDelta.percent,
+      saves: 0, // TikTok doesn't have saves
+      savesGrowth: 0,
+      savesGrowthPercent: 0,
     };
   });
 
@@ -247,7 +296,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
 
   // Historical analytics data from DB snapshots
   const selectedDays = ref(30);
-  const followerHistory = ref<Record<string, { date: string; followers: number; totalViews: number; totalLikes: number; totalComments: number; totalShares: number; engagementRate: number }[]>>({});
+  const followerHistory = ref<Record<string, { date: string; followers: number; totalViews: number; totalLikes: number; totalComments: number; totalShares: number; totalSaves: number; engagementRate: number }[]>>({});
 
   // Fetch all data
   async function fetchAll() {

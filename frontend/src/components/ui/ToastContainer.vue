@@ -45,18 +45,18 @@ defineExpose({ showToast, success, error, info, warning });
         v-for="toast in toasts"
         :key="toast.id"
         :class="[
-          'px-4 py-3 rounded-lg shadow-lg border-2 flex items-center gap-3 min-w-[280px] max-w-md animate-slide-in',
+          'px-4 py-3 rounded-none shadow-neo-hard border-neo-3 flex items-center gap-3 min-w-[280px] max-w-md animate-slide-in',
           toast.type === 'success'
-            ? 'bg-green-100 border-green-500 text-green-800 dark:bg-green-900/30 dark:border-green-400 dark:text-green-200'
+            ? 'bg-green-100 border-black text-green-800 dark:bg-green-900/50 dark:border-electric dark:text-green-200'
             : '',
           toast.type === 'error'
-            ? 'bg-red-100 border-red-500 text-red-800 dark:bg-red-900/30 dark:border-red-400 dark:text-red-200'
+            ? 'bg-red-100 border-black text-red-800 dark:bg-red-900/50 dark:border-electric dark:text-red-200'
             : '',
           toast.type === 'warning'
-            ? 'bg-yellow-100 border-yellow-500 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-400 dark:text-yellow-200'
+            ? 'bg-yellow-100 border-black text-yellow-800 dark:bg-yellow-900/50 dark:border-electric dark:text-yellow-200'
             : '',
           toast.type === 'info'
-            ? 'bg-blue-100 border-blue-500 text-blue-800 dark:bg-blue-900/30 dark:border-blue-400 dark:text-blue-200'
+            ? 'bg-blue-100 border-black text-blue-800 dark:bg-blue-900/50 dark:border-electric dark:text-blue-200'
             : '',
         ]"
       >

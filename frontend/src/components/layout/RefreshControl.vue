@@ -18,10 +18,7 @@ defineEmits<{
 
 <template>
   <div class="flex items-center gap-3">
-    <span
-      v-if="lastUpdated"
-      class="text-xs text-slate-500 dark:text-slate-400 font-bold hidden sm:inline-block"
-    >
+    <span v-if="lastUpdated" class="text-xs text-slate-900 font-bold hidden sm:inline-block">
       Updated {{ lastUpdated.toLocaleTimeString() }}
     </span>
     <button

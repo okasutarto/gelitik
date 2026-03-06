@@ -1,24 +1,34 @@
 <script setup lang="ts">
-import { Users, Heart, FileText, Eye, Calendar, ChevronDown, Download } from 'lucide-vue-next'
+import {
+  Users,
+  Heart,
+  FileText,
+  Eye,
+  Calendar,
+  ChevronDown,
+  Download,
+  Video
+} from 'lucide-vue-next'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import ExportReportModal from '@/components/dashboard/reports/ExportReportModal.vue'
 import PageHeader from '@/components/layout/PageHeader.vue'
 import StatCard from '@/components/dashboard/cards/StatCard.vue'
 import ContentTable from '@/components/dashboard/content/ContentTable.vue'
-import PlatformHealthComparison from '@/components/dashboard/profile/PlatformHealthComparison.vue'
+import PlatformCard from '@/components/dashboard/profile/PlatformCard.vue'
 import AudienceChart from '@/components/dashboard/charts/AudienceChart.vue'
-import EngagementChart from '@/components/dashboard/charts/EngagementChart.vue'
+import ViewsComparisonChart from '@/components/dashboard/charts/ViewsComparisonChart.vue'
+import EngagementComparisonChart from '@/components/dashboard/charts/EngagementComparisonChart.vue'
 import StatCardSkeleton from '@/components/loading/StatCardSkeleton.vue'
 import ChartSkeleton from '@/components/loading/ChartSkeleton.vue'
 import ContentTableSkeleton from '@/components/loading/ContentTableSkeleton.vue'
 import { useDashboardData } from '@/composables/useDashboardData'
+import { useTiktokStore } from '@/stores/tiktokStore'
 import { ref, computed } from 'vue'
 
 const {
   kpiCards,
   platformHealth,
   followerHistory,
-  engagementHistory,
   selectedDays,
   setDateRange,
   isLoading,
@@ -27,6 +37,8 @@ const {
   refresh,
   topContent
 } = useDashboardData()
+
+const tiktokStore = useTiktokStore()
 
 // Date range options
 const dateRangeOptions = [
@@ -50,7 +62,29 @@ function onDateRangeChange(val: string) {
 }
 
 // Map KPI card data to icons
-const kpiIcons = [Users, Heart, FileText, Eye]
+const kpiIcons = [Users, Heart, FileText, Eye, Video]
+
+// Get TikTok totals - use history data for views (same as Instagram)
+const tiktokTotalViews = computed(() => {
+  const ttHistory = followerHistory.value['tiktok']
+  if (ttHistory && ttHistory.length > 0) {
+    const latest = ttHistory[ttHistory.length - 1]
+    return latest.totalViews
+  }
+  return tiktokStore.data?.analytics?.totalViews ?? 0
+})
+const tiktokPosts = computed(() => tiktokStore.data?.userInfo?.video_count ?? 0)
+
+// Get Instagram totals - use history data for views (most accurate)
+const instagramTotalViews = computed(() => {
+  const igHistory = followerHistory.value['instagram-graph'] ?? followerHistory.value['instagram']
+  if (igHistory && igHistory.length > 0) {
+    const latest = igHistory[igHistory.length - 1]
+    return latest.totalViews
+  }
+  return 0
+})
+const instagramPosts = computed(() => platformHealth.value.instagram?.postsThisWeek ?? 0)
 </script>
 
 <template>
@@ -58,7 +92,7 @@ const kpiIcons = [Users, Heart, FileText, Eye]
     <!-- Page Header -->
     <PageHeader
       title="Overview"
-      subtitle="Welcome back to your master dashboard."
+      subtitle="Your unified analytics command center."
       info-tooltip="Instagram metrics reflect the <strong>last 7 days</strong>. TikTok metrics are based on <strong>recent content</strong>. For detailed time-range filtering, visit each platform's analytics page."
       :last-updated="lastUpdated"
       :loading="isLoading"
@@ -133,10 +167,28 @@ const kpiIcons = [Users, Heart, FileText, Eye]
       </div>
     </div>
 
-    <!-- KPI Stat Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <!-- SECTION 1: Platform Cards (HERO) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <PlatformCard
+        platform="tiktok"
+        :data="platformHealth.tiktok"
+        :total-views="tiktokTotalViews"
+        :posts="tiktokPosts"
+        :loading="isLoading"
+      />
+      <PlatformCard
+        platform="instagram"
+        :data="platformHealth.instagram"
+        :total-views="instagramTotalViews"
+        :posts="instagramPosts"
+        :loading="isLoading"
+      />
+    </div>
+
+    <!-- SECTION 2: Unified KPI Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
       <template v-if="isLoading">
-        <StatCardSkeleton :count="4" />
+        <StatCardSkeleton :count="5" />
       </template>
       <template v-else>
         <StatCard
@@ -153,34 +205,34 @@ const kpiIcons = [Users, Heart, FileText, Eye]
       </template>
     </div>
 
-    <!-- Audience Chart -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      <ChartSkeleton v-if="isLoading" />
-      <AudienceChart
-        v-else
-        platform="all"
-        title="Audience Growth"
-        subtitle="Daily follower snapshots"
+    <div class="mb-8">
+      <ViewsComparisonChart
+        title="Views Comparison"
+        subtitle="TikTok vs Instagram views"
         :follower-history="followerHistory"
-      />
-      <!-- Engagement Over Time -->
-
-      <ChartSkeleton v-if="isLoading" />
-      <EngagementChart
-        v-else
-        title="Engagement Over Time"
-        subtitle="Daily total likes &amp; engagement rate"
-        :historical-data="engagementHistory"
       />
     </div>
 
-    <!-- Platform Health Comparison -->
-    <div class="mb-12">
-      <PlatformHealthComparison
-        :instagram="platformHealth.instagram"
-        :tiktok="platformHealth.tiktok"
-        :loading="isLoading"
-      />
+    <!-- SECTION 3: Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <template v-if="isLoading">
+        <ChartSkeleton />
+        <ChartSkeleton />
+      </template>
+      <template v-else>
+        <AudienceChart
+          platform="all"
+          title="Follower Comparison"
+          subtitle="TikTok vs Instagram followers"
+          :follower-history="followerHistory"
+        />
+
+        <EngagementComparisonChart
+          title="Engagement Comparison"
+          subtitle="TikTok vs Instagram likes"
+          :follower-history="followerHistory"
+        />
+      </template>
     </div>
 
     <!-- Top Performing Content -->

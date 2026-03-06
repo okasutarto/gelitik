@@ -1,4 +1,5 @@
 import axios from 'axios';
+import NodeCache from 'node-cache';
 
 const GRAPH_API_VERSION = 'v25.0';
 const GRAPH_API_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
@@ -16,6 +17,7 @@ export interface InstagramInsights {
     saves: number;
     profileViews: number;
     profileLinkTaps: number;
+    websiteClicks: number;
     accountsEngaged: number;
     demographics: {
         gender: { gender: string; percentage: number }[];
@@ -25,6 +27,7 @@ export interface InstagramInsights {
     historical: {
         reach: { date: string; value: number }[];
         followers: { date: string; value: number }[];
+        views: { date: string; value: number }[];
         likes: { date: string; value: number }[];
         comments: { date: string; value: number }[];
     };
@@ -32,6 +35,12 @@ export interface InstagramInsights {
 
 export class InstagramInsightsService {
     private readonly graphUrl = GRAPH_API_BASE;
+    private cache: NodeCache;
+
+    constructor() {
+        // Cache for 5 minutes
+        this.cache = new NodeCache({ stdTTL: 300 });
+    }
 
     /**
      * Parse metric value - handles both regular and total_value formats
@@ -64,6 +73,13 @@ export class InstagramInsightsService {
         igAccountId: string,
         timeframe: string = 'this_week'
     ): Promise<InstagramInsights> {
+        // Check cache first
+        const cacheKey = `ig_insights_${igAccountId}_${timeframe}`;
+        const cachedData = this.cache.get<InstagramInsights>(cacheKey);
+        if (cachedData) {
+            return cachedData;
+        }
+
         try {
             const until = Math.floor(Date.now() / 1000);
             let days = 30;
@@ -77,8 +93,9 @@ export class InstagramInsightsService {
             let reach = 0, views = 0;
             let historicalReach: { date: string; value: number }[] = [];
             let historicalFollowers: { date: string; value: number }[] = [];
+            let historicalViews: { date: string; value: number }[] = [];
             let totalInteractions = 0, likes = 0, comments = 0, shares = 0, saves = 0;
-            let profileViews = 0, profileLinkTaps = 0, accountsEngaged = 0;
+            let profileViews = 0, profileLinkTaps = 0, websiteClicks = 0, accountsEngaged = 0;
 
             const demographics = {
                 gender: [] as any[],
@@ -90,6 +107,7 @@ export class InstagramInsightsService {
                 profileRes,
                 reachRes,
                 viewsRes,
+                viewsHistoricalRes,
                 followersRes,
                 engagementRes,
                 ageGenderRes,
@@ -104,12 +122,16 @@ export class InstagramInsightsService {
                 axios.get(`${this.graphUrl}/${igAccountId}/insights`, {
                     params: { metric: 'views', period: 'day', metric_type: 'total_value', since, until, access_token: accessToken }
                 }),
+                // Historical views for chart (daily data, without total_value)
+                axios.get(`${this.graphUrl}/${igAccountId}/insights`, {
+                    params: { metric: 'views', period: 'day', since, until, access_token: accessToken }
+                }),
                 axios.get(`${this.graphUrl}/${igAccountId}/insights`, {
                     params: { metric: 'follower_count', period: 'day', since, until, access_token: accessToken }
                 }),
                 axios.get(`${this.graphUrl}/${igAccountId}/insights`, {
                     params: {
-                        metric: 'likes,comments,shares,saves,profile_views,profile_links_taps,accounts_engaged',
+                        metric: 'likes,comments,shares,saves,profile_views,profile_links_taps,website_clicks,accounts_engaged',
                         metric_type: 'total_value', period: 'day', since, until, access_token: accessToken
                     }
                 }),
@@ -145,6 +167,15 @@ export class InstagramInsightsService {
                 views = reach;
             }
 
+            // Process Historical Views (for chart)
+            if (viewsHistoricalRes.status === 'fulfilled') {
+                const viewsData = viewsHistoricalRes.value.data?.data?.[0]?.values || [];
+                historicalViews = viewsData.map((v: any) => ({
+                    date: v.end_time?.split('T')[0] || '',
+                    value: v.value || 0
+                }));
+            }
+
             // Process Followers
             if (followersRes.status === 'fulfilled') {
                 const followersData = followersRes.value.data?.data?.[0]?.values || [];
@@ -167,6 +198,7 @@ export class InstagramInsightsService {
                 saves = findMetric('saves');
                 profileViews = findMetric('profile_views');
                 profileLinkTaps = findMetric('profile_links_taps');
+                websiteClicks = findMetric('website_clicks');
                 accountsEngaged = findMetric('accounts_engaged');
             }
 
@@ -213,7 +245,7 @@ export class InstagramInsightsService {
 
             totalInteractions = likes + comments + shares + saves;
 
-            return {
+            const result = {
                 followers,
                 following: followsCount,
                 mediaCount,
@@ -226,15 +258,22 @@ export class InstagramInsightsService {
                 saves,
                 profileViews,
                 profileLinkTaps,
+                websiteClicks,
                 accountsEngaged,
                 demographics,
                 historical: {
                     reach: historicalReach,
                     followers: historicalFollowers,
+                    views: historicalViews,
                     likes: [],
                     comments: []
                 }
             };
+
+            // Cache the result
+            this.cache.set(cacheKey, result);
+
+            return result;
         } catch (error: any) {
             console.error('[InstagramGraph] getInsights error:', error.response?.data || error.message);
             return {
@@ -250,9 +289,10 @@ export class InstagramInsightsService {
                 saves: 0,
                 profileViews: 0,
                 profileLinkTaps: 0,
+                websiteClicks: 0,
                 accountsEngaged: 0,
                 demographics: { gender: [], age: [], cities: [] },
-                historical: { reach: [], followers: [], likes: [], comments: [] }
+                historical: { reach: [], followers: [], views: [], likes: [], comments: [] }
             };
         }
     }

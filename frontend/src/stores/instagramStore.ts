@@ -18,6 +18,7 @@ export interface InstagramInsights {
   accountsEngaged: number;
   following: number;
   mediaCount: number;
+  media?: Record<string, unknown>[];
 }
 
 export interface InstagramProfile {

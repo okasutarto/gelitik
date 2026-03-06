@@ -1,14 +1,23 @@
 <script setup lang="ts">
-import { Users, Heart, FileText, Eye, Calendar, ChevronDown, Download } from 'lucide-vue-next'
+import {
+  Users,
+  Heart,
+  FileText,
+  Eye,
+  Calendar,
+  ChevronDown,
+  Download,
+  Video
+} from 'lucide-vue-next'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import ExportReportModal from '@/components/dashboard/reports/ExportReportModal.vue'
 import PageHeader from '@/components/layout/PageHeader.vue'
 import StatCard from '@/components/dashboard/cards/StatCard.vue'
 import ContentTable from '@/components/dashboard/content/ContentTable.vue'
 import PlatformCard from '@/components/dashboard/profile/PlatformCard.vue'
-import PlatformHealthComparison from '@/components/dashboard/profile/PlatformHealthComparison.vue'
 import AudienceChart from '@/components/dashboard/charts/AudienceChart.vue'
-import EngagementChart from '@/components/dashboard/charts/EngagementChart.vue'
+import ViewsComparisonChart from '@/components/dashboard/charts/ViewsComparisonChart.vue'
+import EngagementComparisonChart from '@/components/dashboard/charts/EngagementComparisonChart.vue'
 import StatCardSkeleton from '@/components/loading/StatCardSkeleton.vue'
 import ChartSkeleton from '@/components/loading/ChartSkeleton.vue'
 import ContentTableSkeleton from '@/components/loading/ContentTableSkeleton.vue'
@@ -20,7 +29,6 @@ const {
   kpiCards,
   platformHealth,
   followerHistory,
-  engagementHistory,
   selectedDays,
   setDateRange,
   isLoading,
@@ -54,7 +62,7 @@ function onDateRangeChange(val: string) {
 }
 
 // Map KPI card data to icons
-const kpiIcons = [Users, Heart, FileText, Eye]
+const kpiIcons = [Users, Heart, FileText, Eye, Video]
 
 // Get TikTok totals - use history data for views (same as Instagram)
 const tiktokTotalViews = computed(() => {
@@ -197,6 +205,14 @@ const instagramPosts = computed(() => platformHealth.value.instagram?.postsThisW
       </template>
     </div>
 
+    <div class="mb-8">
+      <ViewsComparisonChart
+        title="Views Comparison"
+        subtitle="TikTok vs Instagram views"
+        :follower-history="followerHistory"
+      />
+    </div>
+
     <!-- SECTION 3: Charts Row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       <template v-if="isLoading">
@@ -206,15 +222,15 @@ const instagramPosts = computed(() => platformHealth.value.instagram?.postsThisW
       <template v-else>
         <AudienceChart
           platform="all"
-          title="Audience Growth"
-          subtitle="Combined follower trends"
+          title="Follower Comparison"
+          subtitle="TikTok vs Instagram followers"
           :follower-history="followerHistory"
         />
 
-        <EngagementChart
-          title="Engagement Trend"
-          subtitle="Daily likes & engagement rate"
-          :historical-data="engagementHistory"
+        <EngagementComparisonChart
+          title="Engagement Comparison"
+          subtitle="TikTok vs Instagram likes"
+          :follower-history="followerHistory"
         />
       </template>
     </div>

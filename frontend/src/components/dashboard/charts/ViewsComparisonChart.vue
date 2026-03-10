@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { Line } from 'vue-chartjs'
 import { useTheme } from '@/composables/useTheme'
+import ChartSkeleton from '@/components/loading/ChartSkeleton.vue'
 import '@/composables/useChart' // Registers Chart.js components
 
 interface FollowerHistoryEntry {
@@ -14,11 +15,13 @@ interface Props {
   title?: string
   subtitle?: string
   followerHistory?: Record<string, FollowerHistoryEntry[]>
+  loading?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: 'Views Comparison',
-  subtitle: 'TikTok vs Instagram views'
+  subtitle: 'TikTok vs Instagram views',
+  loading: false
 })
 
 const { isDark } = useTheme()
@@ -157,7 +160,10 @@ const chartOptions = computed(() => ({
 </script>
 
 <template>
-  <div class="brutal-card brutal-hover-lift rounded-none p-6">
+  <div v-if="loading">
+    <ChartSkeleton />
+  </div>
+  <div v-else class="brutal-card brutal-hover-lift rounded-none p-6">
     <div v-if="!hasHistoryData" class="p-8 text-center">
       <p class="text-sm font-bold text-slate-500 dark:text-slate-400">No views data yet</p>
       <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">

@@ -9,6 +9,8 @@ import {
   Download,
   Video
 } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+import api from '@/services/api'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import ExportReportModal from '@/components/dashboard/reports/ExportReportModal.vue'
 import PageHeader from '@/components/layout/PageHeader.vue'
@@ -23,7 +25,35 @@ import ChartSkeleton from '@/components/loading/ChartSkeleton.vue'
 import ContentTableSkeleton from '@/components/loading/ContentTableSkeleton.vue'
 import { useDashboardData } from '@/composables/useDashboardData'
 import { useTiktokStore } from '@/stores/tiktokStore'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+
+const router = useRouter()
+
+// Check for connected platforms
+const connectedPlatforms = ref<string[]>([])
+const isCheckingConnections = ref(true)
+
+async function checkConnectedPlatforms() {
+  try {
+    const response = await api.get('/api/accounts/status')
+    connectedPlatforms.value = response.data.data.connected || []
+  } catch (error) {
+    console.error('Failed to check connected platforms:', error)
+    connectedPlatforms.value = []
+  } finally {
+    isCheckingConnections.value = false
+  }
+}
+
+onMounted(() => {
+  checkConnectedPlatforms()
+})
+
+const showEmptyState = computed(() => !isCheckingConnections.value && connectedPlatforms.value.length === 0)
+
+function navigateToConnections() {
+  router.push('/connections')
+}
 
 const {
   kpiCards,
@@ -99,147 +129,176 @@ const instagramPosts = computed(() => platformHealth.value.instagram?.postsThisW
       @refresh="refresh"
     />
 
-    <!-- Error Banner -->
-    <div
-      v-if="error"
-      class="brutal-card border-red-500 bg-red-50 dark:bg-red-900/20 p-4 mb-6 flex items-center justify-between"
-    >
-      <span class="text-sm font-bold text-red-600 dark:text-red-400">
-        {{ error }}
-      </span>
-      <button
-        @click="refresh"
-        class="text-sm font-black uppercase px-3 py-1 bg-red-100 dark:bg-red-900/30 border-2 border-red-400 rounded hover:bg-red-200 transition-colors"
-      >
-        Retry
+    <!-- Empty State - No platforms connected -->
+    <div v-if="showEmptyState" class="empty-hero">
+      <div class="empty-icon-cluster">
+        <div class="ring ring-1">
+          <span class="orbit-dot"></span>
+          <span class="orbit-dot"></span>
+          <span class="orbit-dot"></span>
+          <span class="orbit-dot"></span>
+        </div>
+        <div class="ring ring-2"></div>
+        <div class="center-box">⚡</div>
+      </div>
+      <div class="no-connected-badge">
+        <span class="dot"></span> NO PLATFORMS CONNECTED
+      </div>
+      <h2>YOUR DASHBOARD IS EMPTY</h2>
+      <p>Connect your social media platforms to start tracking followers, views, engagement, and more — all in one place.</p>
+      <button class="connect-btn" @click="navigateToConnections">
+        <span class="plus">+</span>
+        Connect Your First Platform
       </button>
     </div>
 
-    <!-- Actions Row -->
-    <div class="flex justify-end gap-3 mb-6 relative">
-      <button
-        @click="isExportModalOpen = true"
-        class="flex items-center gap-2 bg-neo-accent dark:bg-hotpink text-black px-4 py-2 border-3 border-black dark:border-electric font-black brutal-hover-lift group shadow-brutal-sm uppercase tracking-wider text-sm"
-      >
-        <Download :size="18" class="stroke-[3]" />
-        Export
-      </button>
-
-      <button
-        @click="isDropdownOpen = !isDropdownOpen"
-        class="flex items-center gap-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-4 py-2 border-3 border-black dark:border-electric font-bold brutal-hover-lift group shadow-brutal-sm"
-      >
-        <Calendar :size="18" class="text-neo-accent dark:text-electric" />
-        {{ selectedTimeframeLabel }}
-        <ChevronDown
-          :size="18"
-          class="transition-transform duration-200"
-          :class="{ 'rotate-180': isDropdownOpen }"
-        />
-      </button>
-
+    <!-- Dashboard Content -->
+     <div v-else>
+      <div>
+      <!-- Error Banner -->
       <div
-        v-if="isDropdownOpen"
-        class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 border-2 border-black dark:border-electric shadow-brutal z-50 flex flex-col"
+        v-if="error"
+        class="brutal-card border-red-500 bg-red-50 dark:bg-red-900/20 p-4 mb-6 flex items-center justify-between"
       >
+        <span class="text-sm font-bold text-red-600 dark:text-red-400">
+          {{ error }}
+        </span>
         <button
-          v-for="tf in dateRangeOptions"
-          :key="tf.value"
-          @click="onDateRangeChange(tf.value)"
-          class="flex items-center justify-between px-4 py-3 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors font-bold text-slate-900 dark:text-white"
+          @click="refresh"
+          class="text-sm font-black uppercase px-3 py-1 bg-red-100 dark:bg-red-900/30 border-2 border-red-400 rounded hover:bg-red-200 transition-colors"
         >
-          {{ tf.label }}
-          <svg
-            v-if="selectedRange === tf.value"
-            class="w-4 h-4 text-neo-accent dark:text-electric"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="3"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
+          Retry
         </button>
       </div>
-    </div>
 
-    <!-- SECTION 1: Platform Cards (HERO) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-      <PlatformCard
-        platform="tiktok"
-        :data="platformHealth.tiktok"
-        :total-views="tiktokTotalViews"
-        :posts="tiktokPosts"
-        :loading="isLoading"
-      />
-      <PlatformCard
-        platform="instagram"
-        :data="platformHealth.instagram"
-        :total-views="instagramTotalViews"
-        :posts="instagramPosts"
-        :loading="isLoading"
-      />
-    </div>
+      <!-- Actions Row -->
+      <div class="flex justify-end gap-3 mb-6 relative">
+        <button
+          @click="isExportModalOpen = true"
+          class="flex items-center gap-2 bg-neo-accent dark:bg-hotpink text-black px-4 py-2 border-3 border-black dark:border-electric font-black brutal-hover-lift group shadow-brutal-sm uppercase tracking-wider text-sm"
+        >
+          <Download :size="18" class="stroke-[3]" />
+          Export
+        </button>
 
-    <!-- SECTION 2: Unified KPI Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-      <template v-if="isLoading">
-        <StatCardSkeleton :count="5" />
-      </template>
-      <template v-else>
-        <StatCard
-          v-for="(card, index) in kpiCards"
-          :key="card.title"
-          :title="card.title"
-          :value="card.value"
-          :icon="kpiIcons[index]"
-          :subtitle="card.subtitle"
-          :delta="card.delta"
-          :delta-percent="card.deltaPercent"
-          :delta-label="card.deltaLabel"
+        <button
+          @click="isDropdownOpen = !isDropdownOpen"
+          class="flex items-center gap-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-4 py-2 border-3 border-black dark:border-electric font-bold brutal-hover-lift group shadow-brutal-sm"
+        >
+          <Calendar :size="18" class="text-neo-accent dark:text-electric" />
+          {{ selectedTimeframeLabel }}
+          <ChevronDown
+            :size="18"
+            class="transition-transform duration-200"
+            :class="{ 'rotate-180': isDropdownOpen }"
+          />
+        </button>
+
+        <div
+          v-if="isDropdownOpen"
+          class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 border-2 border-black dark:border-electric shadow-brutal z-50 flex flex-col"
+        >
+          <button
+            v-for="tf in dateRangeOptions"
+            :key="tf.value"
+            @click="onDateRangeChange(tf.value)"
+            class="flex items-center justify-between px-4 py-3 text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors font-bold text-slate-900 dark:text-white"
+          >
+            {{ tf.label }}
+            <svg
+              v-if="selectedRange === tf.value"
+              class="w-4 h-4 text-neo-accent dark:text-electric"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="3"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- SECTION 1: Platform Cards (HERO) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <PlatformCard
+          platform="tiktok"
+          :data="platformHealth.tiktok"
+          :total-views="tiktokTotalViews"
+          :posts="tiktokPosts"
+          :loading="isLoading"
         />
-      </template>
-    </div>
+        <PlatformCard
+          platform="instagram"
+          :data="platformHealth.instagram"
+          :total-views="instagramTotalViews"
+          :posts="instagramPosts"
+          :loading="isLoading"
+        />
+      </div>
 
-    <div class="mb-8">
-      <ViewsComparisonChart
-        title="Views Comparison"
-        subtitle="TikTok vs Instagram views"
-        :follower-history="followerHistory"
-      />
-    </div>
+      <!-- SECTION 2: Unified KPI Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <template v-if="isLoading">
+          <StatCardSkeleton :count="5" />
+        </template>
+        <template v-else>
+          <StatCard
+            v-for="(card, index) in kpiCards"
+            :key="card.title"
+            :title="card.title"
+            :value="card.value"
+            :icon="kpiIcons[index]"
+            :subtitle="card.subtitle"
+            :delta="card.delta"
+            :delta-percent="card.deltaPercent"
+            :delta-label="card.deltaLabel"
+          />
+        </template>
+      </div>
 
-    <!-- SECTION 3: Charts Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      <template v-if="isLoading">
-        <ChartSkeleton />
-        <ChartSkeleton />
-      </template>
-      <template v-else>
-        <AudienceChart
-          platform="all"
-          title="Follower Comparison"
-          subtitle="TikTok vs Instagram followers"
+      <div class="mb-8">
+        <ViewsComparisonChart
+          title="Views Comparison"
+          subtitle="TikTok vs Instagram views"
           :follower-history="followerHistory"
+          :loading="isLoading"
         />
+      </div>
 
-        <EngagementComparisonChart
-          title="Engagement Comparison"
-          subtitle="TikTok vs Instagram likes"
-          :follower-history="followerHistory"
-        />
-      </template>
+      <!-- SECTION 3: Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <template v-if="isLoading">
+          <ChartSkeleton />
+          <ChartSkeleton />
+        </template>
+        <template v-else>
+          <AudienceChart
+            platform="all"
+            title="Follower Comparison"
+            subtitle="TikTok vs Instagram followers"
+            :follower-history="followerHistory"
+          />
+
+          <EngagementComparisonChart
+            title="Engagement Comparison"
+            subtitle="TikTok vs Instagram likes"
+            :follower-history="followerHistory"
+          />
+        </template>
+      </div>
+
+      <!-- Top Performing Content -->
+      <ContentTableSkeleton v-if="isLoading" />
+      <ContentTable v-else platform="all" :videos="topContent" />
+
+      <!-- Export Modal -->
+      <ExportReportModal :is-open="isExportModalOpen" @close="isExportModalOpen = false" />
+      </div>
     </div>
-
-    <!-- Top Performing Content -->
-    <ContentTableSkeleton v-if="isLoading" />
-    <ContentTable v-else platform="all" :videos="topContent" />
-
-    <!-- Export Modal -->
-    <ExportReportModal :is-open="isExportModalOpen" @close="isExportModalOpen = false" />
   </DashboardLayout>
 </template>

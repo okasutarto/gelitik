@@ -579,3 +579,188 @@ html {
     linear-gradient(90deg, rgba(0, 240, 255, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
 }
+
+/* Empty State - Dashboard Hero */
+.empty-hero {
+  @apply flex flex-col items-center justify-center py-16 px-4 text-center;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.dark .empty-hero {
+  background-image:
+    linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+}
+
+.empty-hero h2 {
+  @apply text-3xl md:text-4xl font-black uppercase tracking-wider mb-4;
+  color: #000;
+}
+
+.dark .empty-hero h2 {
+  color: #e0e0e0;
+}
+
+.empty-hero p {
+  @apply text-base md:text-lg max-w-md mb-8;
+  color: rgb(0 0 0 / 0.7);
+}
+
+.dark .empty-hero p {
+  color: rgb(224 224 224 / 0.8);
+}
+
+.empty-icon-cluster {
+  @apply relative w-40 h-40 mb-8;
+}
+
+.empty-hero .ring {
+  @apply absolute rounded-full border-2;
+  border-color: #000;
+}
+
+.dark .empty-hero .ring {
+  border-color: #00f0ff;
+}
+
+.empty-hero .ring-1 {
+  @apply w-full h-full animate-spin-slow;
+  border-style: dashed;
+}
+
+.empty-hero .ring-2 {
+  @apply w-3/4 h-3/4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin-reverse;
+  border-style: dotted;
+}
+
+.empty-hero .orbit-dot {
+  @apply absolute w-3 h-3 rounded-full;
+  background-color: #ffcc00;
+}
+
+.dark .empty-hero .orbit-dot {
+  background-color: #ff0099;
+}
+
+.empty-hero .orbit-dot:nth-child(1) {
+  @apply -top-1.5 left-1/2 -translate-x-1/2;
+}
+
+.empty-hero .orbit-dot:nth-child(2) {
+  @apply top-1/2 -right-1.5 -translate-y-1/2;
+}
+
+.empty-hero .orbit-dot:nth-child(3) {
+  @apply -bottom-1.5 left-1/2 -translate-x-1/2;
+}
+
+.empty-hero .orbit-dot:nth-child(4) {
+  @apply top-1/2 -left-1.5 -translate-y-1/2;
+}
+
+.empty-hero .center-box {
+  @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 flex items-center justify-center text-3xl;
+  background-color: #000;
+  color: #fff;
+  box-shadow: 6px 6px 0px 0px #ffcc00;
+}
+
+.dark .empty-hero .center-box {
+  background-color: #00f0ff;
+  color: #0a0a1a;
+  box-shadow: 6px 6px 0px 0px #ff0099;
+}
+
+.no-connected-badge {
+  @apply inline-flex items-center gap-2 px-4 py-2 mb-6 font-black text-xs tracking-wider uppercase;
+  background-color: #ef4444;
+  color: #fff;
+  border: 2px solid #000;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.3);
+}
+
+.dark .no-connected-badge {
+  background-color: #ff0099;
+  border-color: #00f0ff;
+  box-shadow: 4px 4px 0px 0px #6b2cf5;
+}
+
+.no-connected-badge .dot {
+  @apply w-2 h-2 rounded-full;
+  background-color: #fff;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.connect-btn {
+  @apply inline-flex items-center gap-2 px-8 py-4 text-lg font-black uppercase tracking-wider transition-all;
+  background-color: #ffcc00;
+  color: #000;
+  border: 3px solid #000;
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.dark .connect-btn {
+  background-color: #00f0ff;
+  border-color: #00f0ff;
+  box-shadow: 6px 6px 0px 0px #6b2cf5;
+}
+
+.connect-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 10px 10px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.dark .connect-btn:hover {
+  box-shadow: 10px 10px 0px 0px #ff0099;
+}
+
+.connect-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.dark .connect-btn:active {
+  box-shadow: 2px 2px 0px 0px #ff0099;
+}
+
+.connect-btn .plus {
+  @apply text-2xl font-bold;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse {
+  from {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
+.animate-spin-reverse {
+  animation: spin-reverse 8s linear infinite;
+}

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   LayoutDashboard,
@@ -27,9 +27,8 @@ const togglePlatforms = () => {
   }
 }
 
-onMounted(async () => {
-  initSidebar()
-  // Fetch connection status from API
+// Fetch connected platforms from API
+const fetchConnectedPlatforms = async () => {
   try {
     const { data } = await api.get('/api/accounts/status')
     if (data.success && data.data.connected) {
@@ -38,7 +37,27 @@ onMounted(async () => {
   } catch {
     // Silently fail - will show disconnected status
   }
+}
+
+onMounted(async () => {
+  initSidebar()
+  await fetchConnectedPlatforms()
 })
+
+// Refresh connected platforms when route changes (to update after disconnect/connect)
+watch(
+  () => route.path,
+  () => {
+    fetchConnectedPlatforms()
+  }
+)
+
+// Listen for custom event when account is connected/disconnected
+if (typeof window !== 'undefined') {
+  window.addEventListener('accounts-updated', () => {
+    fetchConnectedPlatforms()
+  })
+}
 
 interface NavItem {
   name: string
@@ -64,6 +83,8 @@ const mainDashboardItem: NavItem = {
 
 // Platform items (sub-nav under Platforms section) - fetched from API
 const connectedPlatforms = ref<string[]>([])
+
+const hasConnectedPlatforms = computed(() => connectedPlatforms.value.length > 0)
 
 const platformItems = computed<SubNavItem[]>(() => [
   {
@@ -188,26 +209,31 @@ const userAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik'
 
       <!-- Platforms Section -->
       <div class="pt-2">
-        <button
-          v-if="!isCollapsed"
-          @click="togglePlatforms"
-          class="flex items-center justify-between w-full text-sm font-black text-black/40 dark:text-electric/60 uppercase tracking-widest mb-2 px-3 hover:text-black dark:hover:text-white transition-colors"
-        >
-          <span>Platforms</span>
-          <ChevronDown
-            :size="16"
-            class="transition-transform duration-200"
-            :class="{ '-rotate-90': !isPlatformsOpen }"
-          />
-        </button>
-        <p
-          v-else
-          class="text-center text-[10px] font-black text-black/40 dark:text-electric/60 uppercase mb-2"
-        >
-          Apps
-        </p>
+        <!-- Header - only show when platforms are connected -->
+        <div v-if="hasConnectedPlatforms">
+          <button
+            v-if="!isCollapsed"
+            @click="togglePlatforms"
+            class="flex items-center justify-between w-full text-sm font-black text-black/40 dark:text-electric/60 uppercase tracking-widest mb-2 px-3 hover:text-black dark:hover:text-white transition-colors"
+          >
+            <span>Platforms</span>
+            <ChevronDown
+              :size="16"
+              class="transition-transform duration-200"
+              :class="{ '-rotate-90': !isPlatformsOpen }"
+            />
+          </button>
+          <p
+            v-else
+            class="text-center text-[10px] font-black text-black/40 dark:text-electric/60 uppercase mb-2"
+          >
+            Apps
+          </p>
+        </div>
 
+        <!-- Connected platforms list - only show when platforms connected -->
         <div
+          v-if="hasConnectedPlatforms"
           v-show="isPlatformsOpen || isCollapsed"
           class="transition-all duration-300 overflow-hidden pt-2"
           :class="{
@@ -260,35 +286,36 @@ const userAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik'
               </div>
             </button>
           </template>
+        </div>
 
-          <button
-            @click="navigateTo('/connections')"
+        <!-- Add Platform - always visible -->
+        <button
+          @click="navigateTo('/connections')"
+          :class="[
+            'group sub-nav-item w-full transition-all relative border-dashed border-black/30',
+            isActive('/connections') ? 'active' : '',
+            isCollapsed ? 'justify-center px-0 ml-0' : ''
+          ]"
+        >
+          <Plus :size="22" class="shrink-0" :stroke-width="isActive('/connections') ? 2.5 : 2" />
+          <span
+            v-if="!isCollapsed"
             :class="[
-              'group sub-nav-item w-full transition-all relative border-dashed border-black/30',
-              isActive('/connections') ? 'active' : '',
-              isCollapsed ? 'justify-center px-0 ml-0' : ''
+              'font-black uppercase text-sm',
+              isActive('/connections') ? 'text-black' : ''
             ]"
           >
-            <Plus :size="22" class="shrink-0" :stroke-width="isActive('/connections') ? 2.5 : 2" />
-            <span
-              v-if="!isCollapsed"
-              :class="[
-                'font-black uppercase text-sm',
-                isActive('/connections') ? 'text-black' : ''
-              ]"
-            >
-              Add Platform
-            </span>
+            Add Platform
+          </span>
 
-            <!-- Tooltip for collapsed state -->
-            <div
-              v-if="isCollapsed"
-              class="absolute left-16 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-brutal-sm"
-            >
-              Add Platform
-            </div>
-          </button>
-        </div>
+          <!-- Tooltip for collapsed state -->
+          <div
+            v-if="isCollapsed"
+            class="absolute left-16 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-brutal-sm"
+          >
+            Add Platform
+          </div>
+        </button>
       </div>
 
       <!-- Tools Section -->

@@ -142,6 +142,9 @@ const disconnectAccount = async () => {
     await api.delete(`/api/accounts/${accountId}`);
     await fetchAccounts();
     toast.success("Account disconnected successfully");
+
+    // Notify sidebar to refresh connected platforms
+    window.dispatchEvent(new CustomEvent('accounts-updated'));
   } catch (error) {
     console.error("Disconnect error:", error);
     toast.error("Failed to disconnect account");

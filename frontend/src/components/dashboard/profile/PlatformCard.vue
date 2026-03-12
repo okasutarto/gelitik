@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { TrendingUp, CheckCircle, XCircle, Loader2 } from 'lucide-vue-next'
+import { TrendingUp, CheckCircle, XCircle } from 'lucide-vue-next'
 import { formatNumber } from '@/utils/format'
 import { PlatformCardSkeleton } from '@/components/loading'
 import type { PlatformSnapshot } from '@/stores/dashboardStore'

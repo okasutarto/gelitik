@@ -13,29 +13,17 @@ import {
   ChevronDown
 } from 'lucide-vue-next'
 import { useSidebar } from '@/composables/useSidebar'
-import api from '@/services/api'
 
 const route = useRoute()
 const router = useRouter()
-const { isCollapsed, toggleSidebar, initSidebar } = useSidebar()
+const { isCollapsed, toggleSidebar, initSidebar, connectedPlatforms, fetchConnectedPlatforms } =
+  useSidebar()
 
 const isPlatformsOpen = ref(true)
 
 const togglePlatforms = () => {
   if (!isCollapsed.value) {
     isPlatformsOpen.value = !isPlatformsOpen.value
-  }
-}
-
-// Fetch connected platforms from API
-const fetchConnectedPlatforms = async () => {
-  try {
-    const { data } = await api.get('/api/accounts/status')
-    if (data.success && data.data.connected) {
-      connectedPlatforms.value = data.data.connected
-    }
-  } catch {
-    // Silently fail - will show disconnected status
   }
 }
 
@@ -82,7 +70,6 @@ const mainDashboardItem: NavItem = {
 }
 
 // Platform items (sub-nav under Platforms section) - fetched from API
-const connectedPlatforms = ref<string[]>([])
 
 const hasConnectedPlatforms = computed(() => connectedPlatforms.value.length > 0)
 
@@ -243,6 +230,7 @@ const userAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik'
         >
           <template v-for="platform in platformItems" :key="platform.path">
             <button
+              v-if="platform.connected"
               @click="navigateTo(platform.path)"
               :class="[
                 'group sub-nav-item w-full transition-all relative',
@@ -300,10 +288,7 @@ const userAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=gelitik'
           <Plus :size="22" class="shrink-0" :stroke-width="isActive('/connections') ? 2.5 : 2" />
           <span
             v-if="!isCollapsed"
-            :class="[
-              'font-black uppercase text-sm',
-              isActive('/connections') ? 'text-black' : ''
-            ]"
+            :class="['font-black uppercase text-sm', isActive('/connections') ? 'text-black' : '']"
           >
             Add Platform
           </span>

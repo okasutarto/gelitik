@@ -1,6 +1,8 @@
 import { ref } from "vue";
+import api from "@/services/api";
 
 const isCollapsed = ref(false);
+const connectedPlatforms = ref<string[]>([]);
 
 /**
  * Composable for managing sidebar collapse state
@@ -26,10 +28,24 @@ export function useSidebar() {
     localStorage.setItem(STORAGE_KEY, String(collapsed));
   };
 
+  const fetchConnectedPlatforms = async () => {
+    try {
+      const { data } = await api.get('/api/accounts/status');
+      if (data.success && data.data.connected) {
+        connectedPlatforms.value = data.data.connected;
+      }
+    } catch {
+      // Silently fail - will show disconnected status
+    }
+  };
+
   return {
     isCollapsed,
+    connectedPlatforms,
+    fetchConnectedPlatforms,
     toggleSidebar,
     setSidebarCollapsed,
     initSidebar,
   };
 }
+

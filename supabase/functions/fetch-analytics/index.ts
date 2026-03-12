@@ -2,7 +2,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
-  Deno.env.get('SERVICE_ROLE_KEY')!
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 )
 
 Deno.serve(async (req: Request) => {
@@ -22,8 +22,8 @@ Deno.serve(async (req: Request) => {
     .or(`expiresAt.gt.${new Date(Date.now() + 1000 * 60 * 5).toISOString()},expiresAt.is.null`)
 
   if (credErr) {
-    console.error('Failed to load credentials:', credErr)
-    return new Response('DB error', { status: 500 })
+    console.error('Full error:', JSON.stringify(credErr))
+    return new Response(JSON.stringify(credErr), { status: 500 })
   }
 
   const results = await Promise.allSettled(
@@ -64,6 +64,7 @@ async function fetchAndSave(cred: any, startTime: number) {
 
     // Log success
     await supabase.from('FetchLog').insert({
+      id: crypto.randomUUID(),
       accountId: cred.id,
       platform: cred.platform,
       status: 'success',
@@ -74,6 +75,7 @@ async function fetchAndSave(cred: any, startTime: number) {
   } catch (err: any) {
     // Log failure — never crash the whole job
     await supabase.from('FetchLog').insert({
+      id: crypto.randomUUID(),
       accountId: cred.id,
       platform: cred.platform,
       status: 'error',
@@ -95,34 +97,47 @@ async function fetchTikTok(cred: any) {
   const json = await res.json()
   const user = json.data?.user
 
-  // Fetch recent video stats separately
-  const videosRes = await fetch(
-    'https://open.tiktokapis.com/v2/video/list/?fields=view_count,like_count,comment_count,share_count',
-    { headers: { Authorization: `Bearer ${cred.accessToken}` } }
-  )
-  const videosJson = await videosRes.json()
-  const videos = videosJson.data?.videos ?? []
+  // ← Wrap video list in try/catch so it never blocks
+  let videos: any[] = []
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 5000) // 5s timeout
 
-  const totalViews = videos.reduce((sum: number, v: any) => sum + (v.view_count ?? 0), 0)
-  const totalLikes = videos.reduce((sum: number, v: any) => sum + (v.like_count ?? 0), 0)
-  const totalComments = videos.reduce((sum: number, v: any) => sum + (v.comment_count ?? 0), 0)
-  const totalShares = videos.reduce((sum: number, v: any) => sum + (v.share_count ?? 0), 0)
+    const videosRes = await fetch(
+      'https://open.tiktokapis.com/v2/video/list/?fields=view_count,like_count,comment_count,share_count',
+      {
+        headers: { Authorization: `Bearer ${cred.accessToken}` },
+        signal: controller.signal
+      }
+    )
+    clearTimeout(timeout)
+    const videosJson = await videosRes.json()
+    videos = videosJson.data?.videos ?? []
+  } catch (err: any) {
+    console.warn('Video list fetch failed or timed out:', err.message)
+    // Continue with empty videos — user info still gets saved
+  }
+
+  const totalViews    = videos.reduce((s: number, v: any) => s + (v.view_count    ?? 0), 0)
+  const totalLikes    = videos.reduce((s: number, v: any) => s + (v.like_count    ?? 0), 0)
+  const totalComments = videos.reduce((s: number, v: any) => s + (v.comment_count ?? 0), 0)
+  const totalShares   = videos.reduce((s: number, v: any) => s + (v.share_count   ?? 0), 0)
 
   const followers = user?.follower_count ?? 0
-  const engagementRate = followers > 0
+  const engagementRate = followers > 0 && videos.length > 0
     ? ((totalLikes + totalComments + totalShares) / (followers * videos.length)) * 100
     : 0
 
   return {
     followers,
-    following: user?.following_count ?? 0,
-    totalViews: totalViews,
-    totalLikes: totalLikes,
-    totalComments: totalComments,
-    totalShares: totalShares,
-    totalSaves: 0, // TikTok API does not expose saves in this endpoint
+    following:      user?.following_count ?? 0,
+    totalViews,
+    totalLikes,
+    totalComments,
+    totalShares,
+    totalSaves:     0,
     engagementRate: parseFloat(engagementRate.toFixed(4)),
-    rawPayload: { user_info: json, videos_list: videosJson }
+    rawPayload:     { user_info: json, videos_list: { data: { videos } } }
   }
 }
 

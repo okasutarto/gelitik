@@ -55,6 +55,7 @@ model SocialAccount {
   analytics             Analytics[]
   content               Content[]
   posts                 Post[]
+  fetchLogs             FetchLog[]
   user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, platform, accountId])
@@ -72,6 +73,7 @@ model Analytics {
   totalViews      Int           @default(0)
   engagementRate  Float         @default(0)
   platformMetrics Json?
+  rawPayload      Json?
   createdAt       DateTime      @default(now())
   totalSaves      Int           @default(0)
   account         SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
@@ -131,4 +133,16 @@ model OAuthState {
   createdAt DateTime @default(now())
 
   @@index([expiresAt])
+}
+
+model FetchLog {
+  id            String   @id @default(cuid())
+  accountId     String
+  platform      String
+  status        String   // 'success', 'error', 'skipped'
+  errorMessage  String?
+  durationMs    Int?
+  triggeredAt   DateTime @default(now())
+
+  account       SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 }

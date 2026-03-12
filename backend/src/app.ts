@@ -12,7 +12,6 @@ import analyticsRoutes from './routes/analytics.routes';
 import socialAccountsRoutes from './routes/socialAccounts';
 import instagramGraphRoutes from './routes/instagramGraph.routes';
 import reportsRoutes from './routes/reports.routes';
-import { startTokenRefreshCron } from './jobs/tokenRefresh';
 import session from 'express-session';
 
 const app = express();
@@ -90,8 +89,7 @@ app.use('/api/analytics', authenticateJwt, analyticsRoutes);
 app.use('/api/accounts', authenticateJwt, socialAccountsRoutes);
 app.use('/api/reports', authenticateJwt, reportsRoutes);
 
-// Start token refresh cron job
-startTokenRefreshCron();
+// Old cron job for token refresh has been migrated to Supabase Edge Functions.
 
 // Health Check
 app.get('/health', (req, res) => {

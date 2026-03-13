@@ -71,7 +71,7 @@ vi.mock('../../services/tiktokService.js', () => ({
       username: 'tiktokuser',
       displayName: 'TikTok User',
       avatar: 'https://example.com/avatar.jpg',
-      scope: 'user.info.basic',
+      scope: 'user.info.basic,user.info.stats,video.list',
       expiresIn: 5184000
     })
   }))

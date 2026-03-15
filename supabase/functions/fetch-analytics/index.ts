@@ -57,6 +57,14 @@ Deno.serve(async (req: Request) => {
     return new Response('Unauthorized', { status: 401 })
   }
 
+  // Get timezone from query param (default to UTC+7 for Indonesia/WIB)
+  const url = new URL(req.url)
+  const timezoneOffset = parseInt(url.searchParams.get('timezone') || '7', 10)
+  const now = new Date()
+  // Adjust to user's timezone by adding offset hours
+  now.setHours(now.getHours() + timezoneOffset)
+  const todayStr = now.toLocaleDateString('en-CA') // YYYY-MM-DD in local timezone
+
   // Get all connected accounts for TikTok and Instagram
   // Also check if token is valid (expiresAt > now or is null)
   const { data: credentials, error: credErr } = await supabase
@@ -71,7 +79,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const results = await Promise.allSettled(
-    (credentials || []).map(cred => fetchAndSave(cred, startTime))
+    (credentials || []).map(cred => fetchAndSave(cred, startTime, now, todayStr))
   )
 
   const summary = results.map((r, i) => ({
@@ -87,7 +95,7 @@ Deno.serve(async (req: Request) => {
 
 // ── Per-platform fetch ──────────────────────────────────────────
 
-async function fetchAndSave(cred: any, startTime: number) {
+async function fetchAndSave(cred: any, startTime: number, now: Date, todayStr: string) {
   try {
     let snapshot: any = null
 
@@ -99,7 +107,7 @@ async function fetchAndSave(cred: any, startTime: number) {
 
     if (!snapshot) throw new Error('No data returned from API')
 
-    const todayStr = new Date().toISOString().split('T')[0]
+    // Use the now and todayStr from outer scope (with timezone adjustment)
     const startOfDay = `${todayStr}T00:00:00.000Z`
     const endOfDay = `${todayStr}T23:59:59.999Z`
 
@@ -120,7 +128,7 @@ async function fetchAndSave(cred: any, startTime: number) {
         .from('Analytics')
         .update({
           ...snapshot,
-          date: new Date().toISOString() // Always set date to the actual time of this exact function run
+          date: now.toISOString() // Always set date to the actual time of this exact function run
         })
         .eq('id', existingSnapshot.id)
       analyticsErr = error
@@ -129,7 +137,7 @@ async function fetchAndSave(cred: any, startTime: number) {
       const { error } = await supabase.from('Analytics').insert({
         id: crypto.randomUUID(),
         accountId: cred.id,
-        date: new Date().toISOString(),
+        date: now.toISOString(),
         ...snapshot,
       })
       analyticsErr = error

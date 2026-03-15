@@ -109,6 +109,8 @@ router.get('/:platform/callback', async (req, res) => {
                 username: result.username,
                 avatar: result.avatar,
                 scope: result.scope,
+                accessToken: result.accessToken, // Legacy field - will be migrated
+                refreshToken: result.refreshToken,
                 isActive: true
             },
             create: {

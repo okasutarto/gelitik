@@ -72,6 +72,9 @@ router.get('/callback', async (req, res) => {
                 displayName: result.displayName,
                 username: result.username,
                 avatar: result.avatar,
+                accessToken: result.accessToken, // Legacy field - will be migrated
+                refreshToken: result.refreshToken,
+                expiresAt: result.expiresIn ? new Date(Date.now() + result.expiresIn * 1000) : null,
                 isActive: true
             },
             create: {

@@ -198,46 +198,85 @@ async function fetchTikTok(cred: any) {
 }
 
 // ── Instagram fetch ─────────────────────────────────────────────
-
 async function fetchInstagram(cred: any) {
   const token = cred.accessToken
 
-  console.log('Instagram token (first 20):', token?.substring(0, 20))
-
-  const fields = 'followers_count,media_count,name'
-  const res = await fetch(
-    `https://graph.instagram.com/me?fields=${fields}&access_token=${token}`
+  // ── Get Instagram Business Account ID first ──
+  const accountsRes = await fetch(
+    `https://graph.facebook.com/v25.0/me/accounts?access_token=${token}`
   )
-  const user = await res.json()
-  console.log('Instagram user response:', JSON.stringify(user))
+  const accountsJson = await accountsRes.json()
+  console.log('FB accounts:', JSON.stringify(accountsJson))
 
-  const mediaRes = await fetch(
-    `https://graph.instagram.com/me/media?fields=like_count,comments_count,saved,impressions,reach&access_token=${token}&limit=30`
+  const page = accountsJson.data?.[0]
+  if (!page) throw new Error('No Facebook page found')
+
+  const pageToken = page.access_token
+  const pageId = page.id
+
+  // ── Get Instagram Business Account linked to the page ──
+  const igRes = await fetch(
+    `https://graph.facebook.com/v25.0/${pageId}?fields=instagram_business_account&access_token=${pageToken}`
   )
-  const mediaJson = await mediaRes.json()
+  const igJson = await igRes.json()
+  const igAccountId = igJson.instagram_business_account?.id
+  console.log('IG account id:', igAccountId)
 
-  console.log('Instagram media response:', JSON.stringify(mediaJson))
+  if (!igAccountId) throw new Error('No Instagram business account linked to page')
 
-  const media = mediaJson.data ?? []
+  // ── Get profile ──
+  const profileRes = await fetch(
+    `https://graph.facebook.com/v25.0/${igAccountId}?fields=followers_count,media_count,username&access_token=${pageToken}`
+  )
+  const profile = await profileRes.json()
+  console.log('IG profile:', JSON.stringify(profile))
 
-  const totalLikes = media.reduce((sum: number, m: any) => sum + (m.like_count ?? 0), 0)
-  const totalComments = media.reduce((sum: number, m: any) => sum + (m.comments_count ?? 0), 0)
-  const totalSaves = media.reduce((sum: number, m: any) => sum + (m.saved ?? 0), 0)
-  const totalViews = media.reduce((sum: number, m: any) => sum + (m.impressions ?? 0), 0)
+  // ── Get recent media ──
+  let media: any[] = []
+  try {
+    const mediaRes = await fetch(
+      `https://graph.facebook.com/v25.0/${igAccountId}/media?fields=like_count,comments_count,saved,impressions&access_token=${pageToken}&limit=30`
+    )
+    const mediaJson = await mediaRes.json()
+    console.log('IG media response:', JSON.stringify(mediaJson).substring(0, 200))
 
-  const followers = user.followers_count ?? 0
+    if (mediaJson.error) {
+      // Retry without impressions
+      const mediaRes2 = await fetch(
+        `https://graph.facebook.com/v25.0/${igAccountId}/media?fields=like_count,comments_count,saved&access_token=${pageToken}&limit=30`
+      )
+      const mediaJson2 = await mediaRes2.json()
+      media = mediaJson2.data ?? []
+    } else {
+      media = mediaJson.data ?? []
+    }
+  } catch (e: any) {
+    console.warn('Media fetch failed:', e.message)
+  }
+
+  const totalLikes    = media.reduce((s: number, m: any) => s + (m.like_count     ?? 0), 0)
+  const totalComments = media.reduce((s: number, m: any) => s + (m.comments_count ?? 0), 0)
+  const totalSaves    = media.reduce((s: number, m: any) => s + (m.saved          ?? 0), 0)
+  const totalViews    = media.reduce((s: number, m: any) => s + (m.impressions    ?? 0), 0)
+  const totalShares   = media.reduce((s: number, m: any) => s + (m.shares         ?? 0), 0)
+
+  const followers = profile.followers_count ?? 0
   const engagementRate = followers > 0 && media.length > 0
-    ? ((totalLikes + totalComments + totalSaves) / (followers * media.length)) * 100
+    ? ((totalLikes + totalComments + totalSaves + totalShares) / (followers * media.length)) * 100
     : 0
+
+  console.log('IG snapshot:', { followers, totalLikes, totalComments, totalViews, mediaCount: media.length })
 
   return {
     followers,
-    totalViews: totalViews,
-    totalLikes: totalLikes,
-    totalComments: totalComments,
-    totalShares: 0, // IG API does not expose shares here
-    totalSaves: totalSaves,
+    following: 0,
+    totalViews,
+    totalLikes,
+    totalComments,
+    totalShares: 0,
+    totalSaves,
     engagementRate: parseFloat(engagementRate.toFixed(4)),
-    rawPayload: { user_info: user, media_list: mediaJson }
+    rawPayload: { profile, media_count: media.length }
   }
 }
+

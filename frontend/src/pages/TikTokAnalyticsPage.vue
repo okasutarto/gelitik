@@ -90,8 +90,12 @@ const tiktokStats = computed(() => {
   const totalLikes = userData.value?.likes_count || 0
   const totalShares = vids.reduce((sum, v) => sum + (v.share_count || 0), 0)
   const totalComments = vids.reduce((sum, v) => sum + (v.comment_count || 0), 0)
-  const totalEngagement = totalLikes + totalComments + totalShares
-  const engagementRate = totalViews > 0 ? (totalEngagement / totalViews) * 100 : 0
+
+  // Use engagement rate from DB (already calculated in edge function)
+  const latestSnapshot = followerHistory.value.length > 0
+    ? followerHistory.value[followerHistory.value.length - 1]
+    : null
+  const engagementRate = latestSnapshot?.engagementRate || 0
 
   const followersDelta = getSnapshotDelta('followers')
   const viewsDelta = getSnapshotDelta('totalViews')

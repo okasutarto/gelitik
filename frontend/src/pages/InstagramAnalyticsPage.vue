@@ -418,8 +418,10 @@ const instagramStats = computed((): InstagramStat[] => {
       ? (latestSnapshot.totalViews || 0) - (oldestSnapshot.totalViews || 0)
       : 0
 
-  // Use engagement rate directly from DB (includes saves which history doesn't have)
-  const periodEngagement = latestSnapshot?.engagementRate || 0
+  // Calculate engagement rate using the same formula as the backend
+  // (Total Engagement / Total Views) * 100
+  const totalEngagement = totalLikes + totalComments + totalShares + totalSaves
+  const periodEngagement = latestSnapshot?.engagementRate || (totalViews > 0 ? (totalEngagement / totalViews) * 100 : 0)
 
   // Get delta from full history for followers (for comparison against first record)
   const followersDelta = getIgSnapshotDelta('followers')

@@ -99,15 +99,43 @@ async function fetchAndSave(cred: any, startTime: number) {
 
     if (!snapshot) throw new Error('No data returned from API')
 
-    // Insert snapshot
-    const { error: analyticsErr } = await supabase.from('Analytics').insert({
-      id: crypto.randomUUID(),
-      accountId: cred.id,
-      date: new Date().toISOString(),
-      ...snapshot,
-    })
+    const todayStr = new Date().toISOString().split('T')[0]
+    const startOfDay = `${todayStr}T00:00:00.000Z`
+    const endOfDay = `${todayStr}T23:59:59.999Z`
 
-    if (analyticsErr) throw new Error(`Analytics insert failed: ${analyticsErr.message}`)
+    // Check if snapshot already exists for today using proper date range
+    const { data: existingSnapshot } = await supabase
+      .from('Analytics')
+      .select('id')
+      .eq('accountId', cred.id)
+      .gte('date', startOfDay)
+      .lte('date', endOfDay)
+      .maybeSingle()
+
+    let analyticsErr = null
+
+    if (existingSnapshot) {
+      // Update existing
+      const { error } = await supabase
+        .from('Analytics')
+        .update({
+          ...snapshot,
+          date: new Date().toISOString() // Always set date to the actual time of this exact function run
+        })
+        .eq('id', existingSnapshot.id)
+      analyticsErr = error
+    } else {
+      // Insert new with exact current timestamp
+      const { error } = await supabase.from('Analytics').insert({
+        id: crypto.randomUUID(),
+        accountId: cred.id,
+        date: new Date().toISOString(),
+        ...snapshot,
+      })
+      analyticsErr = error
+    }
+
+    if (analyticsErr) throw new Error(`Analytics save failed: ${analyticsErr.message}`)
 
     // Log success
     await supabase.from('FetchLog').insert({
@@ -145,28 +173,43 @@ async function fetchTikTok(cred: any) {
   const json = await res.json()
   const user = json.data?.user
 
-  // Video list — POST with JSON body (matches backend TikTokService.getVideos)
+  // Video list — Fetch all videos with pagination
   let videos: any[] = []
   try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 8000)
+    let hasMore = true
+    let cursor: number | undefined = undefined
 
-    const videosRes = await fetch(
-      'https://open.tiktokapis.com/v2/video/list/?fields=id,view_count,like_count,comment_count,share_count',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${cred.accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ max_count: 20 }),
-        signal: controller.signal
-      }
-    )
-    clearTimeout(timeout)
-    const videosJson = await videosRes.json()
-    console.log('TikTok videos response:', JSON.stringify(videosJson))
-    videos = videosJson.data?.videos ?? []
+    while (hasMore) {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 8000)
+
+      const body: any = { max_count: 20 }
+      if (cursor) body.cursor = cursor
+
+      const videosRes = await fetch(
+        'https://open.tiktokapis.com/v2/video/list/?fields=id,view_count,like_count,comment_count,share_count',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${cred.accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body),
+          signal: controller.signal
+        }
+      )
+      clearTimeout(timeout)
+
+      const videosJson = await videosRes.json()
+      const newVideos = videosJson.data?.videos ?? []
+      videos.push(...newVideos)
+
+      hasMore = videosJson.data?.has_more ?? false
+      cursor = videosJson.data?.cursor
+
+      // Safety limit to avoid edge function timeouts
+      if (videos.length >= 500) break
+    }
   } catch (err: any) {
     console.warn('Video list fetch failed or timed out:', err.message)
   }
@@ -177,11 +220,10 @@ async function fetchTikTok(cred: any) {
   const totalComments = videos.reduce((s: number, v: any) => s + (v.comment_count ?? 0), 0)
   const totalShares = videos.reduce((s: number, v: any) => s + (v.share_count ?? 0), 0)
 
-  // Match backend calculateAnalytics logic exactly
+  // Match frontend calculateAnalytics logic exactly
   const totalEngagement = totalLikes + totalComments + totalShares
-  const totalImpressions = totalViews || followers
-  const engagementRate = totalImpressions > 0
-    ? (totalEngagement / totalImpressions) * 100
+  const engagementRate = totalViews > 0
+    ? (totalEngagement / totalViews) * 100
     : 0
 
   return {
@@ -206,7 +248,6 @@ async function fetchInstagram(cred: any) {
     `https://graph.facebook.com/v25.0/me/accounts?access_token=${token}`
   )
   const accountsJson = await accountsRes.json()
-  console.log('FB accounts:', JSON.stringify(accountsJson))
 
   const page = accountsJson.data?.[0]
   if (!page) throw new Error('No Facebook page found')
@@ -220,63 +261,133 @@ async function fetchInstagram(cred: any) {
   )
   const igJson = await igRes.json()
   const igAccountId = igJson.instagram_business_account?.id
-  console.log('IG account id:', igAccountId)
 
   if (!igAccountId) throw new Error('No Instagram business account linked to page')
 
   // ── Get profile ──
   const profileRes = await fetch(
-    `https://graph.facebook.com/v25.0/${igAccountId}?fields=followers_count,media_count,username&access_token=${pageToken}`
+    `https://graph.facebook.com/v25.0/${igAccountId}?fields=followers_count,follows_count,media_count,username&access_token=${pageToken}`
   )
   const profile = await profileRes.json()
-  console.log('IG profile:', JSON.stringify(profile))
 
-  // ── Get recent media ──
-  let media: any[] = []
+  // ── Get recent media with insights ──
+  let allMedia: any[] = []
   try {
-    const mediaRes = await fetch(
-      `https://graph.facebook.com/v25.0/${igAccountId}/media?fields=like_count,comments_count,saved,impressions&access_token=${pageToken}&limit=30`
-    )
-    const mediaJson = await mediaRes.json()
-    console.log('IG media response:', JSON.stringify(mediaJson).substring(0, 200))
+    let hasMore = true
+    let cursor: string | undefined = undefined
 
-    if (mediaJson.error) {
-      // Retry without impressions
-      const mediaRes2 = await fetch(
-        `https://graph.facebook.com/v25.0/${igAccountId}/media?fields=like_count,comments_count,saved&access_token=${pageToken}&limit=30`
-      )
-      const mediaJson2 = await mediaRes2.json()
-      media = mediaJson2.data ?? []
-    } else {
-      media = mediaJson.data ?? []
+    // Loop to fetch all media
+    while (hasMore) {
+      const url = new URL(`https://graph.facebook.com/v25.0/${igAccountId}/media`)
+      url.searchParams.append('fields', 'id,like_count,comments_count,media_type,media_product_type')
+      url.searchParams.append('access_token', pageToken)
+      url.searchParams.append('limit', '50')
+      if (cursor) url.searchParams.append('after', cursor)
+
+      const mediaRes = await fetch(url.toString())
+      const mediaJson = await mediaRes.json()
+
+      if (mediaJson.error) {
+        console.warn('IG media error:', JSON.stringify(mediaJson.error))
+        break
+      }
+
+      const mediaItems = mediaJson.data ?? []
+      allMedia.push(...mediaItems)
+
+      const paging = mediaJson.paging || {}
+      hasMore = !!paging.cursors?.after
+      cursor = paging.cursors?.after
+
+      if (allMedia.length >= 500) break
+    }
+
+    // Next, fetch insights for these media items in chunks (API limits batches to 50)
+    if (allMedia.length > 0) {
+      const batchSize = 50
+      for (let i = 0; i < allMedia.length; i += batchSize) {
+        const batch = allMedia.slice(i, i + batchSize)
+
+        const batchRequests = batch.map((item: any) => ({
+          method: 'GET',
+          relative_url: `v25.0/${item.id}/insights?metric=reach,views,saved,shares`
+        }))
+
+        const formData = new URLSearchParams()
+        formData.append('access_token', pageToken)
+        formData.append('batch', JSON.stringify(batchRequests))
+
+        const batchRes = await fetch(`https://graph.facebook.com`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData.toString()
+        })
+
+        const batchData = await batchRes.json()
+
+        batch.forEach((item: any, idx: number) => {
+          item.reach = 0
+          item.views = 0
+          item.saves = 0
+          item.shares = 0
+
+          const res = batchData[idx]
+          if (res && res.code === 200) {
+            try {
+              const body = JSON.parse(res.body)
+              
+              // If the body itself contains an error message despite a 200 wrapper
+              if (body.error) {
+                console.warn(`[Batch Insight Error Code 200] Media ${item.id}:`, JSON.stringify(body.error))
+              }
+
+              const insights = body.data || []
+
+              for (const metric of insights) {
+                const value = metric.values?.[0]?.value ?? metric.total_value?.value ?? 0
+                if (metric.name === 'reach') item.reach = value
+                if (metric.name === 'views') item.views = value
+                if (metric.name === 'saved') item.saves = value
+                if (metric.name === 'shares') item.shares = value
+              }
+            } catch (err) {
+              console.warn(`Error parsing insights for media ${item.id}`, err)
+            }
+          } else if (res && res.body) {
+             console.warn(`[Batch Insight Error Code ${res.code}] Media ${item.id}:`, res.body)
+          }
+        })
+      }
     }
   } catch (e: any) {
     console.warn('Media fetch failed:', e.message)
   }
 
-  const totalLikes    = media.reduce((s: number, m: any) => s + (m.like_count     ?? 0), 0)
-  const totalComments = media.reduce((s: number, m: any) => s + (m.comments_count ?? 0), 0)
-  const totalSaves    = media.reduce((s: number, m: any) => s + (m.saved          ?? 0), 0)
-  const totalViews    = media.reduce((s: number, m: any) => s + (m.impressions    ?? 0), 0)
-  const totalShares   = media.reduce((s: number, m: any) => s + (m.shares         ?? 0), 0)
+  const totalLikes    = allMedia.reduce((s: number, m: any) => s + (m.like_count     ?? 0), 0)
+  const totalComments = allMedia.reduce((s: number, m: any) => s + (m.comments_count ?? 0), 0)
+  const totalSaves    = allMedia.reduce((s: number, m: any) => s + (m.saves          ?? 0), 0)
+  const totalViews    = allMedia.reduce((s: number, m: any) => s + (m.views          ?? 0), 0)
+  const totalShares   = allMedia.reduce((s: number, m: any) => s + (m.shares         ?? 0), 0)
 
   const followers = profile.followers_count ?? 0
-  const engagementRate = followers > 0 && media.length > 0
-    ? ((totalLikes + totalComments + totalSaves + totalShares) / (followers * media.length)) * 100
+  const following = profile.follows_count ?? 0
+  const totalEngagement = totalLikes + totalComments + totalSaves + totalShares
+  const engagementRate = totalViews > 0
+    ? (totalEngagement / totalViews) * 100
     : 0
 
-  console.log('IG snapshot:', { followers, totalLikes, totalComments, totalViews, mediaCount: media.length })
+  console.log('IG snapshot:', { followers, totalLikes, totalComments, totalViews, totalSaves, totalShares, mediaCount: allMedia.length })
 
   return {
     followers,
-    following: 0,
+    following,
     totalViews,
     totalLikes,
     totalComments,
-    totalShares: 0,
+    totalShares,
     totalSaves,
     engagementRate: parseFloat(engagementRate.toFixed(4)),
-    rawPayload: { profile, media_count: media.length }
+    rawPayload: { profile, media_count: allMedia.length }
   }
 }
 
